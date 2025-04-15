@@ -1,1 +1,1 @@
-print ("fouad")
+print ("x=5")
