@@ -1,0 +1,148 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  body {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f6fa;
+  }
+  
+  .login-container {
+    display: flex;
+    width: 80%;
+    max-width: 1000px;
+    height: 600px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .left-side {
+    flex: 1;
+    background: #4F46E5;
+    color: #fff;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .left-side h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .left-side p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+  }
+  
+  .left-side img {
+    max-width: 300px;
+  }
+  
+  .right-side {
+    flex: 1;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .right-side h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  
+  .right-side p {
+    margin-bottom: 20px;
+    color: #555;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  label {
+    margin: 10px 0 5px;
+    font-weight: 600;
+  }
+  
+  input[type="email"],
+  input[type="password"] {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+  }
+  
+  .form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px 0;
+    font-size: 0.9rem;
+  }
+  
+  .form-options a {
+    text-decoration: none;
+    color: #4F46E5;
+  }
+  
+  button {
+    padding: 12px;
+    background: #4F46E5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  
+  .signup-link {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.95rem;
+  }
+  
+  .signup-link a {
+    color: #4F46E5;
+    text-decoration: none;
+  }
+  @media (max-width: 768px) {
+    .login-container {
+      flex-direction: column;
+      height: auto;
+    }
+  
+    .left-side, .right-side {
+      width: 100%;
+      padding: 40px 20px;
+      text-align: center;
+    }
+  
+    .left-side img {
+      max-width: 200px;
+    }
+  
+    .form-options {
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-start;
+    }
+  
+    .form-options a {
+      align-self: flex-end;
+    }
+  }

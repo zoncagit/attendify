@@ -1,11 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <script src="scripts/app.js"></script>  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendify Login</title>
+  <link rel="stylesheet" href="styles/style.css" />
 </head>
 <body>
-    <h1>HELLO WORLD !</h1>
+  <div class="login-container">
+    <div class="left-side">
+      <h1>Attendify</h1>
+      <p>Track attendance effortlessly and smartly</p>
+      <img src="illustration.svg" alt="Illustration" />
+    </div>
+    <div class="right-side">
+      <h2>Welcome Back 👋</h2>
+      <p>Please enter your details</p>
+      <form>
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Enter your email" required />
+        
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" required />
+        
+        <div class="form-options">
+          <label><input type="checkbox" /> Remember me</label>
+          <a href="#">Forgot password?</a>
+        </div>
+
+        <button type="submit">Sign In</button>
+      </form>
+      <p class="signup-link">Don't have an account? <a href="#">Sign up</a></p>
+    </div>
+  </div>
 </body>
+
 </html>
