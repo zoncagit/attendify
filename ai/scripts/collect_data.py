@@ -1,20 +1,18 @@
 import cv2
 import os
 
-# Set parameters
 user_id = input("Enter user ID (e.g., student name or number): ")
 base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dataset"))
 save_path = os.path.join(base_path, user_id)
 print("Creating folder at:", save_path)
 os.makedirs(save_path, exist_ok=True)
 
-# Load Haar Cascade for face detection
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
-# Start webcam
+# webcam
 cam = cv2.VideoCapture(0)
 count = 0
-max_images = 50 # Number of images to collect
+max_images = 50
 
 print("[INFO] Starting face capture. Look at the camera...")
 
