@@ -14,7 +14,7 @@ cam = cv2.VideoCapture(0)
 count = 0
 max_images = 50
 
-print("[INFO] Starting face capture. Look at the camera...")
+print("Starting face capture. Look at the camera...")
 
 while True:
     ret, frame = cam.read()
@@ -27,7 +27,6 @@ while True:
     for (x, y, w, h) in faces:
         count += 1
         face_img = gray[y:y+h, x:x+w]
-        face_img = cv2.resize(face_img, (100, 100))
 
         cv2.imwrite(f"{save_path}/{user_id}_{count}.jpg", face_img)
         cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
