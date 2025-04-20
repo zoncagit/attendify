@@ -40,7 +40,7 @@ while True:
         name = labels[class_idx] if confidence > 0.8 else "Unknown"
 
         cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-        cv2.putText(frame, f"{name} ({confidence*100}%)", (x, y-10),
+        cv2.putText(frame, f"{name} ({confidence*100} %)", (x, y-10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
     cv2.imshow("Face Recognition", frame)

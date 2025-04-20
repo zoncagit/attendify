@@ -2,11 +2,12 @@ import os
 import numpy as np
 import cv2
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
-
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.optimizers import Adam
 # Load images
 data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dataset"))
 X, y = [], []
@@ -42,23 +43,33 @@ datagen.fit(X_train)
 # Build the CNN model
 model = Sequential()
 model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(100, 100, 1)))
+model.add(BatchNormalization())
 model.add(MaxPooling2D((2, 2)))
+
 model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(BatchNormalization())
 model.add(MaxPooling2D((2, 2)))
+
 model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(BatchNormalization())
 model.add(MaxPooling2D((2, 2)))
+
 model.add(Flatten())
-model.add(Dense(256, activation='relu'))
+model.add(Dense(512, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(len(labels), activation='softmax'))  # Ensure labels are properly loaded here
 
-# Compile the model
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+# Compile the model with a lower learning rate
+model.compile(optimizer=Adam(learning_rate=0.0005), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Add early stopping
+early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
 # Train the model
 history = model.fit(datagen.flow(X_train, y_train, batch_size=32),
                     epochs=20,
-                    validation_data=(X_val, y_val))
+                    validation_data=(X_val, y_val),
+                    callbacks=[early_stop])
 
 # Save the trained model
 model.save(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models", "face_model.h5")))
