@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 from sklearn.metrics import accuracy_score
 
-data_dir = "student"
+data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "student"))
 
 known_encodings = []
 known_names = []
@@ -39,4 +39,3 @@ data = {"encodings": known_encodings, "names": known_names} #hada dictionaire ha
 with open("face_encodings.pickle", "wb") as f:
     pickle.dump(data, f)
     #haka derna binary file storina fih face encodings bch lmodel ykhdm bihom fel face comparison 
-

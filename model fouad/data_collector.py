@@ -4,8 +4,11 @@ import face_recognition
 
 name=input("type the student's name\t")
 
-base_path = "C:/Users/hmani/students"
-student_folder= os.path.join(base_path, name)
+base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "student"))
+student_folder = os.path.join(base_path, name)
+print("Creating folder at:", student_folder)
+os.makedirs(student_folder, exist_ok=True)
+
 
 if not os.path.exists(student_folder):
     os.makedirs(student_folder)
