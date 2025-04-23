@@ -1,0 +1,47 @@
+import os
+import cv2
+
+# Load Haar cascade for face detection
+xml_path = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier(xml_path)
+
+# Open webcam
+video = cv2.VideoCapture(0)
+
+# Ask user for name and create unique folder
+name = input("Your name:\t")
+path = os.path.join('students', name)
+while os.path.exists(path):
+    name = input("This name already exists. Give another name:\t")
+    path = os.path.join('students', name)
+os.makedirs(path)
+
+# Start capturing and saving face images
+count = 0
+while True:
+    ret, frame = video.read()
+    if not ret:
+        print("Frame not captured")
+        break
+
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+    for (x, y, w, h) in faces:
+        cropped = frame[y:y+h, x:x+w]
+        img_path = os.path.join(path, f"{name}/{count}.jpg")
+        cv2.imwrite(img_path, cropped)
+        count += 1
+
+        # Draw rectangle
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (200, 0, 0), 2)
+
+    cv2.imshow("Face detection", frame)
+
+    # Stop when 30 images are collected or q is pressed
+    if count >= 30 or cv2.waitKey(1) & 0xFF == ord("q"):
+        break
+
+# Cleanup
+video.release()
+cv2.destroyAllWindows()

@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 from sklearn.metrics import accuracy_score
 
-data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "student"))
+data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "students"))
 
 known_encodings = []
 known_names = []

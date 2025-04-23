@@ -12,7 +12,7 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_fronta
 # webcam
 cam = cv2.VideoCapture(0)
 count = 0
-max_images = 200
+max_images = 30
 
 print("Starting face capture. Look at the camera...")
 
@@ -29,7 +29,7 @@ while True:
         face_img = gray[y:y+h, x:x+w]
 
         cv2.imwrite(f"{save_path}/{user_id}_{count}.jpg", face_img)
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (200, 255, 0), 2)
 
         cv2.imshow('Face Capture', frame)
 
