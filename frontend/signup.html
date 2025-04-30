@@ -118,5 +118,162 @@
         </div>
       </form>
     </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          const signupForm = document.getElementById('signupForm');
+          const firstNameInput = document.getElementById('firstName');
+          const lastNameInput = document.getElementById('lastName');
+          const emailInput = document.getElementById('email');
+          const passwordInput = document.getElementById('password');
+          const confirmPasswordInput = document.getElementById('confirmPassword');
+          const successMessage = document.getElementById('successMessage');
+          const progressFill = document.getElementById('progressFill');
+          const passwordStrengthBar = document.getElementById('passwordStrengthBar');
+          const passwordStrengthText = document.getElementById('passwordStrengthText');
+          
+          const formInputs = [firstNameInput, lastNameInput, emailInput, passwordInput, confirmPasswordInput];
+          let filledInputs = 0;
+          
+          function updateProgress() {
+              filledInputs = 0;
+              
+              formInputs.forEach(input => {
+                  if (input.type === 'checkbox') {
+                      if (input.checked) filledInputs++;
+                  } else {
+                      if (input.value.trim() !== '') filledInputs++;
+                  }
+              });
+              
+              const progress =(filledInputs / formInputs.length) * 100;
+              progressFill.style.width = `${progress}%`;
+          }
+          
+          formInputs.forEach(input => {
+              input.addEventListener('input', updateProgress);
+              input.addEventListener('change', updateProgress);
+          });
+          
+          passwordInput.addEventListener('input', function() {
+              const password = this.value;
+              let strength = 0;
+              let strengthText = 'Weak';
+              let strengthColor = '#ef4444'; //red
+              
+              if (password.length >= 8) strength += 25;
+              if (password.match(/[a-z]+/)) strength += 25;
+              if (password.match(/[A-Z]+/)) strength += 25;
+              if (password.match(/[0-9]+/)) strength += 25;
+              
+              if (strength >= 100) {
+                  strengthText = 'Strong';
+                  strengthColor = '#10b981'; // Green
+              } else if (strength >= 75) {
+                  strengthText = 'Good';
+                  strengthColor = '#f59e0b'; // Yellow
+              } else if (strength >= 50) {
+                  strengthText = 'Fair';
+                  strengthColor = '#f59e0b'; // Yellow
+              }
+              
+              passwordStrengthBar.style.width = `${strength}%`;
+              passwordStrengthBar.style.backgroundColor = strengthColor;
+              passwordStrengthText.textContent = `Password strength: ${strengthText}`;
+              passwordStrengthText.style.color = strengthColor;
+          });
+          
+          confirmPasswordInput.addEventListener('input', function() {
+              if (this.value !== passwordInput.value && this.value !== '') {
+                  this.classList.add('error');
+              } else {
+                  this.classList.remove('error');
+              }
+          });
+          
+
+          emailInput.addEventListener('input', function() {
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(this.value) && this.value !== '') {
+                  this.classList.add('error');
+              } else {
+                  this.classList.remove('error');
+              }
+          });
+          
+          signupForm.addEventListener('submit', function(e) {
+              e.preventDefault();
+              
+              let isValid = true;
+              
+              if (firstNameInput.value.trim() === '') {
+                  firstNameInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  firstNameInput.classList.remove('error');
+              }
+              
+              if (lastNameInput.value.trim() === '') {
+                  lastNameInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  lastNameInput.classList.remove('error');
+              }
+              
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(emailInput.value)) {
+                  emailInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  emailInput.classList.remove('error');
+              }
+              
+              if (passwordInput.value.length < 8) {
+                  passwordInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  passwordInput.classList.remove('error');
+              }
+              
+              if (confirmPasswordInput.value !== passwordInput.value) {
+                  confirmPasswordInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  confirmPasswordInput.classList.remove('error');
+              }
+              
+              if (!isValid) return;
+              
+              const button = this.querySelector('button[type="submit"]');
+              button.classList.add('loading');
+              button.disabled = true;
+              
+              setTimeout(() => {
+                  successMessage.classList.add('show');
+                  
+                  setTimeout(() => {
+                      window.location.href = 'dashboard.html';
+                  }, 1500);
+              }, 1500);
+          });
+
+          const profilePicture = document.getElementById('profilePicture');
+          const previewImage = document.getElementById('previewImage');
+          const profileIcon = document.querySelector('.profile-picture-preview i');
+          
+          profilePicture.addEventListener('change', function(e) {
+              if (this.files && this.files[0]) {
+                  const reader = new FileReader();
+                  
+                  reader.onload = function(e) {
+                      previewImage.src = e.target.result;
+                      previewImage.style.display = 'block';
+                      profileIcon.style.display = 'none';
+                  }
+                  
+                  reader.readAsDataURL(this.files[0]);
+              }
+          });
+      });
+  </script>
   </body>
 </html>
