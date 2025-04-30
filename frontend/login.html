@@ -20,61 +20,131 @@
         <h1 class="login-title">Attendify</h1>
         <p class="login-subtitle">Login to your Attendify account</p>
       </div>
-    
 
-    <div class="success-message" id="successMessage">
-      <!--JS-->
-      <i class="fas fa-check-circle"></i> Login successful! Redirecting...
+      <div class="success-message" id="successMessage">
+        <!--JS-->
+        <i class="fas fa-check-circle"></i> Login successful! Redirecting...
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            class="form-input"
+            placeholder="Enter your email"
+            required
+          />
+          <i class="fas fa-envelope input-icon"></i>
+          <div class="error-message">Please enter a valid email address</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            class="form-input"
+            placeholder="Enter your password"
+            required
+          />
+          <i class="fas fa-lock input-icon"></i>
+          <div class="error-message">Password is required</div>
+        </div>
+
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" id="rememberMe" />
+            <span>Remember me</span>
+          </label>
+
+          <a href="forgot-password.html" class="forgot-password">
+            Forgot password?
+          </a>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <span>Login</span>
+          <div class="spinner"></div>
+          <!--display loading spinner-->
+        </button>
+
+        <div class="signup-link">
+          Don't have an account? <a href="signup.html">Sign up</a>
+        </div>
+      </form>
     </div>
 
-    <form id="loginForm">
-      <div class="form-group">
-        <label class="form-label" for="email">Email</label>
-        <input
-          type="email"
-          id="email"
-          class="form-input"
-          placeholder="Enter your email"
-          required
-        />
-        <i class="fas fa-envelope input-icon"></i>
-        <div class="error-message">Please enter a valid email address</div>
-      </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {//waiting until the entire html document is loaded
 
-      <div class="form-group">
-        <label class="form-label" for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          class="form-input"
-          placeholder="Enter your password"
-          required
-        />
-        <i class="fas fa-lock input-icon"></i>
-        <div class="error-message">Password is required</div>
-      </div>
+          const loginForm = document.getElementById('loginForm');
+          const emailInput = document.getElementById('email');
+          const passwordInput = document.getElementById('password');
+          const rememberMeCheckbox = document.getElementById('rememberMe');
+          const successMessage = document.getElementById('successMessage');
 
-      <div class="form-options">
-        <label class="remember-me">
-          <input type="checkbox" id="rememberMe" />
-          <span>Remember me</span>
-        </label>
+          if (localStorage.getItem('rememberedEmail')){//3nd l user 
+              emailInput.value = localStorage.getItem('rememberedEmail');
+              rememberMeCheckbox.checked = true;
+          }
 
+       
+          emailInput.addEventListener('input', function() {
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;//regular expression
+              if (!emailRegex.test(this.value) && this.value !== '') {
+                  this.classList.add('error');
+              } else {
+                  this.classList.remove('error');
+              }
+          });
 
-        <a href="forgot-password.html" class="forgot-password">
-          Forgot password?
-        </a>
-      </div>
+          loginForm.addEventListener('submit', function(e) {//e: object automatically passed by the browser
+              e.preventDefault();//lemme handle
 
-      <button type="submit" class="btn-login">
-        <span>Login</span>
-        <div class="spinner"></div> <!--display loading spinner-->
-      </button>
+              let isValid = true;
 
-      <div class="signup-link">
-        Don't have an account? <a href="signup.html">Sign up</a>
-      </div>
-    </form>
-  </div>
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(emailInput.value)) {
+                  emailInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  emailInput.classList.remove('error');
+              }
+
+              if (passwordInput.value.trim() === '') {//trim: remove whitespaces from beginning and end
+                  passwordInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  passwordInput.classList.remove('error');
+              }
+
+              if (!isValid) return;
+
+              if (rememberMeCheckbox.checked) {
+                  localStorage.setItem('rememberedEmail', emailInput.value);
+              } else {
+                  localStorage.removeItem('rememberedEmail');
+              }
+
+              
+              const button = this.querySelector('button[type="submit"]');//look for the BUTTON
+              button.classList.add('loading');
+              button.disabled = true;
+
+              //simulate login process
+              setTimeout(() => {
+                  //show success message
+                  successMessage.classList.add('show');
+
+                  //redirect after a delay
+                  setTimeout(() => {
+                      window.location.href = 'dashboard.html';
+                  }, 1500);
+              }, 1500);//1500: 1.5s (changes with fetch)
+          });
+      });
+    </script>
   </body>
 </html>
