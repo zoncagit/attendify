@@ -5,9 +5,7 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     face_id_hash TEXT,
-    qr_code TEXT,
     face_id_vector TEXT,
-    qr_last_updated_at TIMESTAMP NULL,
     face_id_encrypted BOOLEAN,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -43,6 +41,8 @@ CREATE TABLE sessions (
     start_time TIME,
     end_time TIME,
     created_by INT,
+     qr_code TEXT,
+     qr_last_updated_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (class_id) REFERENCES classes(class_id),
