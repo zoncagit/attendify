@@ -69,4 +69,12 @@ CREATE TABLE logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+CREATE INDEX idx_classes_created_by ON classes (created_by);
+CREATE INDEX idx_class_users_class_id ON class_users (class_id);
+CREATE INDEX idx_class_users_user_id ON class_users (user_id);
+CREATE INDEX idx_sessions_class_id ON sessions (class_id);
+CREATE INDEX idx_sessions_created_by ON sessions (created_by);
+CREATE INDEX idx_attendance_session_id ON attendance (session_id);
+CREATE INDEX idx_attendance_user_id ON attendance (user_id);
+CREATE INDEX idx_logs_user_id ON logs (user_id);
 
