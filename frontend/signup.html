@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Attendify - Sign Up</title>
+    <link rel="icon" type="image/png" href="logo_attendify.png" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
@@ -118,7 +119,20 @@
         </div>
       </form>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.halo.min.js"></script>
     <script>
+       VANTA.HALO({
+        el: "#vanta-bg",
+        mouseControls: true,
+        touchControls: false,
+        gyroControls: true,
+        minHeight: 200.00,
+        baseColor: 0x2f005b,
+        speed: 2.00,
+        amplitudeFactor: 0.05,
+        minWidth: 300.00
+      })
       document.addEventListener('DOMContentLoaded', function() {
           const signupForm = document.getElementById('signupForm');
           const firstNameInput = document.getElementById('firstName');
