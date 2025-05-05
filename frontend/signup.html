@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Attendify - Sign Up</title>
+    <link rel="icon" type="image/png" href="logo_attendify1.png" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
@@ -15,7 +16,7 @@
     <link rel="stylesheet" href="styles/signup.css" />
   </head>
   <body>
-    <div id="vanta-bg"></div>
+   
     <div class="signup-container">
       <div class="signup-header">
         <h1 class="signup-title">Create Account</h1>
@@ -142,248 +143,143 @@
         </div>
       </form>
     </div>
-
-    <div class="modal" id="emailVerificationModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Verify Your Email</h2>
-          <button type="button" class="modal-close" id="closeVerificationModal">
-            &times;
-          </button>
-        </div>
-
-        <div class="modal-body">
-          <div class="verification-message">
-            <i class="fas fa-envelope"></i>
-            <div class="verification-text">
-              <p>
-                A verification code has been sent to
-                <strong id="verificationEmail"></strong>
-              </p>
-              <p>
-                Please check your inbox (and spam folder) and enter the 6-digit
-                code below.
-              </p>
-            </div>
-          </div>
-          <div class="verification-code-container">
-            <div class="verification-code-input">
-              <input
-                type="text"
-                id="digit1"
-                class="code-digit"
-                maxlength="1"
-                pattern="[0-9]"
-                inputmode="numeric"
-              />
-              <input
-                type="text"
-                id="digit2"
-                class="code-digit"
-                maxlength="1"
-                pattern="[0-9]"
-                inputmode="numeric"
-              />
-              <input
-                type="text"
-                id="digit3"
-                class="code-digit"
-                maxlength="1"
-                pattern="[0-9]"
-                inputmode="numeric"
-              />
-              <input
-                type="text"
-                id="digit4"
-                class="code-digit"
-                maxlength="1"
-                pattern="[0-9]"
-                inputmode="numeric"
-              />
-              <input
-                type="text"
-                id="digit5"
-                class="code-digit"
-                maxlength="1"
-                pattern="[0-9]"
-                inputmode="numeric"
-              />
-              <input
-                type="text"
-                id="digit6"
-                class="code-digit"
-                maxlength="1"
-                pattern="[0-9]"
-                inputmode="numeric"
-              />
-            </div>
-          </div>
-          <div class="verification-error" id="verificationError">
-            Incorrect verification code. Please try again.
-          </div>
-          <div class="resend-code">
-            Didn't receive the code?
-            <button id="resendCodeBtn" class="resend-btn">Resend code</button>
-            <div class="resend-timer" id="resendTimer">
-              Resend in <span id="resendCountdown">60</span>s
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-verify" id="verifyCodebtn">
-            <span>Verify</span>
-            <div class="spinner"></div>
-          </button>
-        </div>
-      </div>
-    </div>
-
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const signupForm = document.getElementById("signupForm");
-        const firstNameInput = document.getElementById("firstName");
-        const lastNameInput = document.getElementById("lastName");
-        const emailInput = document.getElementById("email");
-        const passwordInput = document.getElementById("password");
-        const confirmPasswordInput = document.getElementById("confirmPassword");
-        const successMessage = document.getElementById("successMessage");
-        const progressFill = document.getElementById("progressFill");
-        const passwordStrengthBar = document.getElementById(
-          "passwordStrengthBar"
-        );
-        const passwordStrengthText = document.getElementById(
-          "passwordStrengthText"
-        );
-
-        const formInputs = [
-          firstNameInput,
-          lastNameInput,
-          emailInput,
-          passwordInput,
-          confirmPasswordInput,
-        ];
-        let filledInputs = 0;
-
-        function updateProgress() {
-          filledInputs = 0;
-
-          formInputs.forEach((input) => {
-            if (input.type === "checkbox") {
-              if (input.checked) filledInputs++;
-            } else {
-              if (input.value.trim() !== "") filledInputs++;
-            }
+      document.addEventListener('DOMContentLoaded', function() {
+          const signupForm = document.getElementById('signupForm');
+          const firstNameInput = document.getElementById('firstName');
+          const lastNameInput = document.getElementById('lastName');
+          const emailInput = document.getElementById('email');
+          const passwordInput = document.getElementById('password');
+          const confirmPasswordInput = document.getElementById('confirmPassword');
+          const successMessage = document.getElementById('successMessage');
+          const progressFill = document.getElementById('progressFill');
+          const passwordStrengthBar = document.getElementById('passwordStrengthBar');
+          const passwordStrengthText = document.getElementById('passwordStrengthText');
+          
+          const formInputs = [firstNameInput, lastNameInput, emailInput, passwordInput, confirmPasswordInput];
+          let filledInputs = 0;
+          
+          function updateProgress() {
+              filledInputs = 0;
+              
+              formInputs.forEach(input => {
+                  if (input.type === 'checkbox') {
+                      if (input.checked) filledInputs++;
+                  } else {
+                      if (input.value.trim() !== '') filledInputs++;
+                  }
+              });
+              
+              const progress =(filledInputs / formInputs.length) * 100;
+              progressFill.style.width = `${progress}%`;
+          }
+          
+          formInputs.forEach(input => {
+              input.addEventListener('input', updateProgress);
+              input.addEventListener('change', updateProgress);
           });
+          
+          passwordInput.addEventListener('input', function() {
+              const password = this.value;
+              let strength = 0;
+              let strengthText = 'Weak';
+              let strengthColor = '#ef4444'; //red
+              
+              if (password.length >= 8) strength += 25;
+              if (password.match(/[a-z]+/)) strength += 25;
+              if (password.match(/[A-Z]+/)) strength += 25;
+              if (password.match(/[0-9]+/)) strength += 25;
+              
+              if (strength >= 100) {
+                  strengthText = 'Strong';
+                  strengthColor = '#10b981'; // Green
+              } else if (strength >= 75) {
+                  strengthText = 'Good';
+                  strengthColor = '#f59e0b'; // Yellow
+              } else if (strength >= 50) {
+                  strengthText = 'Fair';
+                  strengthColor = '#f59e0b'; // Yellow
+              }
+              
+              passwordStrengthBar.style.width = `${strength}%`;
+              passwordStrengthBar.style.backgroundColor = strengthColor;
+              passwordStrengthText.textContent = `Password strength: ${strengthText}`;
+              passwordStrengthText.style.color = strengthColor;
+          });
+          
+          confirmPasswordInput.addEventListener('input', function() {
+              if (this.value !== passwordInput.value && this.value !== '') {
+                  this.classList.add('error');
+              } else {
+                  this.classList.remove('error');
+              }
+          });
+          
 
-          const progress = (filledInputs / formInputs.length) * 100;
-          progressFill.style.width = `${progress}%`;
-        }
-
-        formInputs.forEach((input) => {
-          input.addEventListener("input", updateProgress);
-          input.addEventListener("change", updateProgress);
-        });
-
-        passwordInput.addEventListener("input", function () {
-          const password = this.value;
-          let strength = 0;
-          let strengthText = "Weak";
-          let strengthColor = "#ef4444"; //red
-
-          if (password.length >= 8) strength += 25;
-          if (password.match(/[a-z]+/)) strength += 25;
-          if (password.match(/[A-Z]+/)) strength += 25;
-          if (password.match(/[0-9]+/)) strength += 25;
-
-          if (strength >= 100) {
-            strengthText = "Strong";
-            strengthColor = "#10b981"; // Green
-          } else if (strength >= 75) {
-            strengthText = "Good";
-            strengthColor = "#f59e0b"; // Yellow
-          } else if (strength >= 50) {
-            strengthText = "Fair";
-            strengthColor = "#f59e0b"; // Yellow
-          }
-
-          passwordStrengthBar.style.width = `${strength}%`;
-          passwordStrengthBar.style.backgroundColor = strengthColor;
-          passwordStrengthText.textContent = `Password strength: ${strengthText}`;
-          passwordStrengthText.style.color = strengthColor;
-        });
-
-        confirmPasswordInput.addEventListener("input", function () {
-          if (this.value !== passwordInput.value && this.value !== "") {
-            this.classList.add("error");
-          } else {
-            this.classList.remove("error");
-          }
-        });
-
-        emailInput.addEventListener("input", function () {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(this.value) && this.value !== "") {
-            this.classList.add("error");
-          } else {
-            this.classList.remove("error");
-          }
-        });
-
-        signupForm.addEventListener("submit", function (e) {
-          e.preventDefault();
-
-          let isValid = true;
-
-          if (firstNameInput.value.trim() === "") {
-            firstNameInput.classList.add("error");
-            isValid = false;
-          } else {
-            firstNameInput.classList.remove("error");
-          }
-
-          if (lastNameInput.value.trim() === "") {
-            lastNameInput.classList.add("error");
-            isValid = false;
-          } else {
-            lastNameInput.classList.remove("error");
-          }
-
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(emailInput.value)) {
-            emailInput.classList.add("error");
-            isValid = false;
-          } else {
-            emailInput.classList.remove("error");
-          }
-
-          if (passwordInput.value.length < 8) {
-            passwordInput.classList.add("error");
-            isValid = false;
-          } else {
-            passwordInput.classList.remove("error");
-          }
-
-          if (confirmPasswordInput.value !== passwordInput.value) {
-            confirmPasswordInput.classList.add("error");
-            isValid = false;
-          } else {
-            confirmPasswordInput.classList.remove("error");
-          }
-
-          if (!isValid) return;
-
-          const button = this.querySelector('button[type="submit"]');
-          button.classList.add("loading");
-          button.disabled = true;
-
-          setTimeout(() => {
-            successMessage.classList.add("show");
-
-            setTimeout(() => {
-              window.location.href = "dashboard.html";
-            }, 1500);
-          }, 1500);
-        });
+          emailInput.addEventListener('input', function() {
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(this.value) && this.value !== '') {
+                  this.classList.add('error');
+              } else {
+                  this.classList.remove('error');
+              }
+          });
+          
+          signupForm.addEventListener('submit', function(e) {
+              e.preventDefault();
+              
+              let isValid = true;
+              
+              if (firstNameInput.value.trim() === '') {
+                  firstNameInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  firstNameInput.classList.remove('error');
+              }
+              
+              if (lastNameInput.value.trim() === '') {
+                  lastNameInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  lastNameInput.classList.remove('error');
+              }
+              
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(emailInput.value)) {
+                  emailInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  emailInput.classList.remove('error');
+              }
+              
+              if (passwordInput.value.length < 8) {
+                  passwordInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  passwordInput.classList.remove('error');
+              }
+              
+              if (confirmPasswordInput.value !== passwordInput.value) {
+                  confirmPasswordInput.classList.add('error');
+                  isValid = false;
+              } else {
+                  confirmPasswordInput.classList.remove('error');
+              }
+              
+              if (!isValid) return;
+              
+              const button = this.querySelector('button[type="submit"]');
+              button.classList.add('loading');
+              button.disabled = true;
+              
+              setTimeout(() => {
+                  successMessage.classList.add('show');
+                  
+                  setTimeout(() => {
+                      window.location.href = 'dashboard.html';
+                  }, 1500);
+              }, 1500);
+          });
 
         const profilePicture = document.getElementById("profilePicture");
         const previewImage = document.getElementById("previewImage");
