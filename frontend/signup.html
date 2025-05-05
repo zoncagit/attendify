@@ -450,26 +450,27 @@
        signupButton.disabled=false;
       }
 
-      //start the countdown timer
-      function startResendTimer(){
-        clearInterval(timer); //clear any existing timer first
+      let timer; // Declare timer globally
 
-        let timeLeft=60;
-        resendCountdown.textContent=timeLeft;
-        resendCodeBtn.disabled=true;
-        resendTimer.style.display="block";
+      function startResendTimer() {
+        clearInterval(timer); // Clear any existing timer
+
+        let timeLeft = 60;
+        resendCountdown.textContent = timeLeft;
+        resendCodeBtn.disabled = true;
+        resendTimer.style.display = "block";
+
+        timer = setInterval(() => {
+          timeLeft--;
+          resendCountdown.textContent = timeLeft;
+
+          if (timeLeft <= 0) {
+            clearInterval(timer);
+            resendCodeBtn.disabled = false;
+            resendTimer.style.display = "none";
+          }
+        }, 1000);
       }
-
-      let timer= setInterval(() =>{
-        timeLeft--;
-        resendCountdown.textContent= timeLeft;
-
-        if(timeLeft<=0){
-          clearInterval(timer);
-          resendCodeBtn.disabled=false;
-          resendTimer.style.display="none";
-        }
-      },1000);
 
       //close verification modal 
       closeVerificationModal.addEventListener("click", function(){
