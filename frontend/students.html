@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendify - Class Students</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles/dashboard.css" />
+    <style>
+      /* Additional styles specific to the students page */
+      :root {
+        --primary: #4f46e5;
+        --secondary: #818cf8;
+        --background: #0f172a;
+        --card-bg: #1e293b;
+        --text: #f8fafc;
+        --text-secondary: #94a3b8;
+        --success: #10b981;
+        --error: #ef4444;
+        --warning: #f59e0b;
+        --hover: rgba(255, 255, 255, 0.1);
+        --border: rgba(255, 255, 255, 0.1);
+      }
+      
+      .dashboard-content {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+      
+      .students-container {
+        margin-top: 20px;
+      }
+      
+      .student-card {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+      }
+      
+      .student-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+      
+      /* Middle container styles */
+      .middle-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+      }
+      
+      /* Attendance row - horizontal layout */
+      .attendance-row {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+        justify-content: center;
+        background: rgba(30, 41, 59, 0.4);
+        border-radius: 8px;
+        padding: 10px 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        flex-wrap: nowrap;
+      }
+      
+      /* Add styles for the smaller remove button */
+      .delete-student-btn.small-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        margin-left: auto;
+        height: 36px;
+        align-self: center;
+        flex-shrink: 0;
+      }
+      
+      /* Make the checkmarks container flex grow to ensure alignment */
+      .checkmarks-container.small {
+        margin: 0;
+        flex: 1;
+      }
+      
+      /* Smaller attendance counter */
+      .attendance-counter.small {
+        transform: none;
+        padding: 6px 10px;
+        min-width: 100px;
+        flex-shrink: 0;
+        background: rgba(79, 70, 229, 0.08);
+        border: 1px solid rgba(79, 70, 229, 0.12);
+        border-radius: 5px;
+      }
+      
+      .attendance-counter.small .attendance-count {
+        font-size: 16px;
+      }
+      
+      .attendance-counter.small .attendance-label {
+        font-size: 11px;
+        font-weight: 500;
+      }
+      
+      /* Checkmarks container smaller */
+      .checkmarks-container.small {
+        margin: 0;
+      }
+      
+      .checkmarks-container.small .absence-label {
+        font-size: 12px;
+        margin-bottom: 5px;
+      }
+      
+      .checkmarks-row {
+        display: flex;
+        gap: 8px;
+      }
+      
+      .checkmarks-container.small .checkmark {
+        width: 24px;
+        height: 24px;
+      }
+      
+      .student-info {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        min-width: 250px;
+      }
+      
+      .student-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px;
+        font-size: 20px;
+        color: white;
+      }
+      
+      .student-details {
+        flex: 1;
+      }
+      
+      .student-name {
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      .student-id {
+        font-family: monospace;
+        font-size: 13px;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      
+      .copy-student-id {
+        background: none;
+        border: none;
+        color: var(--secondary);
+        cursor: pointer;
+        padding: 4px;
+        transition: all 0.2s ease;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+      
+      .copy-student-id:hover {
+        background-color: rgba(79, 70, 229, 0.1);
+      }
+      
+      .copy-success {
+        font-size: 12px;
+        color: var(--success);
+        background: rgba(16, 185, 129, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        transition: opacity 0.3s ease;
+        font-weight: 600;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        margin-left: 5px;
+        display: none;
+      }
+      
+      /* Checkmarks container styles */
+      .checkmarks-container {
+        display: flex;
+        gap: 10px;
+        margin: 0 auto;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      .absence-label {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-right: 5px;
+        white-space: nowrap;
+      }
+      
+      .checkmark {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        background-color: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        overflow: hidden;
+      }
+      
+      .checkmark:hover {
+        transform: scale(1.15);
+        border-color: var(--warning);
+        box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+      }
+      
+      .checkmark.checked {
+        background-color: var(--warning);
+        border-color: var(--warning);
+        transform: scale(1.1);
+        box-shadow: 0 3px 10px rgba(245, 158, 11, 0.5);
+      }
+      
+      .checkmark.checked:after {
+        content: '\f00c';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        color: white;
+        font-size: 14px;
+        animation: checkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      
+      @keyframes checkPop {
+        0% { transform: scale(0); opacity: 0; }
+        50% { transform: scale(1.4); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      
+      .checkmark:active {
+        transform: scale(0.9);
+      }
+      
+      /* Ripple animation */
+      @keyframes ripple {
+        to {
+          transform: scale(4);
+          opacity: 0;
+        }
+      }
+      
+      .ripple {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        pointer-events: none;
+      }
+      
+      .justifications {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 10px 0;
+        flex: 1;
+        flex-wrap: wrap;
+        min-width: 300px;
+      }
+      
+      .justification-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+      }
+      
+      .justification-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+      }
+      
+      .justified {
+        color: var(--success);
+      }
+      
+      .justified i {
+        filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.3));
+      }
+      
+      .not-justified {
+        color: var(--error);
+      }
+      
+      .not-justified i {
+        filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.3));
+      }
+      
+      .student-actions {
+        display: flex;
+        gap: 10px;
+        margin-left: auto;
+        flex-wrap: wrap;
+      }
+      
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+      }
+      
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      }
+      
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
+      
+      .btn-delete {
+        background-color: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: rgba(239, 68, 68, 0.9);
+        font-size: 14px;
+        padding: 6px 12px;
+      }
+      
+      .btn-delete:hover {
+        background-color: rgba(239, 68, 68, 0.2);
+        color: white;
+        transform: translateY(-2px);
+      }
+      
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 14px;
+      }
+      
+      .class-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+      
+      .class-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      
+      .current-date {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+        background: rgba(255, 255, 255, 0.07);
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      
+      .current-date i {
+        color: var(--secondary);
+      }
+      
+      .back-btn {
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        margin-bottom: 8px;
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+      
+      .back-btn:hover {
+        color: var(--text);
+      }
+      
+      .class-title {
+        font-size: 24px;
+        font-weight: 700;
+        background: linear-gradient(to right, var(--text), var(--secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        margin: 0;
+      }
+      
+      .group-selector {
+        width: 100%;
+        padding: 12px 15px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        appearance: auto;
+        font-family: 'Inter', sans-serif;
+        min-width: 250px;
+      }
+      
+      .group-selector:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+      
+      .group-selector:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+      }
+      
+      .group-selector option {
+        background-color: var(--card-bg);
+        color: var(--text);
+        padding: 12px;
+        font-size: 16px;
+      }
+      
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: rgba(30, 41, 59, 0.5);
+        border-radius: 10px;
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+        margin-top: 20px;
+      }
+      
+      .empty-icon {
+        font-size: 40px;
+        color: var(--text-secondary);
+        margin-bottom: 15px;
+      }
+      
+      /* Background animation */
+      .background-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        opacity: 0.1;
+        background: 
+          radial-gradient(circle at 20% 20%, var(--primary) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, var(--secondary) 0%, transparent 50%);
+        animation: pulse 8s ease-in-out infinite alternate;
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.2); }
+      }
+      
+      /* Dashboard container */
+      .dashboard-container {
+        position: relative;
+        z-index: 1;
+        max-width: 1200px;
+        margin: 40px auto 0;
+        padding-top: 20px;
+      }
+      
+      /* Dashboard header */
+      .dashboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding: 1rem 2rem;
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 1500;
+      }
+      
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(to right, var(--text), var(--secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      
+      .logo a {
+        text-decoration: none;
+      }
+      
+      /* Groups info section styles */
+      .groups-info-section {
+        margin-bottom: 30px;
+        background: rgba(30, 41, 59, 0.5);
+        border-radius: 10px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--text);
+        background: linear-gradient(to right, var(--text), var(--secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+      }
+      
+      .groups-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 15px;
+      }
+      
+      .group-card {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 15px;
+        transition: all 0.3s ease;
+      }
+      
+      .group-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+      
+      .group-name {
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 10px;
+        color: var(--text);
+      }
+      
+      .group-code-display {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        position: relative;
+      }
+      
+      .group-code-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      
+      .group-code-value {
+        font-family: monospace;
+        font-weight: 600;
+        color: var(--text);
+      }
+      
+      .group-code-copy-btn {
+        background: none;
+        border: none;
+        color: var(--secondary);
+        cursor: pointer;
+        padding: 5px;
+        transition: all 0.2s ease;
+        border-radius: 4px;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      
+      .group-code-copy-btn:hover {
+        background-color: rgba(79, 70, 229, 0.1);
+      }
+      
+      .group-code-copy-success {
+        position: absolute;
+        right: 30px;
+        bottom: -20px;
+        font-size: 12px;
+        color: var(--success);
+        background: rgba(16, 185, 129, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        transition: opacity 0.3s ease;
+        font-weight: 600;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        z-index: 5;
+        display: none;
+      }
+      
+      .group-students-count {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+      
+      @media (max-width: 768px) {
+        .student-card {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        
+        .student-info, .justifications {
+          margin-bottom: 15px;
+        }
+        
+        .student-actions {
+          width: 100%;
+        }
+        
+        .btn {
+          width: 100%;
+        }
+        
+        .dashboard-header {
+          flex-direction: column;
+          gap: 1rem;
+          padding: 1rem;
+        }
+        
+        .header-nav {
+          order: 2;
+        }
+        
+        .user-profile {
+          order: 1;
+          width: 100%;
+          justify-content: flex-end;
+        }
+      }
+
+      /* Confirmation modal */
+      .mini-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.95);
+        background: rgba(30, 41, 59, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        padding: 25px;
+        width: 90%;
+        max-width: 400px;
+        z-index: 3000;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        display: none;
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+      }
+      
+      .mini-modal.active {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      
+      .mini-modal-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .mini-modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        text-align: center;
+      }
+      
+      .mini-modal-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .mini-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2999;
+        display: none;
+      }
+      
+      /* Profile dropdown styles */
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: relative;
+        z-index: 2100;
+      }
+      
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        position: relative;
+      }
+      
+      .avatar-circle {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .profile-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        background: rgba(30, 41, 59, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        width: 180px;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        display: none;
+        z-index: 2000;
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+      }
+      
+      .profile-dropdown-menu.show {
+        display: block;
+        animation: fadeIn 0.2s ease;
+      }
+      
+      .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 15px;
+        color: var(--text);
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+      }
+      
+      .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      
+      /* Add animation keyframes */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--background);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 20px;
+        position: relative;
+        overflow-x: hidden;
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+            /* Attendance counter styles */      
+      .attendance-counter {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+      }
+      
+      .middle-container .attendance-counter {
+        background: rgba(79, 70, 229, 0.1);
+        border: 1px solid rgba(79, 70, 229, 0.15);
+        padding: 8px 14px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        transform: scale(1.05);
+        margin-bottom: 5px;
+      }            .attendance-count {        font-size: 16px;        font-weight: 600;        color: var(--text);      }            .middle-container .attendance-count {        font-size: 22px;        font-weight: 700;        text-shadow: 0 1px 2px rgba(0,0,0,0.2);      }            .attendance-count .attended {        color: var(--primary);      }            .attendance-count .total {        color: var(--text-secondary);      }            .attendance-label {        font-size: 13px;        color: var(--text-secondary);        margin-left: 5px;      }            .middle-container .attendance-label {        font-size: 14px;        font-weight: 500;        color: var(--text);      }
+      
+      /* Actions container styles */
+      .actions-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-end;
+      }
+      
+            @media (max-width: 900px) {
+        .student-card {
+          flex-direction: column;
+          align-items: stretch;
+          text-align: center;
+        }
+        
+        .student-info {
+          justify-content: center;
+        }
+        
+        .middle-container {
+          margin: 20px 0;
+          width: 100%;
+        }
+        
+        .attendance-row {
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 15px;
+          padding: 15px;
+          justify-content: space-between;
+        }
+        
+        .attendance-counter.small {
+          width: auto;
+          min-width: 100px;
+          margin-right: auto;
+        }
+        
+        .checkmarks-container.small {
+          order: 3;
+          width: 100%;
+          flex-basis: 100%;
+          margin-top: 10px;
+        }
+        
+        .delete-student-btn.small-btn {
+          order: 2;
+          margin-left: 0;
+        }
+        
+        .actions-container {
+          flex-direction: column;
+          align-items: center;
+          width: 100%;
+        }
+        
+        .actions-container .btn {
+          width: 100%;
+          max-width: 220px;
+        }
+      }
+      
+      /* Style for today's attendance status */
+      .today-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.2);
+        margin-left: 10px;
+        white-space: nowrap;
+      }
+      
+      .today-status-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+      
+      .status-present {
+        color: var(--success);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .status-present:before {
+        content: '•';
+        font-size: 20px;
+        line-height: 0;
+      }
+      
+      .status-absent {
+        color: var(--error);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .status-absent:before {
+        content: '•';
+        font-size: 20px;
+        line-height: 0;
+      }
+      
+      .status-na {
+        color: var(--text-secondary);
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background-animation"></div>
+    
+    <!-- Main Dashboard Container -->
+    <div class="dashboard-container">
+      <!-- Top Navigation -->
+      <header class="dashboard-header">
+        <h1 class="logo"><a href="index.html">Attendify</a></h1>
+        <div class="header-nav">
+          <!-- Navigation content can be added here if needed -->
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar">
+            <div class="avatar-circle">
+              <img src="assets/default-avatar.png" alt="Profile" class="profile-image" id="profileImage" style="display: none;">
+              <i class="fas fa-user avatar-icon" id="avatarIcon"></i>
+            </div>
+          </div>
+          <div class="user-info">
+          <span id="userName" class="user-name">Sididris Meriem</span>
+            <div class="user-id-container">
+              <span id="headerStudentId" class="user-id">STU123456</span>
+              <button id="headerCopyIdBtn" class="copy-id-btn" title="Copy Student ID">
+                <i class="fas fa-copy"></i>
+              </button>
+              <span id="headerCopySuccess" class="header-copy-success" style="display: none;">Copied!</span>
+            </div>
+          </div>
+          <div class="profile-dropdown">
+            <button id="profileDropdownBtn" class="profile-dropdown-btn">
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div id="profileDropdownMenu" class="profile-dropdown-menu">
+              <a href="#" id="settingsBtn" class="dropdown-item">
+                <i class="fas fa-cog"></i> Settings
+              </a>
+              <a href="index.html" id="logoutBtn" class="dropdown-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="dashboard-content">
+        <div class="class-header">
+          <div class="class-info">
+            <a href="dashboard.html" class="back-btn">
+              <i class="fas fa-arrow-left"></i> Back to dashboard
+            </a>
+            <h1 id="classTitle" class="class-title">Students</h1>
+            <div class="current-date">
+              <i class="fas fa-calendar"></i>
+              <span id="currentDate">Loading...</span>
+            </div>
+          </div>
+          <div class="group-filter-container" style="display: flex; align-items: center; gap: 10px;">
+            <label for="groupSelector" style="color: var(--text-secondary); font-weight: 500;">Filter by Group:</label>
+            <select id="groupSelector" class="group-selector">
+            <option value="all">All Groups</option>
+              <!-- Groups will be populated here -->
+          </select>
+        </div>
+          </div>
+          
+        <!-- Groups Info Section -->
+        <div class="groups-info-section">
+          <h2 class="section-title">Groups</h2>
+          <div id="groupsList" class="groups-list">
+            <!-- Groups will be dynamically added here -->
+          </div>
+        </div>
+        
+        <!-- Display heading for current group selection -->
+        <div class="content-section">
+          <h2 class="section-title" id="currentGroupTitle">All Students</h2>
+          <div class="students-container" id="studentsContainer">
+            <!-- Students will be dynamically added here -->
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Delete confirmation modal -->
+    <div class="mini-modal-overlay" id="confirmOverlay"></div>
+    <div class="mini-modal" id="confirmDeleteModal">
+      <div class="mini-modal-content">
+        <div class="mini-modal-title">
+          Are you sure you want to remove <span id="studentNameToDelete"></span> from this class?
+          </div>
+        <div class="mini-modal-buttons">
+          <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+          <button class="btn btn-danger" id="confirmDeleteBtn">Remove Student</button>
+          </div>
+          </div>
+          </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Get class code from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const classCode = urlParams.get('class');
+        
+        // Set current date
+        updateCurrentDate();
+        
+        // First make sure the class exists
+        ensureClassExists(classCode);
+        
+        // First load the class data to ensure groups exist
+        preloadClassData(classCode);
+        
+        // Then load class details for UI
+        loadClassDetails(classCode);
+        
+        // Load groups list
+        loadGroupsList(classCode);
+        
+        // Load students list
+        loadStudents(classCode);
+        
+        // Handle profile dropdown
+        setupProfileDropdown();
+        
+        // Setup group selector change event
+        document.getElementById('groupSelector').addEventListener('change', function() {
+          const selectedGroup = this.value;
+          document.getElementById('currentGroupTitle').textContent = selectedGroup === 'all' ? 'All Students' : `Students in ${selectedGroup}`;
+          loadStudents(classCode, selectedGroup);
+        });
+        
+        // Setup delete confirmation modal
+        setupDeleteConfirmation();
+      });
+      
+      // Function to update the current date
+      function updateCurrentDate() {
+        const dateElement = document.getElementById('currentDate');
+        if (dateElement) {
+          const now = new Date();
+          const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          };
+          dateElement.textContent = now.toLocaleDateString('en-US', options);
+        }
+      }
+      
+      // Helper function to make sure the class exists
+      function ensureClassExists(classCode) {
+        if (!classCode) return;
+        
+        const storedClasses = localStorage.getItem('attendify_tutored_classes');
+        if (!storedClasses) {
+          // No classes exist, create a default array with this class
+          const defaultClasses = [{
+            name: `Class ${classCode}`,
+            code: classCode,
+            createdAt: new Date().toISOString(),
+            groups: [
+              { name: 'Group A', code: 'GRP101', students: [] },
+              { name: 'Group B', code: 'GRP102', students: [] },
+              { name: 'Group C', code: 'GRP103', students: [] },
+              { name: 'Default Group', code: 'GRP000', students: [] }
+            ]
+          }];
+          
+          localStorage.setItem('attendify_tutored_classes', JSON.stringify(defaultClasses));
+          console.log('Created default class with code:', classCode);
+          return;
+        }
+        
+        // Check if this specific class exists
+        const classes = JSON.parse(storedClasses);
+        if (!classes.some(cls => cls.code === classCode)) {
+          // Class doesn't exist, add it
+          classes.push({
+            name: `Class ${classCode}`,
+            code: classCode,
+            createdAt: new Date().toISOString(),
+            groups: [
+              { name: 'Group A', code: 'GRP101', students: [] },
+              { name: 'Group B', code: 'GRP102', students: [] },
+              { name: 'Group C', code: 'GRP103', students: [] },
+              { name: 'Default Group', code: 'GRP000', students: [] }
+            ]
+          });
+          
+          localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
+          console.log('Added new class with code:', classCode);
+        }
+      }
+      
+      // Preload and sync class data
+      function preloadClassData(classCode) {
+        if (!classCode) return;
+        console.log('Preloading class data for:', classCode);
+        
+        // Generate dummy students if none exist
+        if (!localStorage.getItem(`attendify_class_students_${classCode}`)) {
+          console.log('No students found, generating dummy students');
+          const dummyStudents = generateDummyStudents();
+          localStorage.setItem(`attendify_class_students_${classCode}`, JSON.stringify(dummyStudents));
+        }
+        
+        // Get class from localStorage
+        const storedClasses = localStorage.getItem('attendify_tutored_classes');
+        if (!storedClasses) return;
+        
+        const classes = JSON.parse(storedClasses);
+        const classIndex = classes.findIndex(cls => cls.code === classCode);
+        
+        if (classIndex === -1) {
+          console.warn('Class not found in tutored classes');
+          return;
+        }
+        
+        let currentClass = classes[classIndex];
+        
+        // Ensure the class has a groups array
+        if (!currentClass.groups || !Array.isArray(currentClass.groups)) {
+          currentClass.groups = [];
+        }
+        
+        // Ensure standard groups exist
+        const standardGroups = [
+          { name: 'Group A', code: 'GRP101' }, 
+          { name: 'Group B', code: 'GRP102' }, 
+          { name: 'Group C', code: 'GRP103' },
+          { name: 'Default Group', code: 'GRP000' }
+        ];
+        
+        let hasChanges = false;
+        
+        standardGroups.forEach(standardGroup => {
+          if (!currentClass.groups.some(g => g.name === standardGroup.name)) {
+            currentClass.groups.push({ 
+              name: standardGroup.name, 
+              code: standardGroup.code, 
+              students: [] 
+            });
+            hasChanges = true;
+          }
+        });
+        
+        // Sync students from localStorage to class groups
+        const storedStudents = localStorage.getItem(`attendify_class_students_${classCode}`);
+        
+        if (storedStudents) {
+          const students = JSON.parse(storedStudents);
+          console.log('Syncing', students.length, 'students with class groups');
+          
+          // Map to track which students are assigned to which groups
+          const studentGroupMap = new Map();
+          
+          // First, collect current group assignments
+          if (currentClass.groups) {
+            currentClass.groups.forEach(group => {
+              if (group.students) {
+                group.students.forEach(studentId => {
+                  studentGroupMap.set(studentId, group.name);
+                });
+              }
+            });
+          }
+          
+          // Now ensure all students have their groups in sync
+          let studentsModified = false;
+          
+          students.forEach(student => {
+            // If student is already assigned to a group in the class data
+            if (studentGroupMap.has(student.id)) {
+              const assignedGroup = studentGroupMap.get(student.id);
+              
+              // If student.group doesn't match their actual assignment, update it
+              if (student.group !== assignedGroup) {
+                student.group = assignedGroup;
+                studentsModified = true;
+              }
+            } 
+            // If student is not in any group, add them to their current group or Default Group
+            else {
+              const targetGroupName = student.group || 'Default Group';
+              const targetGroup = currentClass.groups.find(g => g.name === targetGroupName);
+              
+              if (targetGroup) {
+                if (!targetGroup.students) targetGroup.students = [];
+                targetGroup.students.push(student.id);
+                hasChanges = true;
+              } else {
+                // If target group doesn't exist, add to Default Group
+                const defaultGroup = currentClass.groups.find(g => g.name === 'Default Group') || 
+                                    currentClass.groups[0]; // Fallback to first group
+                
+                if (defaultGroup) {
+                  if (!defaultGroup.students) defaultGroup.students = [];
+                  defaultGroup.students.push(student.id);
+                  student.group = defaultGroup.name;
+                  studentsModified = true;
+                  hasChanges = true;
+                }
+              }
+            }
+          });
+          
+          // Save changes to students if needed
+          if (studentsModified) {
+            localStorage.setItem(`attendify_class_students_${classCode}`, JSON.stringify(students));
+            console.log('Updated student group assignments in localStorage');
+          }
+        }
+        
+        // Save class changes if needed
+        if (hasChanges) {
+          classes[classIndex] = currentClass;
+          localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
+          console.log('Updated class data with synchronized groups');
+        }
+      }
+      
+      // Load class details
+      function loadClassDetails(classCode) {
+        if (!classCode) {
+          document.getElementById('classTitle').textContent = 'No Class Selected';
+          return;
+        }
+        
+        console.log('Loading class details for:', classCode);
+        
+        // Get class from localStorage
+        const storedClasses = localStorage.getItem('attendify_tutored_classes');
+        if (storedClasses) {
+          const classes = JSON.parse(storedClasses);
+          const classIndex = classes.findIndex(cls => cls.code === classCode);
+          
+          if (classIndex !== -1) {
+            const currentClass = classes[classIndex];
+            console.log('Found class:', currentClass.name, 'with groups:', currentClass.groups);
+            
+            // Set class title with proper formatting and no class code
+            document.getElementById('classTitle').textContent = currentClass.name;
+            
+            // Ensure all groups have codes
+            let hasChanges = false;
+            
+            if (currentClass.groups && currentClass.groups.length > 0) {
+              currentClass.groups.forEach((group, index) => {
+                if (!group.code) {
+                  // Generate a unique code for this group
+                  const randomCode = 'GRP' + Math.floor(100000 + Math.random() * 900000);
+                  currentClass.groups[index].code = randomCode;
+                  hasChanges = true;
+                }
+                
+                // Debug group names
+                console.log(`Group: ${group.name}, Code: ${group.code}, Students: ${group.students ? group.students.length : 0}`);
+              });
+              
+              // Save changes if needed
+              if (hasChanges) {
+                classes[classIndex] = currentClass;
+                localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
+                console.log('Updated group codes in loadClassDetails');
+              }
+            }
+            
+            // Populate group selector
+            const groupSelector = document.getElementById('groupSelector');
+            groupSelector.innerHTML = '<option value="all">All Groups</option>';
+            
+            if (currentClass.groups && currentClass.groups.length > 0) {
+              // Sort groups alphabetically for easier finding
+              const sortedGroups = [...currentClass.groups].sort((a, b) => a.name.localeCompare(b.name));
+              
+              sortedGroups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group.name;
+                // Display group name with code more prominently
+                option.textContent = `${group.name} ${group.code ? `(${group.code})` : ''}`;
+                option.title = `Group code: ${group.code || 'Not set'}`;
+                groupSelector.appendChild(option);
+              });
+              
+              // Add a divider and option to show unassigned students if any
+              const hasUnassignedStudents = currentClass.students && currentClass.students.some(student => 
+                !currentClass.groups.some(group => 
+                  group.students && group.students.includes(student.id)
+                )
+              );
+              
+              if (hasUnassignedStudents) {
+                const divider = document.createElement('option');
+                divider.disabled = true;
+                divider.textContent = '──────────';
+                groupSelector.appendChild(divider);
+                
+                const unassignedOption = document.createElement('option');
+                unassignedOption.value = 'unassigned';
+                unassignedOption.textContent = '⚠️ Unassigned Students';
+                groupSelector.appendChild(unassignedOption);
+              }
+            }
+          }
+        }
+      }
+      
+      // Load groups list
+      function loadGroupsList(classCode) {
+        if (!classCode) return;
+        
+        const groupsList = document.getElementById('groupsList');
+        if (!groupsList) return;
+        
+        // Get class from localStorage
+        const storedClasses = localStorage.getItem('attendify_tutored_classes');
+        if (storedClasses) {
+          const classes = JSON.parse(storedClasses);
+          const currentClass = classes.find(cls => cls.code === classCode);
+          
+          if (currentClass && currentClass.groups && currentClass.groups.length > 0) {
+            // First, ensure all groups have codes
+            let hasChanges = false;
+            currentClass.groups.forEach((group, index) => {
+              if (!group.code) {
+                // Generate a unique code for this group
+                group.code = 'GRP' + Math.floor(100000 + Math.random() * 900000);
+                hasChanges = true;
+              }
+            });
+            
+            // Save changes if needed
+            if (hasChanges) {
+              const classIndex = classes.findIndex(cls => cls.code === classCode);
+              if (classIndex !== -1) {
+                classes[classIndex] = currentClass;
+                localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
+                console.log('Updated group codes in loadGroupsList');
+              }
+            }
+            
+            groupsList.innerHTML = ''; // Clear the list
+            
+            currentClass.groups.forEach(group => {
+              // Count students in this group
+              const studentCount = group.students ? group.students.length : 0;
+              
+              const groupCard = document.createElement('div');
+              groupCard.className = 'group-card';
+              groupCard.innerHTML = `
+                <div class="group-name">${group.name}</div>
+                <div class="group-code-display">
+                  <span class="group-code-label">Code:</span>
+                  <span class="group-code-value">${group.code || 'N/A'}</span>
+                  <button class="group-code-copy-btn" title="Copy Code" data-code="${group.code || ''}">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                  <span class="group-code-copy-success">Copied!</span>
+        </div>
+                <div class="group-students-count">
+                  <i class="fas fa-user-graduate"></i> ${studentCount} student${studentCount !== 1 ? 's' : ''}
+      </div>
+              `;
+              
+              groupsList.appendChild(groupCard);
+            });
+            
+            // Add event listeners to the copy code buttons
+            setupGroupCodeCopyButtons();
+          } else {
+            groupsList.innerHTML = `
+              <div class="empty-state" style="text-align: center; padding: 20px;">
+                <i class="fas fa-users-slash" style="font-size: 24px; margin-bottom: 10px; color: var(--text-secondary);"></i>
+                <p>No groups available for this class.</p>
+          </div>
+            `;
+          }
+        }
+      }
+      
+      // Setup copy buttons for group codes
+      function setupGroupCodeCopyButtons() {
+        const copyButtons = document.querySelectorAll('.group-code-copy-btn');
+        copyButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const code = this.getAttribute('data-code');
+            if (!code) return;
+            
+            const successMsg = this.nextElementSibling;
+            
+            navigator.clipboard.writeText(code)
+              .then(() => {
+                // Show success message
+                successMsg.style.display = 'block';
+                
+                // Hide after 2 seconds
+                setTimeout(() => {
+                  successMsg.style.display = 'none';
+                }, 2000);
+              })
+              .catch(err => {
+                console.error('Failed to copy:', err);
+              });
+          });
+        });
+      }
+      
+      // Load students list
+      function loadStudents(classCode, groupFilter = 'all') {
+        const studentsContainer = document.getElementById('studentsContainer');
+        console.log('Loading students for class:', classCode, 'with group filter:', groupFilter);
+        
+        if (!classCode) {
+          studentsContainer.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">
+                <i class="fas fa-users-slash"></i>
+        </div>
+              <h4>No Class Selected</h4>
+              <p>Please go back to the dashboard and select a class.</p>
+      </div>
+          `;
+          return;
+        }
+        
+        // Generate dummy students if none exist
+        if (!localStorage.getItem(`attendify_class_students_${classCode}`)) {
+          // Create dummy students with various groups
+          const dummyStudents = generateDummyStudents();
+          localStorage.setItem(`attendify_class_students_${classCode}`, JSON.stringify(dummyStudents));
+        }
+
+        // Get class data to access groups
+        const storedClasses = localStorage.getItem('attendify_tutored_classes');
+        let currentClass = null;
+        let classIndex = -1;
+        
+        if (storedClasses) {
+          const classes = JSON.parse(storedClasses);
+          classIndex = classes.findIndex(cls => cls.code === classCode);
+          if (classIndex !== -1) {
+            currentClass = classes[classIndex];
+            console.log('Found class:', currentClass.name, 'with groups:', currentClass.groups);
+          }
+        }
+        
+        // Get students from localStorage
+        const storedStudents = localStorage.getItem(`attendify_class_students_${classCode}`);
+        if (storedStudents) {
+          let students = JSON.parse(storedStudents);
+          console.log('Total students before filtering:', students.length);
+          
+          // Validate and ensure all students have a group
+          let studentsModified = false;
+          students = students.map(student => {
+            if (!student.group || student.group.trim() === '') {
+              student.group = 'Default Group';
+              studentsModified = true;
+            }
+            return student;
+          });
+          
+          // Also ensure students are in their respective groups in class data
+          if (currentClass && currentClass.groups) {
+            let classModified = false;
+            
+            // Find or create Default Group
+            let defaultGroup = currentClass.groups.find(g => g.name === 'Default Group');
+            if (!defaultGroup) {
+              defaultGroup = { 
+                name: 'Default Group', 
+                code: 'GRP000', 
+                students: []
+              };
+              currentClass.groups.push(defaultGroup);
+              classModified = true;
+            }
+            
+            // Ensure all students are in a group in the class data
+            students.forEach(student => {
+              // Check if student is in any group
+              const isInGroup = currentClass.groups.some(group => 
+                group.students && group.students.includes(student.id)
+              );
+              
+              if (!isInGroup) {
+                // If not in any group, add to the group matching their 'group' property
+                const matchingGroup = currentClass.groups.find(g => g.name === student.group);
+                
+                if (matchingGroup) {
+                  if (!matchingGroup.students) matchingGroup.students = [];
+                  matchingGroup.students.push(student.id);
+                  classModified = true;
+                } else {
+                  // If no matching group, add to Default Group
+                  if (!defaultGroup.students) defaultGroup.students = [];
+                  defaultGroup.students.push(student.id);
+                  classModified = true;
+                }
+              }
+            });
+            
+            // Save class data changes if needed
+            if (classModified && classIndex !== -1) {
+              const classes = JSON.parse(storedClasses);
+              classes[classIndex] = currentClass;
+              localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
+              console.log('Updated student group assignments in class data');
+            }
+          }
+          
+          // If any students were modified, save the changes back to localStorage
+          if (studentsModified) {
+            localStorage.setItem(`attendify_class_students_${classCode}`, JSON.stringify(students));
+            console.log('Fixed students missing group assignment');
+          }
+          
+          // Apply group filter if needed
+          if (groupFilter !== 'all') {
+            if (groupFilter === 'unassigned') {
+              // Show only students not in any group
+              students = students.filter(student => {
+                const isAssignedToGroup = currentClass && currentClass.groups && 
+                  currentClass.groups.some(group => 
+                    group.students && group.students.includes(student.id)
+                  );
+                return !isAssignedToGroup;
+              });
+            } else {
+              // Debug: log each student's group compared to the filter
+              console.log('Filtering students for group:', groupFilter);
+              students.forEach(student => {
+                console.log(`Student ${student.name} is in group '${student.group}', match: ${student.group === groupFilter}`);
+              });
+              
+              // Filter by exact group name match
+              students = students.filter(student => student.group === groupFilter);
+            }
+            console.log('Students after filtering:', students.length);
+          }
+          
+          // Display students or empty state
+          if (students.length > 0) {
+            studentsContainer.innerHTML = '';
+            
+            students.forEach((student, index) => {
+              const studentCard = document.createElement('div');
+              studentCard.className = 'student-card';
+              
+              // Get initials for avatar
+              const nameParts = student.name.split(' ');
+              const initials = nameParts.length > 1 
+                ? nameParts[0][0] + nameParts[1][0] 
+                : nameParts[0][0];
+              
+              // Get group code if available
+              let groupCode = '';
+              if (currentClass && currentClass.groups) {
+                const studentGroup = currentClass.groups.find(g => g.name === student.group);
+                if (studentGroup && studentGroup.code) {
+                  groupCode = ` (${studentGroup.code})`;
+                }
+              }
+              
+              studentCard.innerHTML = `
+                <div class="student-info">
+                  <div class="student-avatar">${initials}</div>
+                  <div class="student-details">
+                    <div class="student-name">
+                      ${student.name}
+                      ${(() => {
+                        const todayAttendance = getStudentAttendanceStatus(student.id);
+                        return `<div class="today-status">
+                          <span class="today-status-label">Today:</span>
+                          <span class="${todayAttendance.statusClass}">${todayAttendance.status}</span>
+                        </div>`;
+                      })()}
+                    </div>
+                    <div class="student-id">
+                      ${student.id}
+                      <button class="copy-student-id" data-id="${student.id}" title="Copy ID">
+                        <i class="fas fa-copy"></i>
+                      </button>
+                      <span class="copy-success">Copied!</span>
+          </div>
+                    <div class="student-group" style="margin-top: 8px;">
+                      <strong>Group: </strong>
+                      <span class="group-badge" style="background: rgba(79, 70, 229, 0.2); padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; color: var(--primary); border: 1px solid rgba(79, 70, 229, 0.3);" title="${student.group}${groupCode}">
+                        ${student.group}
+                      </span>
+          </div>
+          </div>
+        </div>
+                
+                                <div class="middle-container">
+                  <div class="attendance-row">
+                    <div class="attendance-counter small">
+                      <div class="attendance-count">
+                        <span class="attended">${Math.floor(Math.random() * 3 + 5)}</span>/<span class="total">8</span>
+      </div>
+                      <div class="attendance-label">Classes</div>
+    </div>
+    
+                    <div class="checkmarks-container small">
+                      <div class="absence-label">Justified Absences:</div>
+                      <div class="checkmarks-row">
+                        <div class="checkmark" data-student="${student.id}" data-checkpoint="1" title="Absence 1"></div>
+                        <div class="checkmark" data-student="${student.id}" data-checkpoint="2" title="Absence 2"></div>
+                        <div class="checkmark" data-student="${student.id}" data-checkpoint="3" title="Absence 3"></div>
+                        <div class="checkmark" data-student="${student.id}" data-checkpoint="4" title="Absence 4"></div>
+                      </div>
+                    </div>
+                    
+                    <button class="btn btn-delete delete-student-btn small-btn" data-index="${index}" data-name="${student.name}">
+                      <i class="fas fa-user-minus"></i> Remove
+                    </button>
+                  </div>
+              `;
+              
+              studentsContainer.appendChild(studentCard);
+            });
+            
+            // Add event listeners for copy buttons
+            setupCopyButtons();
+            
+            // Add event listeners for delete buttons
+            setupDeleteButtons(classCode);
+            
+            // Setup checkmarks
+            setupCheckmarks(classCode);
+            
+            // Initialize random attendance values for demonstration
+            initializeAttendanceCounters();
+          } else {
+            studentsContainer.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <i class="fas fa-user-slash"></i>
+      </div>
+                <h4>No Students Found</h4>
+                <p>There are no students in ${groupFilter === 'all' ? 'this class' : 'the selected group'}.</p>
+    </div>
+            `;
+          }
+        }
+      }
+      
+      // Function to setup checkmark toggling and saved state
+      function setupCheckmarks(classCode) {
+        const checkmarks = document.querySelectorAll('.checkmark');
+        
+        // Create audio element for click sound feedback
+        const clickSound = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAoDAwMDAwMEREUFBQUGBgbGxscHB8fHx8jIyYmJiYpKSsrLCwvLy8vMzM2NjY2ODg7Ozs7P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/jOMAAAAX0K1M/45NiqqqqqqqqqqqqqqqqqqqqTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/jOMQQA/MK5ndMYmaqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr/4zjELQP4AlaITGMgiqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//M4xCQDwAAGkAAAAIqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=');
+        clickSound.volume = 0.5;
+        
+        // Load saved checkmark states from localStorage
+        const storedCheckmarks = localStorage.getItem(`attendify_justified_absences_${classCode}`);
+        const checkmarkStates = storedCheckmarks ? JSON.parse(storedCheckmarks) : {};
+        
+        // Apply saved states to checkmarks
+        checkmarks.forEach(checkmark => {
+          const studentId = checkmark.getAttribute('data-student');
+          const checkpointId = checkmark.getAttribute('data-checkpoint');
+          const stateKey = `${studentId}_${checkpointId}`;
+          
+          if (checkmarkStates[stateKey]) {
+            checkmark.classList.add('checked');
+          }
+          
+          // Add click event listener for toggling
+          checkmark.addEventListener('click', function(e) {
+            // Create and add ripple element
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            this.appendChild(ripple);
+            
+            // Play sound
+            clickSound.currentTime = 0;
+            clickSound.play().catch(e => console.log('Audio play failed:', e));
+            
+            // Toggle checked state
+            this.classList.toggle('checked');
+            
+            // Update localStorage
+            const isChecked = this.classList.contains('checked');
+            const updatedStates = storedCheckmarks ? JSON.parse(storedCheckmarks) : {};
+            updatedStates[stateKey] = isChecked;
+            
+            localStorage.setItem(`attendify_justified_absences_${classCode}`, JSON.stringify(updatedStates));
+            
+            // Remove ripple after animation completes
+            setTimeout(() => {
+              ripple.remove();
+            }, 600);
+          });
+        });
+      }
+      
+            // Initialize random attendance values for demonstration
+      function initializeAttendanceCounters() {
+        const attendanceCounters = document.querySelectorAll('.attendance-counter');
+        
+        // Add this only if it doesn't exist yet
+        if (!document.querySelector('#pulse-animation')) {
+          const style = document.createElement('style');
+          style.id = 'pulse-animation';
+          style.textContent = `
+            @keyframes pulse-subtle {
+              0% { transform: scale(1); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+              50% { box-shadow: 0 3px 8px rgba(79, 70, 229, 0.2); }
+              100% { transform: scale(1.02); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+        
+        attendanceCounters.forEach(counter => {
+          const attendedSpan = counter.querySelector('.attended');
+          const totalSpan = counter.querySelector('.total');
+          const attended = parseInt(attendedSpan.textContent);
+          const total = parseInt(totalSpan.textContent);
+          
+          // Update colors based on attendance percentage
+          const attendanceCount = attendedSpan.parentElement;
+          const percentage = (attended / total) * 100;
+          let color = '';
+          
+          if (percentage >= 90) {
+            color = 'var(--success)';
+            attendanceCount.style.color = color;
+            counter.style.borderColor = color;
+          } else if (percentage >= 75) {
+            color = 'var(--primary)';
+            attendanceCount.style.color = color;
+            counter.style.borderColor = color;
+          } else if (percentage >= 60) {
+            color = 'var(--warning)';
+            attendanceCount.style.color = color;
+            counter.style.borderColor = color;
+          } else {
+            color = 'var(--error)';
+            attendanceCount.style.color = color;
+            counter.style.borderColor = color;
+          }
+          
+          // Different styling based on if it's small or not
+          if (counter.classList.contains('small')) {
+            // Lighter styling for small counters
+            counter.style.backgroundColor = `${color}15`;
+            counter.style.borderColor = `${color}50`;
+            counter.style.boxShadow = `0 2px 8px ${color}30`;
+          } else {
+            // Add glow effect for regular sized counters
+            counter.style.boxShadow = `0 4px 12px ${color}40, 0 0 20px ${color}20`;
+            counter.style.animation = 'pulse-subtle 2s infinite alternate ease-in-out';
+          }
+        });
+      }
+      
+      // Function to generate dummy students with proper group assignments
+      function generateDummyStudents() {
+        return [
+          {
+            id: 'STU' + Math.floor(100000 + Math.random() * 900000),
+            name: 'John Smith',
+            group: 'Group A',
+            justifications: [
+              { date: '2023-10-05', justified: true },
+              { date: '2023-10-12', justified: true },
+              { date: '2023-10-19', justified: false },
+              { date: '2023-10-26', justified: true }
+            ]
+          },
+          {
+            id: 'STU' + Math.floor(100000 + Math.random() * 900000),
+            name: 'Emily Johnson',
+            group: 'Group A',
+            justifications: [
+              { date: '2023-10-05', justified: false },
+              { date: '2023-10-12', justified: true },
+              { date: '2023-10-19', justified: true },
+              { date: '2023-10-26', justified: true }
+            ]
+          },
+          {
+            id: 'STU' + Math.floor(100000 + Math.random() * 900000),
+            name: 'Michael Brown',
+            group: 'Group B',
+            justifications: [
+              { date: '2023-10-05', justified: true },
+              { date: '2023-10-12', justified: false },
+              { date: '2023-10-19', justified: false },
+              { date: '2023-10-26', justified: true }
+            ]
+          },
+          {
+            id: 'STU' + Math.floor(100000 + Math.random() * 900000),
+            name: 'Jessica Williams',
+            group: 'Group B',
+            justifications: [
+              { date: '2023-10-05', justified: true },
+              { date: '2023-10-12', justified: true },
+              { date: '2023-10-19', justified: true },
+              { date: '2023-10-26', justified: true }
+            ]
+          },
+          {
+            id: 'STU' + Math.floor(100000 + Math.random() * 900000),
+            name: 'David Jones',
+            group: 'Group C',
+            justifications: [
+              { date: '2023-10-05', justified: false },
+              { date: '2023-10-12', justified: false },
+              { date: '2023-10-19', justified: true },
+              { date: '2023-10-26', justified: false }
+            ]
+          },
+          {
+            id: 'STU' + Math.floor(100000 + Math.random() * 900000),
+            name: 'Sarah Garcia',
+            group: 'Group C',
+            justifications: [
+              { date: '2023-10-05', justified: true },
+              { date: '2023-10-12', justified: true },
+              { date: '2023-10-19', justified: true },
+              { date: '2023-10-26', justified: false }
+            ]
+          },
+          {
+            id: 'STU' + Math.floor(100000 + Math.random() * 900000),
+            name: 'Robert Miller',
+            group: 'Default Group',
+            justifications: [
+              { date: '2023-10-05', justified: false },
+              { date: '2023-10-12', justified: false },
+              { date: '2023-10-19', justified: false },
+              { date: '2023-10-26', justified: false }
+            ]
+          },
+          {
+            id: 'STU' + Math.floor(100000 + Math.random() * 900000),
+            name: 'Amanda Thompson',
+            group: 'Default Group',
+            justifications: [
+              { date: '2023-10-05', justified: true },
+              { date: '2023-10-12', justified: false },
+              { date: '2023-10-19', justified: true },
+              { date: '2023-10-26', justified: true }
+            ]
+          },
+          {
+            id: 'STU' + Math.floor(100000 + Math.random() * 900000),
+            name: 'Thomas Wilson',
+            group: 'Group A',
+            justifications: [
+              { date: '2023-10-05', justified: false },
+              { date: '2023-10-12', justified: true },
+              { date: '2023-10-19', justified: false },
+              { date: '2023-10-26', justified: true }
+            ]
+          },
+          {
+            id: 'STU' + Math.floor(100000 + Math.random() * 900000),
+            name: 'Lisa Taylor',
+            group: 'Group B',
+            justifications: [
+              { date: '2023-10-05', justified: true },
+              { date: '2023-10-12', justified: false },
+              { date: '2023-10-19', justified: true },
+              { date: '2023-10-26', justified: false }
+            ]
+          }
+        ];
+      }
+      
+      // Setup copy buttons for student IDs
+      function setupCopyButtons() {
+        const copyButtons = document.querySelectorAll('.copy-student-id');
+        copyButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const studentId = this.getAttribute('data-id');
+            navigator.clipboard.writeText(studentId)
+              .then(() => {
+                const successMsg = this.nextElementSibling;
+                successMsg.style.display = 'inline';
+                setTimeout(() => {
+                  successMsg.style.display = 'none';
+                }, 2000);
+              })
+              .catch(err => {
+                console.error('Failed to copy:', err);
+              });
+          });
+        });
+      }
+      
+      // Setup delete buttons
+      function setupDeleteButtons(classCode) {
+        const deleteButtons = document.querySelectorAll('.delete-student-btn');
+        deleteButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const studentIndex = this.getAttribute('data-index');
+            const studentName = this.getAttribute('data-name');
+            
+            // Store data for confirmation
+            document.getElementById('studentNameToDelete').textContent = studentName;
+            document.getElementById('confirmDeleteBtn').setAttribute('data-index', studentIndex);
+            document.getElementById('confirmDeleteBtn').setAttribute('data-class', classCode);
+            
+            // Show confirmation modal
+            document.getElementById('confirmOverlay').style.display = 'block';
+            document.getElementById('confirmDeleteModal').style.display = 'block';
+            
+            // Add active class for animation
+            setTimeout(() => {
+              document.getElementById('confirmDeleteModal').classList.add('active');
+            }, 10);
+          });
+        });
+      }
+      
+      // Setup delete confirmation modal
+      function setupDeleteConfirmation() {
+        const confirmOverlay = document.getElementById('confirmOverlay');
+        const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        
+        // Function to close modal with animation
+        function closeConfirmModal() {
+          // Remove active class first for animation
+          confirmDeleteModal.classList.remove('active');
+          
+          // Hide elements after animation
+          setTimeout(() => {
+            confirmOverlay.style.display = 'none';
+            confirmDeleteModal.style.display = 'none';
+          }, 300);
+        }
+        
+        // Close modal on cancel with animation
+        cancelDeleteBtn.addEventListener('click', closeConfirmModal);
+        
+        // Handle delete confirmation
+        confirmDeleteBtn.addEventListener('click', function() {
+          const studentIndex = parseInt(this.getAttribute('data-index'));
+          const classCode = this.getAttribute('data-class');
+          
+          // Get students from localStorage
+          const storedStudents = localStorage.getItem(`attendify_class_students_${classCode}`);
+          
+          if (storedStudents) {
+            let students = JSON.parse(storedStudents);
+            
+            // Remove the student
+            students.splice(studentIndex, 1);
+            
+            // Save back to localStorage
+            localStorage.setItem(`attendify_class_students_${classCode}`, JSON.stringify(students));
+            
+            // Close modal
+            closeConfirmModal();
+            
+            // Reload students
+            const groupSelector = document.getElementById('groupSelector');
+            loadStudents(classCode, groupSelector.value);
+          }
+        });
+      }
+      
+      // Setup profile dropdown
+      function setupProfileDropdown() {
+        const profileDropdownBtn = document.getElementById('profileDropdownBtn');
+        const profileDropdownMenu = document.getElementById('profileDropdownMenu');
+        
+        if (profileDropdownBtn && profileDropdownMenu) {
+          profileDropdownBtn.addEventListener('click', function() {
+            profileDropdownMenu.classList.toggle('show');
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', function(e) {
+            if (!profileDropdownBtn.contains(e.target) && !profileDropdownMenu.contains(e.target)) {
+              profileDropdownMenu.classList.remove('show');
+            }
+          });
+        }
+        
+        // Set user name and ID
+        const userName = document.getElementById('userName');
+        const headerStudentId = document.getElementById('headerStudentId');
+        
+        if (userName && headerStudentId) {
+          // You could get this from localStorage if you have it saved
+          userName.textContent = 'Sididris Meriem';
+          
+          let studentId = localStorage.getItem('attendify_student_id');
+          if (!studentId) {
+            studentId = 'STU123456';
+          }
+          headerStudentId.textContent = studentId;
+        }
+      }
+
+      // Function to determine if a student would be present today (for demo purposes)
+      function getStudentAttendanceStatus(studentId) {
+        // Get current date
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        
+        // For demo purposes, use student ID to deterministically generate attendance status
+        // This ensures the same student always gets the same status on the same day
+        
+        // If today is weekend, no class
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          return { status: '-', statusClass: 'status-na' };
+        }
+        
+        // Use a hash of studentId + day of week to determine status
+        const hash = studentId.split('').reduce((a, b) => {
+          return a + b.charCodeAt(0);
+        }, 0) + dayOfWeek;
+        
+        // 80% chance of being present (for demo)
+        const isPresent = hash % 10 < 8;
+        
+        if (isPresent) {
+          return { status: 'Present', statusClass: 'status-present' };
+        } else {
+          return { status: 'Absent', statusClass: 'status-absent' };
+        }
+      }
+    </script>
+  </body>
+</html> 

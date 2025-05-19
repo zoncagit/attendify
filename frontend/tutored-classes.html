@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendify - Tutored Classes</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles/dashboard.css" />
+  </head>
+  <body>
+    <div class="background-animation"></div>
+    
+    <!-- Main Dashboard Container -->
+    <div class="dashboard-container">
+      <!-- Top Navigation -->
+      <header class="dashboard-header">
+        <h1 class="logo"><a href="index.html">Attendify</a></h1>
+        <div class="header-nav">
+          <a href="dashboard.html" class="nav-link">Dashboard</a>
+          <a href="enrolled-classes.html" class="nav-link">Enrolled Classes</a>
+          <a href="tutored-classes.html" class="nav-link active">Tutored Classes</a>
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar">
+            <div class="avatar-circle">
+              <img src="assets/default-avatar.png" alt="Profile" class="profile-image" id="profileImage">
+              <span class="initials" id="userInitials">SM</span>
+            </div>
+          </div>
+          <span id="userName" class="user-name">Sididris Meriem</span>
+          <div class="profile-dropdown">
+            <button id="profileDropdownBtn" class="profile-dropdown-btn">
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div id="profileDropdownMenu" class="profile-dropdown-menu">
+              <a href="#" id="settingsBtn" class="dropdown-item">
+                <i class="fas fa-cog"></i> Settings
+              </a>
+              <a href="index.html" id="logoutBtn" class="dropdown-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Dashboard Content -->
+      <div class="main-dashboard">
+        <!-- Tutored Classes View -->
+        <div id="tutoredView" class="dashboard-view active-view">
+          <div class="view-header">
+            <h2 class="view-title">Classes I Teach</h2>
+            <button id="tutorBtn" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Create Class
+            </button>
+          </div>
+          
+          <div id="tutoredClassesContainer" class="classes-container">
+            <!-- Classes will be loaded dynamically -->
+          </div>
+          
+          <!-- Empty state for tutored view -->
+          <div id="tutoredEmptyState" class="empty-state">
+            <div class="empty-state-icon">
+              <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <h3>You have no tutored classes yet</h3>
+            <p>Create a class to see it here</p>
+            <button class="btn btn-primary" id="emptyStateCreateBtn">Create Class</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div id="modalOverlay" class="modal-overlay">
+      <!-- Create Class Modal -->
+      <div id="createClassModal" class="modal">
+        <div class="modal-content">
+          <h2 class="modal-title">Create New Class</h2>
+          <div class="form-group">
+            <label for="className">Class Name</label>
+            <input type="text" id="className" placeholder="Enter class name" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Class Code</label>
+            <div class="generated-code">
+              <span id="generatedClassCode">ABC12</span>
+              <button class="copy-code-btn" title="Copy Code">
+                <i class="fas fa-copy"></i>
+              </button>
+              <div class="code-info">
+                <span class="code-help">This code will be used by students to join your class</span>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="cancelCreateClassBtn" class="btn btn-secondary">Cancel</button>
+            <button id="confirmCreateClassBtn" class="btn btn-primary">Create Class</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Group Modal -->
+      <div id="addGroupModal" class="modal">
+        <div class="modal-content">
+          <h2 class="modal-title">Add New Group</h2>
+          <div class="form-group">
+            <label for="groupName">Group Name</label>
+            <input type="text" id="groupName" placeholder="Enter group name" class="form-input">
+          </div>
+          <div class="modal-footer">
+            <button id="cancelAddGroupBtn" class="btn btn-secondary">Cancel</button>
+            <button id="confirmAddGroupBtn" class="btn btn-primary">Add Group</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Modal -->
+      <div id="settingsModal" class="modal">
+        <div class="modal-content">
+          <h2 class="modal-title">Settings</h2>
+          <div class="settings-section">
+            <h3 class="section-title">Profile</h3>
+            <div class="profile-settings">
+              <div class="profile-picture-upload">
+                <div class="current-picture">
+                  <img src="assets/default-avatar.png" alt="Profile" id="settingsProfileImage">
+                  <div class="upload-overlay">
+                    <i class="fas fa-camera"></i>
+                    <span>Change</span>
+                  </div>
+                </div>
+                <input type="file" id="profilePictureInput" accept="image/*" hidden>
+              </div>
+              <div class="student-id-section">
+                <label>Student ID</label>
+                <div class="student-id-display">
+                  <span id="studentId">STU123456</span>
+                  <button class="copy-btn" title="Copy ID">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="settings-section">
+            <h3 class="section-title">Face Recognition</h3>
+            <p class="settings-description">Set up face recognition for quick attendance marking</p>
+            <a href="face-setup.html" class="btn btn-primary">
+              <i class="fas fa-camera"></i> Set Up Face Recognition
+            </a>
+          </div>
+          <div class="modal-footer">
+            <button id="closeSettingsBtn" class="btn btn-secondary">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="scripts/tutored-classes.js"></script>
+  </body>
+</html> 

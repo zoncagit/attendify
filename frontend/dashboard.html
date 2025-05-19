@@ -1,0 +1,2924 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendify - Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles/dashboard.css" />
+    <style>
+      :root {
+        --primary: #4f46e5;
+        --secondary: #818cf8;
+        --background: #0f172a;
+        --card-bg: #1e293b;
+        --text: #f8fafc;
+        --text-secondary: #94a3b8;
+        --success: #10b981;
+        --error: #ef4444;
+        --warning: #f59e0b;
+        --hover: rgba(255, 255, 255, 0.1);
+        --border: rgba(255, 255, 255, 0.1);
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--background);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 20px;
+        position: relative;
+        overflow-x: hidden;
+      }
+      
+      .background-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        opacity: 0.1;
+        background: 
+          radial-gradient(circle at 20% 20%, var(--primary) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, var(--secondary) 0%, transparent 50%);
+        animation: pulse 8s ease-in-out infinite alternate;
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.2); }
+      }
+      
+        .dashboard-container {
+        position: relative;
+        z-index: 1;
+        max-width: 1200px;
+        margin: 40px auto 0;
+        padding-top: 20px;
+      }
+      
+      /* Modal Styles */
+      .modal-description {
+        margin-bottom: 20px;
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+      
+      .error-message {
+        color: var(--error);
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
+      }
+      
+      .generated-code {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-bottom: 5px;
+        position: relative;
+      }
+      
+      #generatedClassCode {
+        font-family: monospace;
+        font-size: 18px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        color: var(--text);
+        flex: 1;
+      }
+      
+      .copy-code-btn {
+        background: none;
+        border: none;
+        color: var(--secondary);
+        cursor: pointer;
+        padding: 5px;
+        transition: all 0.2s ease;
+        border-radius: 4px;
+      }
+      
+      .copy-code-btn:hover {
+        background-color: rgba(79, 70, 229, 0.1);
+      }
+      
+      .copy-success {
+        position: absolute;
+        right: 10px;
+        bottom: -20px;
+        font-size: 12px;
+        color: var(--success);
+        background: rgba(16, 185, 129, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        transition: opacity 0.3s ease;
+        font-weight: 600;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        z-index: 5;
+      }
+      
+      .code-info {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      
+      .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+        visibility: visible;
+        animation: fadeIn 0.3s ease;
+      }
+      
+      .modal {
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        width: 100%;
+        max-width: 500px;
+        backdrop-filter: blur(10px);
+        display: none;
+        margin: 1rem;
+        max-height: 90vh;
+        overflow-y: auto;
+        transform: translateY(20px);
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      }
+      
+      .modal::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      .modal::-webkit-scrollbar-track {
+        background: transparent;
+        margin: 10px 0;
+      }
+      
+      .modal::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+      }
+      
+      .modal::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+      
+      .modal.active {
+        display: block;
+        transform: translateY(0);
+        opacity: 1;
+        animation: modalSlideIn 0.3s ease;
+      }
+      
+      .modal-content {
+        padding: 2rem;
+        overflow: hidden;
+      }
+      
+      .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(to right, var(--text), var(--secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      
+      @keyframes modalSlideIn {
+        from { 
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to { 
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      /* Form Styling Enhancements */
+      .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        color: var(--text);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+      }
+      
+      .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+      }
+      
+      .form-input::placeholder {
+        color: var(--text-secondary);
+        opacity: 0.7;
+      }
+      
+      .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+      }
+      
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 30px;
+      }
+      
+      /* Tab Styles */
+      .class-tabs {
+        margin-top: 0;
+      }
+      
+      .tab-buttons {
+        display: flex;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 20px;
+      }
+      
+      .tab-button {
+        padding: 12px 20px;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s ease;
+      }
+      
+      .tab-button:after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: transparent;
+        transition: all 0.3s ease;
+      }
+      
+      .tab-button.active {
+        color: var(--text);
+      }
+      
+      .tab-button.active:after {
+        background: var(--primary);
+      }
+      
+      .tab-pane {
+        display: none;
+      }
+      
+      .tab-pane.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+      }
+      
+      .tab-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      
+      .tab-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+      }
+      
+      .classes-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+      
+      .class-card {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 24px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .class-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+        border-color: rgba(255, 255, 255, 0.2);
+        background: rgba(30, 41, 59, 0.8);
+      }
+      
+      .class-name {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        background: linear-gradient(to right, var(--text), var(--secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        letter-spacing: -0.02em;
+      }
+      
+      .class-details {
+        margin-bottom: 15px;
+        color: var(--text-secondary);
+        font-size: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .detail-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .detail-label {
+        min-width: 100px;
+        color: var(--text);
+        font-weight: 500;
+        font-size: 13px;
+      }
+      
+      .detail-value {
+        color: var(--text-secondary);
+      }
+      
+      /* Attendance status styling */
+      .attendance-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 5px;
+        background: rgba(0, 0, 0, 0.15);
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+      
+      .status-present {
+        color: var(--success);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .status-present:before {
+        content: '•';
+        font-size: 20px;
+        line-height: 0;
+      }
+      
+      .status-absent {
+        color: var(--error);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .status-absent:before {
+        content: '•';
+        font-size: 20px;
+        line-height: 0;
+      }
+      
+      .status-na {
+        color: var(--text-secondary);
+        font-style: italic;
+      }
+      
+      .class-code-display {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      
+      .class-code-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      
+      .class-code-value {
+        font-family: monospace;
+        font-weight: 600;
+        color: var(--text);
+      }
+      
+      .class-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: rgba(30, 41, 59, 0.5);
+        border-radius: 10px;
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+      }
+      
+      .empty-icon {
+        font-size: 40px;
+        color: var(--text-secondary);
+        margin-bottom: 15px;
+      }
+      
+      .empty-state h4 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: var(--text);
+      }
+      
+      .empty-state p {
+        color: var(--text-secondary);
+      }
+      
+      /* Small button style for class cards */
+      .btn-sm {
+        padding: 10px 20px;
+        font-size: 14px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        min-width: 100px;
+        color: white;
+      }
+      
+      /* CSS Variables for colors */
+      :root {
+        --primary: #4f46e5;
+        --secondary: #818cf8;
+        --success: #10B981;
+        --danger: #EF4444;
+        --warning: #F59E0B;
+        --info: #3B82F6;
+        --light: #F3F4F6;
+        --dark: #1F2937;
+        --text: #F9FAFB;
+        --text-secondary: #D1D5DB;
+      }
+      
+      .dashboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding: 1rem 2rem;
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 1500;
+      }
+      
+      .header-nav {
+        display: flex;
+        justify-content: center;
+        flex: 1;
+      }
+      
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(to right, var(--text), var(--secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      
+      .logo a {
+        text-decoration: none;
+      }
+      
+      .dashboard-content {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+      
+      .content-section {
+        margin-bottom: 2rem;
+      }
+      
+      .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(to right, var(--text), var(--secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+      }
+      
+      /* Button styles */
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border: none;
+      }
+      
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        opacity: 0.9;
+      }
+      
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-1px);
+      }
+      
+      .btn-danger {
+        background: rgba(239, 68, 68, 0.25);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+      
+      .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.3);
+        transform: translateY(-1px);
+      }
+      
+      /* Profile dropdown styles */
+      .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: relative;
+        z-index: 2100;
+      }
+      
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        position: relative;
+      }
+      
+      .avatar-circle {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .profile-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
+      
+      .avatar-icon {
+        font-size: 24px;
+        color: white;
+        opacity: 0.9;
+        position: relative;
+        z-index: 0;
+      }
+      
+      .user-info {
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .user-name {
+        font-weight: 500;
+        color: white;
+        margin-bottom: 2px;
+      }
+      
+      .user-id-container {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .user-id {
+        font-family: monospace;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      
+      .copy-id-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0;
+        font-size: 10px;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+      }
+      
+      .copy-id-btn:hover {
+        opacity: 1;
+      }
+      
+      .header-copy-success {
+        font-size: 10px;
+        color: var(--success);
+        opacity: 0.9;
+      }
+      
+      .profile-dropdown {
+        position: relative;
+      }
+      
+      .profile-dropdown-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 5px;
+      }
+      
+      .profile-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        background: rgba(30, 41, 59, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        width: 180px;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        display: none;
+        z-index: 2000;
+        backdrop-filter: blur(10px);
+        overflow: hidden;
+      }
+      
+      .profile-dropdown-menu.show {
+        display: block;
+        animation: fadeIn 0.2s ease;
+      }
+      
+      .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 15px;
+        color: var(--text);
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+      }
+      
+      .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      
+      .dropdown-item i {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+      }
+      
+      /* Settings Modal Styles */
+      .settings-section {
+        margin-bottom: 35px;
+        padding-bottom: 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        animation: fadeIn 0.5s ease;
+        padding: 5px 10px;
+      }
+      
+      .settings-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+      }
+      
+      .section-title:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -6px;
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(to right, var(--primary), var(--secondary));
+        border-radius: 3px;
+      }
+      
+      .profile-settings {
+        display: flex;
+        flex-direction: column;
+        gap: 50px;
+        align-items: center;
+      }
+      
+      .profile-picture-upload {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin-bottom: 15px;
+        align-self: center;
+      }
+      
+      .current-picture {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .profile-picture-info {
+        margin-top: 10px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        text-align: center;
+        max-width: 180px;
+      }
+      
+      .current-picture img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .upload-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        color: white;
+      }
+      
+      .current-picture:hover .upload-overlay {
+        opacity: 1;
+      }
+      
+      .upload-overlay i {
+        font-size: 24px;
+        margin-bottom: 5px;
+      }
+      
+      .upload-overlay span {
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 2px;
+      }
+      
+      .student-id-section {
+        width: 100%;
+        align-self: stretch;
+      }
+      
+      .student-id-section label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+      
+      .student-id-description {
+        margin-bottom: 12px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      
+      .student-id-display {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 10px 15px;
+        border-radius: 6px;
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      #studentId {
+        font-family: monospace;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+        flex: 1;
+      }
+      
+      .copy-btn {
+        background: none;
+        border: none;
+        color: var(--primary);
+        cursor: pointer;
+        padding: 5px 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+      }
+      
+      .copy-btn:hover {
+        background-color: rgba(79, 70, 229, 0.1);
+      }
+      
+      .settings-description {
+        color: var(--text-secondary);
+        margin-bottom: 15px;
+        font-size: 14px;
+      }
+      
+      .settings-status {
+        color: var(--text-secondary);
+        margin-bottom: 15px;
+        font-style: italic;
+      }
+      
+      /* Enhanced Group Dropdown Styles */
+      #groupSelectionContainer {
+        margin-top: 15px;
+        margin-bottom: 20px;
+      }
+      
+      #groupSelectionContainer label {
+        font-weight: 600;
+        color: var(--text);
+        font-size: 1.05rem;
+        margin-bottom: 10px;
+        display: block;
+      }
+      
+      #groupSelection {
+        width: 100%;
+        padding: 12px 15px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        appearance: auto;
+        font-family: 'Inter', sans-serif;
+      }
+      
+      #groupSelection:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+      
+      #groupSelection:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+      }
+      
+      #groupSelection option {
+        background-color: var(--card-bg);
+        color: var(--text);
+        padding: 12px;
+        font-size: 16px;
+      }
+      
+      #groupSelection option:hover {
+        background-color: var(--primary);
+      }
+      
+      .group-info {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-top: 8px;
+        margin-bottom: 5px;
+        font-style: italic;
+      }
+      
+      /* Current Date Display */
+      .current-date-display {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--text);
+        font-weight: 500;
+      }
+      
+      .current-date-display i {
+        color: var(--secondary);
+      }
+      
+      /* Daily Attendance Status */
+      .attendance-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 10px;
+      }
+      
+      .status-present {
+        color: var(--success);
+        font-weight: 600;
+      }
+      
+      .status-absent {
+        color: var(--error);
+        font-weight: 600;
+      }
+      
+      .status-na {
+        color: var(--text-secondary);
+        font-style: italic;
+      }
+      
+      /* Responsive styles */
+              @media (max-width: 768px) {
+          .dashboard-header {
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+          }
+          
+          .header-nav {
+            order: 2;
+          }
+          
+          .user-profile {
+            order: 1;
+            width: 100%;
+            justify-content: flex-end;
+          }
+          
+          .classes-list {
+            grid-template-columns: 1fr;
+          }
+          
+          .class-actions {
+            flex-direction: column;
+          }
+          
+          .btn {
+            width: 100%;
+          }
+          
+          .modal {
+            max-height: 85vh;
+          }
+      }
+      
+      @media (max-width: 576px) {
+        .dashboard-container {
+          padding: 0.5rem;
+        }
+        
+        .modal-content {
+          padding: 1.5rem;
+        }
+      }
+      
+      /* Quit Class Modal Styles */
+      .class-info {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      
+      .class-info h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--text);
+      }
+      
+      #quitClassName {
+        background: linear-gradient(to right, var(--text), var(--secondary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      
+      /* Warning text style */
+      .modal-description.warning {
+        color: var(--warning);
+      }
+      
+      /* Copy button styles for class code */
+      .class-code-display {
+        position: relative;
+      }
+      
+      .class-code-copy-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        color: var(--secondary);
+        cursor: pointer;
+        padding: 6px 8px;
+        transition: all 0.2s ease;
+        border-radius: 6px;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .class-code-copy-btn:hover {
+        background-color: rgba(79, 70, 229, 0.2);
+        color: white;
+      }
+      
+      .class-code-copy-success {
+        position: absolute;
+        right: 10px;
+        bottom: -22px;
+        font-size: 11px;
+        color: var(--success);
+        background: rgba(16, 185, 129, 0.1);
+        padding: 3px 10px;
+        border-radius: 4px;
+        transition: opacity 0.3s ease;
+        font-weight: 500;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        z-index: 5;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      
+      .view-students-btn {
+        background-color: var(--primary);
+        color: white;
+      }
+      
+      .view-students-btn:hover {
+        background-color: rgba(79, 70, 229, 0.85);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      }
+      
+      /* Delete Class Button */
+      .delete-class-btn {
+        background-color: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: rgba(239, 68, 68, 0.9);
+        margin-left: 5px;
+      }
+      
+      .delete-class-btn:hover {
+        background-color: rgba(239, 68, 68, 0.2);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+      }
+      
+      /* Notification styles */
+      .notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+      }
+      
+      .notification {
+        padding: 12px 16px;
+        border-radius: 6px;
+        color: white;
+        max-width: 350px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transform: translateX(100%);
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        cursor: pointer;
+      }
+      
+      .notification.show {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      
+      .notification.success {
+        background-color: var(--success);
+        border-left: 4px solid rgba(255, 255, 255, 0.5);
+      }
+      
+      .notification.error {
+        background-color: var(--error);
+        border-left: 4px solid rgba(255, 255, 255, 0.5);
+      }
+      
+      .notification.info {
+        background-color: var(--primary);
+        border-left: 4px solid rgba(255, 255, 255, 0.5);
+      }
+      
+      .notification.warning {
+        background-color: var(--warning);
+        border-left: 4px solid rgba(255, 255, 255, 0.5);
+      }
+      
+      .notification-text {
+        flex: 1;
+        margin-right: 10px;
+      }
+      
+      .notification-close {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+      }
+      
+      .notification-close:hover {
+        opacity: 1;
+      }
+      
+      /* Modal content styles */
+      .modal-footer .btn {
+        color: white;
+      }
+      
+      .modal-footer .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .modal-footer .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border: none;
+      }
+      
+      .modal-footer .btn-danger {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+      
+      .modal-footer .btn:hover {
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+      
+      .modal-footer .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+      
+      .modal-footer .btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        opacity: 0.9;
+      }
+      
+      .modal-footer .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background-animation"></div>
+    
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+    
+    <!-- Main Dashboard Container -->
+    <div class="dashboard-container">
+      <!-- Top Navigation -->
+      <header class="dashboard-header">
+        <h1 class="logo"><a href="index.html">Attendify</a></h1>
+        <div class="header-nav">
+          <div class="current-date-display">
+            <i class="fas fa-calendar-day"></i>
+            <span id="currentDateDisplay"></span>
+          </div>
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar">
+            <div class="avatar-circle">
+              <img src="assets/default-avatar.png" alt="Profile" class="profile-image" id="profileImage" style="display: none;">
+              <i class="fas fa-user avatar-icon" id="avatarIcon"></i>
+            </div>
+          </div>
+          <div class="user-info">
+            <span id="userName" class="user-name">Sididris Meriem</span>
+            <div class="user-id-container">
+              <span id="headerStudentId" class="user-id">STU123456</span>
+              <button id="headerCopyIdBtn" class="copy-id-btn" title="Copy Student ID">
+                <i class="fas fa-copy"></i>
+              </button>
+              <span id="headerCopySuccess" class="header-copy-success" style="display: none;">Copied!</span>
+            </div>
+          </div>
+          <div class="profile-dropdown">
+            <button id="profileDropdownBtn" class="profile-dropdown-btn">
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div id="profileDropdownMenu" class="profile-dropdown-menu">
+              <a href="#" id="settingsBtn" class="dropdown-item">
+                <i class="fas fa-cog"></i> Settings
+              </a>
+              <a href="index.html" id="logoutBtn" class="dropdown-item">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <div id="dashboardContent" class="dashboard-content">
+        <div class="content-section">
+          
+          <div class="class-tabs">
+            <div class="tab-buttons">
+              <button class="tab-button active" data-tab="enrolled">Enrolled Classes</button>
+              <button class="tab-button" data-tab="tutored">Tutored Classes</button>
+            </div>
+            
+            <div class="tab-content">
+              <!-- Enrolled Classes Tab -->
+              <div id="enrolledClassesTab" class="tab-pane active">
+                <div class="tab-header">
+                  <h3 class="tab-title">Classes You're Taking</h3>
+                  <button id="dashboardEnrollClassBtn" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Enroll in Class
+                  </button>
+                </div>
+                
+                <div id="enrolledClassesList" class="classes-list">
+                  <!-- Enrolled classes will be populated here -->
+                  <div class="empty-state">
+                    <div class="empty-icon">
+                      <i class="fas fa-book-reader"></i>
+                    </div>
+                    <h4>No Enrolled Classes</h4>
+                    <p>You haven't enrolled in any classes yet.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Tutored Classes Tab -->
+              <div id="tutoredClassesTab" class="tab-pane">
+                <div class="tab-header">
+                  <h3 class="tab-title">Classes You're Teaching</h3>
+                  <button id="dashboardCreateClassBtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Class
+                  </button>
+                </div>
+                
+                <div id="tutoredClassesList" class="classes-list">
+                  <!-- Tutored classes will be populated here -->
+                  <div class="empty-state">
+                    <div class="empty-icon">
+                      <i class="fas fa-chalkboard"></i>
+                    </div>
+                    <h4>No Tutored Classes</h4>
+                    <p>You haven't created any classes yet.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div id="modalOverlay" class="modal-overlay">
+      <!-- Enroll Modal -->
+      <div id="enrollModal" class="modal">
+        <div class="modal-content">
+          <h2 class="modal-title">Enroll in Class</h2>
+          <p class="modal-description">Enter the class code provided by your instructor to join their class.</p>
+          <div class="form-group">
+            <label for="classCode">Class Code</label>
+            <input type="text" id="classCode" placeholder="Enter class code" class="form-input" autocomplete="off">
+            <span id="enrollClassError" class="error-message" style="display: none;"></span>
+          </div>
+          <div class="form-group" id="groupSelectionContainer">
+            <label for="groupSelection">Select Group</label>
+            <select id="groupSelection">
+              <option value="" disabled selected>Select a group to join</option>
+              <!-- Group options will be populated dynamically -->
+            </select>
+            <div class="group-info">Choose the appropriate group for this class</div>
+          </div>
+          <div class="modal-footer">
+            <button id="cancelEnrollBtn" class="btn btn-secondary">Cancel</button>
+            <button id="confirmEnrollBtn" class="btn btn-primary">Enroll</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Class Modal -->
+      <div id="createClassModal" class="modal">
+        <div class="modal-content">
+          <h2 class="modal-title">Create New Class</h2>
+          <p class="modal-description">Set up your new class and share the generated code with your students.</p>
+          <div class="form-group">
+            <label for="className">Class Name</label>
+            <input type="text" id="className" placeholder="Enter class name" class="form-input" autocomplete="off">
+            <span id="createClassError" class="error-message" style="display: none;"></span>
+          </div>
+          <div class="form-group">
+            <label>Class Code</label>
+            <div class="generated-code">
+              <span id="generatedClassCode"></span>
+              <button id="copyCodeBtn" class="copy-code-btn" title="Copy Code">
+                <i class="fas fa-copy"></i>
+              </button>
+              <span id="copySuccess" class="copy-success" style="display: none;">Copied!</span>
+            </div>
+            <div class="code-info">
+              <span class="code-help">This code will be used by students to join your class</span>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="cancelCreateClassBtn" class="btn btn-secondary">Cancel</button>
+            <button id="confirmCreateClassBtn" class="btn btn-primary">Create Class</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Modal -->
+      <div id="settingsModal" class="modal">
+        <div class="modal-content">
+          <h2 class="modal-title">Settings</h2>
+          <div class="settings-section">
+            <h3 class="section-title">Profile</h3>
+            <div class="profile-settings">
+              <div class="profile-picture-upload">
+                <div class="current-picture">
+                  <img src="assets/default-avatar.png" alt="Profile" id="settingsProfileImage" style="display: none;">
+                  <i class="fas fa-user avatar-icon" id="settingsAvatarIcon"></i>
+                  <div class="upload-overlay" id="uploadOverlay">
+                    <i class="fas fa-camera"></i>
+                    <span>Change Photo</span>
+                  </div>
+                </div>
+                <input type="file" id="profilePictureInput" accept="image/*" hidden>
+                <p class="profile-picture-info">Click on the image to upload a profile picture</p>
+              </div>
+              <div class="student-id-section">
+                <label>Student ID</label>
+                <p class="student-id-description">This is your unique student identifier used for attendance tracking. Teachers can use this ID to add you to their classes directly.</p>
+                <div class="student-id-display">
+                  <span id="studentId">STU123456</span>
+                  <button id="copyIdBtn" class="copy-btn" title="Copy ID">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                  <span id="copyIdSuccess" class="copy-success" style="display: none;">Copied!</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="settings-section" id="faceRecognitionSection">
+            <h3 class="section-title">Face Recognition</h3>
+            <p class="settings-description">Set up face recognition for quick attendance marking</p>
+            <div id="faceRecognitionStatus">
+              <p class="settings-status" id="faceStatus">You haven't set up face recognition yet.</p>
+              <a href="face-setup.html" class="btn btn-primary" id="setupFaceBtn">
+                <i class="fas fa-camera"></i> Set Up Face Recognition
+              </a>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="closeSettingsBtn" class="btn btn-secondary">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Group Modal -->
+      <div id="addGroupModal" class="modal">
+        <div class="modal-content">
+          <h2 class="modal-title">Add New Group</h2>
+          <p class="modal-description">Add a new student group to your class.</p>
+          <div class="form-group">
+            <label for="groupName">Group Name</label>
+            <input type="text" id="groupName" placeholder="Enter group name" class="form-input" autocomplete="off">
+            <span id="addGroupError" class="error-message" style="display: none;"></span>
+          </div>
+          <div id="classNameDisplay" class="modal-description" style="margin-top: 10px; font-weight: 500;"></div>
+          <div id="addGroupSuccess" class="success-message" style="display: none; color: var(--success); margin-top: 15px; padding: 10px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);">
+            <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+            <span id="successGroupName"></span> added successfully!
+          </div>
+          <div class="modal-footer">
+            <button id="cancelAddGroupBtn" class="btn btn-secondary">Cancel</button>
+            <button id="confirmAddGroupBtn" class="btn btn-primary">Add Group</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quit Class Modal -->
+      <div id="quitClassModal" class="modal">
+        <div class="modal-content">
+          <h2 class="modal-title">Quit Class</h2>
+          <p class="modal-description warning">
+            <i class="fas fa-exclamation-triangle"></i> 
+            Are you sure you want to quit this class?
+          </p>
+          <div class="class-info" id="quitClassInfo">
+            <h3 id="quitClassName"></h3>
+            <div class="class-code-display">
+              <span class="class-code-label">Class Code:</span>
+              <span class="class-code-value" id="quitClassCode"></span>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="cancelQuitBtn" class="btn btn-secondary">Cancel</button>
+            <button id="confirmQuitBtn" class="btn btn-danger">Yes, Quit Class</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+          <!-- Include scripts -->
+    <script src="scripts/dashboard-main.js"></script>
+    <script>
+        // Update current date in navbar
+      function updateCurrentDate() {
+        const dateElement = document.getElementById('currentDateDisplay');
+        if (dateElement) {
+          const now = new Date();
+          const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          };
+          dateElement.textContent = now.toLocaleDateString('en-US', options);
+        }
+      }
+      
+      // Update date when page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        updateCurrentDate();
+        // Update date every minute (for midnight transition)
+        setInterval(updateCurrentDate, 60000);
+      });
+      
+        // Function to close all modals - making it global
+      function closeAllModals() {
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modals = document.querySelectorAll('.modal');
+        
+        if (modalOverlay) {
+          modalOverlay.classList.remove('active');
+        }
+        
+        modals.forEach(modal => {
+          modal.classList.remove('active');
+        });
+      }
+      
+      // Additional script to ensure modal buttons work
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded');
+        
+        // Initialize student ID in header
+        const headerStudentId = document.getElementById('headerStudentId');
+        if (headerStudentId) {
+          let studentId = localStorage.getItem('attendify_student_id');
+          if (!studentId) {
+            // Generate a random student ID
+            studentId = 'STU' + Math.floor(100000 + Math.random() * 900000);
+            localStorage.setItem('attendify_student_id', studentId);
+          }
+          headerStudentId.textContent = studentId;
+        }
+        
+        // Add sample enrolled classes data
+        const sampleEnrolledClasses = [
+          {
+            name: "Introduction to Computer Science",
+            code: "CS101",
+            enrolledAt: new Date(2023, 8, 15).toISOString(),
+            group: "Group A",
+            attendance: {
+              rate: 95,
+              sessions: []
+            }
+          },
+          {
+            name: "Data Structures and Algorithms",
+            code: "CS201",
+            enrolledAt: new Date(2023, 8, 16).toISOString(),
+            group: "Group B",
+            attendance: {
+              rate: 88,
+              sessions: []
+            }
+          },
+          {
+            name: "Web Development Fundamentals",
+            code: "WD110",
+            enrolledAt: new Date(2023, 8, 17).toISOString(),
+            group: "Default Group",
+            attendance: {
+              rate: 100,
+              sessions: []
+            }
+          }
+        ];
+        
+        // Store sample classes in localStorage if none exist
+        if (!localStorage.getItem('attendify_enrolled_classes')) {
+          localStorage.setItem('attendify_enrolled_classes', JSON.stringify(sampleEnrolledClasses));
+        }
+        
+        // Add sample tutored classes data
+        const sampleTutoredClasses = [
+          {
+            name: "Advanced Programming Concepts",
+            code: "CSP300",
+            createdAt: new Date(2023, 8, 10).toISOString(),
+            groups: [
+              { name: "Group A", code: "GRP101", students: [] },
+              { name: "Group B", code: "GRP102", students: [] },
+              { name: "Group C", code: "GRP103", students: [] }
+            ]
+          },
+          {
+            name: "Mobile App Development",
+            code: "MOB101",
+            createdAt: new Date(2023, 8, 12).toISOString(),
+            groups: [
+              { name: "Morning Session", code: "GRP201", students: [] },
+              { name: "Evening Session", code: "GRP202", students: [] }
+            ]
+          },
+          {
+            name: "Database Systems",
+            code: "DB202",
+            createdAt: new Date(2023, 8, 14).toISOString(),
+            groups: [
+              { name: "Default Group", code: "GRP000", students: [] }
+            ]
+          },
+          {
+            name: "Web Frontend Technologies",
+            code: "WEB205",
+            createdAt: new Date(2023, 7, 25).toISOString(),
+            groups: [
+              { name: "Beginners", code: "GRP301", students: [] },
+              { name: "Advanced", code: "GRP302", students: [] }
+            ]
+          }
+        ];
+
+        // Store sample tutored classes in localStorage if none exist
+        if (!localStorage.getItem('attendify_tutored_classes')) {
+          localStorage.setItem('attendify_tutored_classes', JSON.stringify(sampleTutoredClasses));
+        }
+        
+        // Set up copy button for header student ID
+        const headerCopyIdBtn = document.getElementById('headerCopyIdBtn');
+        if (headerCopyIdBtn) {
+          headerCopyIdBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const idElement = document.getElementById('headerStudentId');
+            const copySuccess = document.getElementById('headerCopySuccess');
+            
+            if (idElement) {
+              const studentId = idElement.textContent.trim();
+              navigator.clipboard.writeText(studentId)
+                .then(() => {
+                  console.log('Student ID copied from header:', studentId);
+                  if (copySuccess) {
+                    copySuccess.style.display = 'inline';
+                    setTimeout(() => {
+                      copySuccess.style.display = 'none';
+                    }, 2000);
+                  }
+                })
+                .catch(err => {
+                  console.error('Copy failed:', err);
+                  alert('Failed to copy student ID: ' + studentId);
+                });
+            }
+          });
+        }
+        
+        // Class code input event listener
+        const classCodeInput = document.getElementById('classCode');
+        const groupSelectionContainer = document.getElementById('groupSelectionContainer');
+        
+        if (classCodeInput && groupSelectionContainer) {
+          // Add test class code to the input initially
+          classCodeInput.value = "TEST123";
+          
+          // Populate the group dropdown with test data immediately
+          const groupSelection = document.getElementById('groupSelection');
+          if (groupSelection) {
+            groupSelection.innerHTML = '';
+            
+            // Add test group options
+            const groups = ["Group A", "Group B", "Group C", "Group D"];
+            groups.forEach(group => {
+              const option = document.createElement('option');
+              option.value = group;
+              option.textContent = group;
+              groupSelection.appendChild(option);
+            });
+            
+            // Make sure the Group A option is selected
+            if (groupSelection.options.length > 0) {
+              groupSelection.options[0].selected = true;
+            }
+          }
+          
+          // Function to update the group selection based on the class code
+          function updateGroupSelection() {
+            const code = classCodeInput.value.trim();
+            console.log("Checking code:", code);
+            
+            // DEBUG: Show groupSelectionContainer to verify it exists
+            console.log("Group selection container:", groupSelectionContainer);
+            
+            if (code.length >= 3) {  // Reduced minimum length to start checking earlier
+              // Check if the class exists and has groups
+              const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
+              if (storedTutoredClasses) {
+                const tutoredClasses = JSON.parse(storedTutoredClasses);
+                const matchingClass = tutoredClasses.find(cls => cls.code === code);
+                console.log("Found matching class:", matchingClass);
+                
+                if (matchingClass) {
+                  if (matchingClass.groups && matchingClass.groups.length > 0) {
+                  // Populate the group dropdown
+                  const groupSelection = document.getElementById('groupSelection');
+                  groupSelection.innerHTML = '<option value="" disabled selected>Select a group to join</option>';
+                  
+                    // Sort groups alphabetically
+                    const sortedGroups = [...matchingClass.groups].sort((a, b) => 
+                      a.name.localeCompare(b.name)
+                    );
+                    
+                    sortedGroups.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group.name;
+                    option.textContent = group.name;
+                    groupSelection.appendChild(option);
+                  });
+                  
+                  // Show the group selection container
+                  groupSelectionContainer.style.display = 'block';
+                    console.log("Group selection shown with multiple groups");
+                  } else {
+                    // If class exists but has no groups, create Group A as default
+                    const groupSelection = document.getElementById('groupSelection');
+                    groupSelection.innerHTML = '';
+                    
+                    const option = document.createElement('option');
+                    option.value = 'Group A';
+                    option.textContent = 'Group A';
+                    option.selected = true;
+                    groupSelection.appendChild(option);
+                    
+                    // Show the group selection container
+                    groupSelectionContainer.style.display = 'block';
+                    console.log("Group selection shown with default group");
+                  }
+                } else {
+                  groupSelectionContainer.style.display = 'none';
+                }
+              }
+            } else {
+              groupSelectionContainer.style.display = 'none';
+            }
+          }
+          
+          // Attach input event listener
+          classCodeInput.addEventListener('input', updateGroupSelection);
+          
+          // Also trigger it immediately to show the dropdown for the test class
+          updateGroupSelection();
+                    
+        }
+        
+        // Enroll in class button
+        const dashboardEnrollClassBtn = document.getElementById('dashboardEnrollClassBtn');
+        const enrollModal = document.getElementById('enrollModal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const confirmEnrollBtn = document.getElementById('confirmEnrollBtn');
+        const cancelEnrollBtn = document.getElementById('cancelEnrollBtn');
+        
+        if (dashboardEnrollClassBtn && enrollModal && modalOverlay) {
+          dashboardEnrollClassBtn.addEventListener('click', function() {
+            modalOverlay.classList.add('active');
+            enrollModal.classList.add('active');
+            
+            // Clear previous input
+            const classCodeInput = document.getElementById('classCode');
+            const groupSelectionContainer = document.getElementById('groupSelectionContainer');
+            if (classCodeInput) {
+              classCodeInput.value = '';
+            }
+            if (groupSelectionContainer) {
+              groupSelectionContainer.style.display = 'none';
+            }
+          });
+        }
+        
+        if (cancelEnrollBtn) {
+          cancelEnrollBtn.addEventListener('click', function() {
+            closeAllModals();
+          });
+        }
+        
+        if (confirmEnrollBtn) {
+          confirmEnrollBtn.addEventListener('click', function() {
+            const classCode = document.getElementById('classCode').value.trim();
+            const groupSelection = document.getElementById('groupSelection');
+            const groupSelectionContainer = document.getElementById('groupSelectionContainer');
+            let selectedGroup = 'Group A';
+            
+            // Check if group selection is visible and has a value
+            if (groupSelection && groupSelection.value) {
+              selectedGroup = groupSelection.value;
+              console.log("Selected group:", selectedGroup);
+            }
+            
+            const enrollClassError = document.getElementById('enrollClassError');
+            
+            if (classCode === '') {
+              if (enrollClassError) {
+                enrollClassError.textContent = 'Please enter a class code';
+                enrollClassError.style.display = 'block';
+              }
+              return;
+            }
+            
+            if (groupSelectionContainer.style.display !== 'none' && !selectedGroup) {
+              if (enrollClassError) {
+                enrollClassError.textContent = 'Please select a group';
+                enrollClassError.style.display = 'block';
+              }
+              return;
+            }
+            
+            // Check if class exists in tutored classes
+            const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
+            if (storedTutoredClasses) {
+              const tutoredClasses = JSON.parse(storedTutoredClasses);
+              const matchingClass = tutoredClasses.find(cls => cls.code === classCode);
+              
+              if (matchingClass) {
+                // Enroll in class
+                // Remove 'Class ' prefix from the name if it exists
+                let className = matchingClass.name;
+                if (className.startsWith('Class ')) {
+                  className = className.substring(6);
+                }
+                
+                const newEnrollment = {
+                  name: className,
+                  code: matchingClass.code,
+                  enrolledAt: new Date().toISOString(),
+                  group: selectedGroup,
+                  attendance: {
+                    rate: 100,
+                    sessions: []
+                  }
+                };
+                
+                // Save to localStorage
+                const storedEnrolledClasses = localStorage.getItem('attendify_enrolled_classes');
+                let enrolledClasses = [];
+                
+                if (storedEnrolledClasses) {
+                  enrolledClasses = JSON.parse(storedEnrolledClasses);
+                  
+                  // Check if already enrolled
+                  const alreadyEnrolled = enrolledClasses.some(cls => cls.code === classCode);
+                  if (alreadyEnrolled) {
+                    if (enrollClassError) {
+                      enrollClassError.textContent = 'You are already enrolled in this class';
+                      enrollClassError.style.display = 'block';
+                    }
+                    return;
+                  }
+                }
+                
+                enrolledClasses.push(newEnrollment);
+                localStorage.setItem('attendify_enrolled_classes', JSON.stringify(enrolledClasses));
+                
+                // Close modal
+                closeAllModals();
+                
+                // Show success message
+                alert('Successfully enrolled in class!');
+                
+                // Refresh the page
+                window.location.reload();
+              } else {
+                if (enrollClassError) {
+                  enrollClassError.textContent = 'Invalid class code';
+                  enrollClassError.style.display = 'block';
+                }
+              }
+            } else {
+              if (enrollClassError) {
+                enrollClassError.textContent = 'Invalid class code';
+                enrollClassError.style.display = 'block';
+              }
+            }
+          });
+        }
+        
+        // Set dashboard to always show
+        localStorage.setItem('attendify_is_new_user', false);
+        
+        // Set up copy button for class code
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        if (copyCodeBtn) {
+          copyCodeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const codeElement = document.getElementById('generatedClassCode');
+            const copySuccess = document.getElementById('copySuccess');
+            
+            if (codeElement) {
+              const code = codeElement.textContent.trim();
+              navigator.clipboard.writeText(code)
+                .then(() => {
+                  console.log('Code copied:', code);
+                  if (copySuccess) {
+                    copySuccess.style.display = 'block';
+                    setTimeout(() => {
+                      copySuccess.style.display = 'none';
+                    }, 2000);
+                  }
+                })
+                .catch(err => {
+                  console.error('Copy failed:', err);
+                  alert('Failed to copy code: ' + code);
+                });
+            }
+          });
+        }
+        
+        // Set up copy button for student ID
+        const copyIdBtn = document.getElementById('copyIdBtn');
+        if (copyIdBtn) {
+          copyIdBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const idElement = document.getElementById('studentId');
+            const copyIdSuccess = document.getElementById('copyIdSuccess');
+            
+            if (idElement) {
+              const studentId = idElement.textContent.trim();
+              navigator.clipboard.writeText(studentId)
+                .then(() => {
+                  console.log('Student ID copied:', studentId);
+                  if (copyIdSuccess) {
+                    copyIdSuccess.style.display = 'block';
+                    setTimeout(() => {
+                      copyIdSuccess.style.display = 'none';
+                    }, 2000);
+                  }
+                })
+                .catch(err => {
+                  console.error('Copy failed:', err);
+                  alert('Failed to copy student ID: ' + studentId);
+                });
+            }
+          });
+        }
+        
+        // Set up modal buttons
+        const cancelCreateClassBtn = document.getElementById('cancelCreateClassBtn');
+        const confirmCreateClassBtn = document.getElementById('confirmCreateClassBtn');
+        const cancelAddGroupBtn = document.getElementById('cancelAddGroupBtn');
+        const confirmAddGroupBtn = document.getElementById('confirmAddGroupBtn');
+        
+        // Variables to store current class when adding a group
+        let currentClassId = null;
+        
+        // Function to open the Add Group modal is defined globally as window.openAddGroupModal
+        
+        // Set up Add Group functionality
+        if (confirmAddGroupBtn) {
+          confirmAddGroupBtn.addEventListener('click', function() {
+            if (!currentClassId) {
+              console.error('No class ID set for adding group');
+              alert('Error: No class selected');
+              return;
+            }
+            
+            console.log('Adding group to class ID:', currentClassId);
+            
+            const groupNameInput = document.getElementById('groupName');
+            const addGroupError = document.getElementById('addGroupError');
+            const groupName = groupNameInput ? groupNameInput.value.trim() : '';
+            
+            // Validate group name
+            if (!groupName) {
+              if (addGroupError) {
+                addGroupError.textContent = 'Please enter a group name';
+                addGroupError.style.display = 'block';
+              }
+              return;
+            }
+            
+            // Get tutored classes from localStorage
+            const storedClasses = localStorage.getItem('attendify_tutored_classes');
+            
+            if (storedClasses) {
+              let classes = JSON.parse(storedClasses);
+              
+              // Find the class by ID
+              const classIndex = classes.findIndex(cls => cls.code === currentClassId);
+              
+              if (classIndex !== -1) {
+                // Check if group name already exists
+                const existingGroups = classes[classIndex].groups || [];
+                const groupExists = existingGroups.some(group => 
+                  group.name.toLowerCase() === groupName.toLowerCase()
+                );
+                
+                if (groupExists) {
+                  if (addGroupError) {
+                    addGroupError.textContent = `Group "${groupName}" already exists in this class`;
+                    addGroupError.style.display = 'block';
+                  }
+                  return;
+                }
+                
+                // Generate a unique group code
+                const groupCode = 'GRP' + Math.floor(100000 + Math.random() * 900000);
+                
+                // Add the new group to the class
+                const newGroup = {
+                  name: groupName,
+                  code: groupCode,
+                  description: "",
+                  createdAt: new Date().toISOString(),
+                  students: []
+                };
+                
+                if (!classes[classIndex].groups) {
+                  classes[classIndex].groups = [];
+                }
+                
+                classes[classIndex].groups.push(newGroup);
+                
+                // Save back to localStorage
+                localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
+                
+                // Show success message
+                const addGroupSuccess = document.getElementById('addGroupSuccess');
+                const successGroupName = document.getElementById('successGroupName');
+                if (addGroupSuccess && successGroupName) {
+                  successGroupName.textContent = groupName;
+                  addGroupSuccess.style.display = 'block';
+                  
+                  // Disable confirm button
+                  this.disabled = true;
+                  
+                  // Refresh the page after a short delay
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
+                } else {
+                  // Fallback to alert if elements not found
+                  alert(`Group "${groupName}" added successfully!`);
+                  closeAllModals();
+                  window.location.reload();
+                }
+              } else {
+                alert('Class not found');
+              }
+            }
+          });
+        }
+        
+        // Cancel Add Group
+        if (cancelAddGroupBtn) {
+          cancelAddGroupBtn.addEventListener('click', function() {
+            closeAllModals();
+          });
+        }
+
+        // Create Class button functionality
+        if (cancelCreateClassBtn) {
+          cancelCreateClassBtn.addEventListener('click', function() {
+            console.log('Cancel create class clicked');
+            closeAllModals();
+          });
+        }
+        
+        if (confirmCreateClassBtn) {
+          confirmCreateClassBtn.addEventListener('click', function() {
+            console.log('Confirm create class clicked');
+            const className = document.getElementById('className').value.trim();
+            const classCode = document.getElementById('generatedClassCode').textContent.trim();
+            const createClassError = document.getElementById('createClassError');
+            
+            if (className === '') {
+              if (createClassError) {
+                createClassError.textContent = 'Please enter a class name';
+                createClassError.style.display = 'block';
+              }
+              return;
+            }
+            
+            // Create class object
+            const newClass = {
+              name: className,
+              code: classCode,
+              createdAt: new Date().toISOString(),
+              groups: [{ name: 'Default Group', students: [] }]
+            };
+            
+            // Save to localStorage
+            const storedClasses = localStorage.getItem('attendify_tutored_classes');
+            let classes = [];
+            
+            if (storedClasses) {
+              classes = JSON.parse(storedClasses);
+            }
+            
+            classes.push(newClass);
+            localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
+            
+            // Close modal
+            closeAllModals();
+            
+            // Show success message
+            alert('Class created successfully!');
+            
+            // Refresh the current page instead of redirecting
+            window.location.reload();
+          });
+        }
+        
+        // Tab switching functionality
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        
+        tabButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and panes
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanes.forEach(pane => pane.classList.remove('active'));
+            
+            // Add active class to current button and pane
+            this.classList.add('active');
+            document.getElementById(tabId + 'ClassesTab').classList.add('active');
+          });
+        });
+        
+        // Set up profile dropdown functionality
+        const profileDropdownBtn = document.getElementById('profileDropdownBtn');
+        const profileDropdownMenu = document.getElementById('profileDropdownMenu');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        
+        // Toggle profile dropdown
+        if (profileDropdownBtn && profileDropdownMenu) {
+          profileDropdownBtn.addEventListener('click', function() {
+            profileDropdownMenu.classList.toggle('show');
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', function(e) {
+            if (!profileDropdownBtn.contains(e.target) && !profileDropdownMenu.contains(e.target)) {
+              profileDropdownMenu.classList.remove('show');
+            }
+          });
+        }
+        
+        // Open settings modal
+        if (settingsBtn && settingsModal) {
+          settingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const modalOverlay = document.getElementById('modalOverlay');
+            
+            if (modalOverlay) {
+              modalOverlay.classList.add('active');
+              settingsModal.classList.add('active');
+              
+              // Check if user has face recognition set up
+              const hasFaceRecognition = localStorage.getItem('attendify_face_recognition') === 'true';
+              const faceStatus = document.getElementById('faceStatus');
+              const setupFaceBtn = document.getElementById('setupFaceBtn');
+              
+              if (faceStatus && setupFaceBtn) {
+                if (hasFaceRecognition) {
+                  faceStatus.textContent = 'Face recognition is set up and active.';
+                  faceStatus.style.color = 'var(--success)';
+                  setupFaceBtn.textContent = 'Update Face Recognition';
+                } else {
+                  faceStatus.textContent = 'You haven\'t set up face recognition yet.';
+                  faceStatus.style.color = 'var(--text-secondary)';
+                  setupFaceBtn.textContent = 'Set Up Face Recognition';
+                }
+              }
+              
+              // Use the same student ID from localStorage
+              const studentIdElement = document.getElementById('studentId');
+              if (studentIdElement) {
+                let studentId = localStorage.getItem('attendify_student_id');
+                if (!studentId) {
+                  // Generate a random student ID
+                  studentId = 'STU' + Math.floor(100000 + Math.random() * 900000);
+                  localStorage.setItem('attendify_student_id', studentId);
+                  
+                  // Also update the header student ID
+                  const headerStudentId = document.getElementById('headerStudentId');
+                  if (headerStudentId) {
+                    headerStudentId.textContent = studentId;
+                  }
+                }
+                studentIdElement.textContent = studentId;
+              }
+            }
+          });
+        }
+        
+        // Face Recognition button in dropdown
+        const faceRecognitionBtn = document.getElementById('faceRecognitionBtn');
+        if (faceRecognitionBtn) {
+          faceRecognitionBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = 'face-setup.html';
+          });
+        }
+        
+        // Close settings modal
+        if (closeSettingsBtn) {
+          closeSettingsBtn.addEventListener('click', function() {
+            const modalOverlay = document.getElementById('modalOverlay');
+            
+            if (modalOverlay && settingsModal) {
+              modalOverlay.classList.remove('active');
+              settingsModal.classList.remove('active');
+            }
+          });
+        }
+        
+        // Handle profile picture upload
+        const uploadOverlay = document.getElementById('uploadOverlay');
+        const profilePictureInput = document.getElementById('profilePictureInput');
+        const profileImage = document.getElementById('profileImage');
+        const settingsProfileImage = document.getElementById('settingsProfileImage');
+        
+        if (uploadOverlay && profilePictureInput) {
+          uploadOverlay.addEventListener('click', function() {
+            profilePictureInput.click();
+          });
+          
+          profilePictureInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+              const reader = new FileReader();
+              
+              reader.onload = function(e) {
+                // Update both profile images
+                if (settingsProfileImage) {
+                  settingsProfileImage.src = e.target.result;
+                  settingsProfileImage.style.display = 'block';
+                  
+                  // Hide settings avatar icon when profile picture is set
+                  const settingsAvatarIcon = document.getElementById('settingsAvatarIcon');
+                  if (settingsAvatarIcon) {
+                    settingsAvatarIcon.style.display = 'none';
+                  }
+                }
+                
+                if (profileImage) {
+                  profileImage.src = e.target.result;
+                  profileImage.style.display = 'block';
+                  
+                  // Hide avatar icon when profile picture is set
+                  const avatarIcon = document.getElementById('avatarIcon');
+                  if (avatarIcon) {
+                    avatarIcon.style.display = 'none';
+                  }
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('attendify_profile_image', e.target.result);
+              };
+              
+              reader.readAsDataURL(this.files[0]);
+            }
+          });
+          
+          // Load profile image from localStorage if available
+          const savedProfileImage = localStorage.getItem('attendify_profile_image');
+          if (savedProfileImage) {
+            if (profileImage) {
+              profileImage.src = savedProfileImage;
+              profileImage.style.display = 'block';
+              
+              // Hide avatar icon when profile picture is set
+              const avatarIcon = document.getElementById('avatarIcon');
+              if (avatarIcon) {
+                avatarIcon.style.display = 'none';
+              }
+            }
+            
+            if (settingsProfileImage) {
+              settingsProfileImage.src = savedProfileImage;
+              settingsProfileImage.style.display = 'block';
+              
+              // Hide settings avatar icon when profile picture is set
+              const settingsAvatarIcon = document.getElementById('settingsAvatarIcon');
+              if (settingsAvatarIcon) {
+                settingsAvatarIcon.style.display = 'none';
+              }
+            }
+          }
+        }
+        
+        // Call populateClassLists to show the classes when the page loads
+        populateClassLists();
+        
+        // Generate random code for class creation
+        document.getElementById('dashboardCreateClassBtn').addEventListener('click', function() {
+          const classCode = 'CLS' + Math.floor(100000 + Math.random() * 900000);
+          document.getElementById('generatedClassCode').textContent = classCode;
+          
+        const modalOverlay = document.getElementById('modalOverlay');
+          const createClassModal = document.getElementById('createClassModal');
+        
+          if (modalOverlay && createClassModal) {
+            modalOverlay.classList.add('active');
+            createClassModal.classList.add('active');
+          }
+        });
+        
+        // Call populateClassLists to display the classes
+        populateClassLists();
+
+        // Set up direct event listeners for quit class modal buttons
+        const cancelQuitBtn = document.getElementById('cancelQuitBtn');
+        const confirmQuitBtn = document.getElementById('confirmQuitBtn');
+        
+        if (cancelQuitBtn) {
+          cancelQuitBtn.addEventListener('click', function() {
+            closeAllModals();
+          });
+        }
+        
+        // The confirmQuitBtn will get its specific action when the modal is opened
+        
+        // Handle the visibility of the quit class modal
+        window.openQuitClassModal = function(classId) {
+          // Find the class details
+                const storedEnrolledClasses = localStorage.getItem('attendify_enrolled_classes');
+                if (storedEnrolledClasses) {
+            const enrolledClasses = JSON.parse(storedEnrolledClasses);
+            const classToQuit = enrolledClasses.find(cls => cls.code === classId);
+            
+            if (classToQuit) {
+              // Set class details in the modal
+              document.getElementById('quitClassName').textContent = classToQuit.name;
+              document.getElementById('quitClassCode').textContent = classToQuit.code;
+              
+              // Show the quit class modal
+          const modalOverlay = document.getElementById('modalOverlay');
+              const quitClassModal = document.getElementById('quitClassModal');
+          
+              if (modalOverlay && quitClassModal) {
+            modalOverlay.classList.add('active');
+                quitClassModal.classList.add('active');
+                
+                // Set up the confirm button action
+                if (confirmQuitBtn) {
+                  confirmQuitBtn.onclick = function() {
+                    // Remove class from localStorage
+                    const updatedClasses = enrolledClasses.filter(cls => cls.code !== classId);
+                    localStorage.setItem('attendify_enrolled_classes', JSON.stringify(updatedClasses));
+                  
+                  // Close modal
+                  closeAllModals();
+                  
+                    // Refresh the page
+                  window.location.reload();
+                  };
+                }
+              }
+            }
+          }
+        };
+
+        // Debug helper function
+        window.openAddGroupModal = function(classId) {
+          console.log('openAddGroupModal called with ID:', classId);
+          
+          currentClassId = classId;
+          
+          // Get class name from the stored classes
+          const storedClasses = localStorage.getItem('attendify_tutored_classes');
+          if (storedClasses) {
+            const classes = JSON.parse(storedClasses);
+            const currentClass = classes.find(cls => cls.code === classId);
+            
+            if (currentClass) {
+              // Display class name in modal
+              const classNameDisplay = document.getElementById('classNameDisplay');
+              if (classNameDisplay) {
+                classNameDisplay.textContent = `Class: ${currentClass.name}`;
+              }
+            }
+          }
+          
+          // Clear any previous input and errors
+          const groupNameInput = document.getElementById('groupName');
+          const addGroupError = document.getElementById('addGroupError');
+          const addGroupSuccess = document.getElementById('addGroupSuccess');
+          
+          if (groupNameInput) {
+            groupNameInput.value = '';
+            // Remove any existing event listeners by cloning and replacing the element
+            const newGroupNameInput = groupNameInput.cloneNode(true);
+            groupNameInput.parentNode.replaceChild(newGroupNameInput, groupNameInput);
+            
+            // Add keydown event listener for Enter key to the new element
+            newGroupNameInput.addEventListener('keydown', function(event) {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById('confirmAddGroupBtn').click();
+              }
+            });
+            
+            // Focus the input field
+            setTimeout(() => document.getElementById('groupName').focus(), 300);
+          }
+          
+          if (addGroupError) {
+            addGroupError.style.display = 'none';
+          }
+          
+          if (addGroupSuccess) {
+            addGroupSuccess.style.display = 'none';
+          }
+          
+          // Show modal and overlay
+          const modalOverlay = document.getElementById('modalOverlay');
+          const addGroupModal = document.getElementById('addGroupModal');
+          
+          if (modalOverlay && addGroupModal) {
+            console.log('Opening modal for adding group');
+            modalOverlay.classList.add('active');
+            addGroupModal.classList.add('active');
+          } else {
+            console.error('Modal elements not found:',
+              modalOverlay ? 'modalOverlay found' : 'modalOverlay missing',
+              addGroupModal ? 'addGroupModal found' : 'addGroupModal missing'
+            );
+          }
+        };
+      });
+        
+        // Function to populate class lists
+        function populateClassLists() {
+          const enrolledClassesList = document.getElementById('enrolledClassesList');
+          const tutoredClassesList = document.getElementById('tutoredClassesList');
+          
+          // Get classes from localStorage
+          const storedEnrolledClasses = localStorage.getItem('attendify_enrolled_classes');
+          const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
+          
+          // Parse enrolled classes
+          if (storedEnrolledClasses && enrolledClassesList) {
+            const enrolledClasses = JSON.parse(storedEnrolledClasses);
+            
+            if (enrolledClasses.length > 0) {
+              // Clear the list
+              enrolledClassesList.innerHTML = '';
+              
+              // Add each class
+              enrolledClasses.forEach(cls => {
+                const classCard = document.createElement('div');
+                classCard.className = 'class-card';
+                
+              // Define attendance color based on rate
+              const attendanceColor = cls.attendance.rate > 90 ? 'var(--success)' : 
+                                      cls.attendance.rate > 75 ? 'var(--warning)' : 'var(--error)';
+                
+                // Look up the group code for this enrollment
+                let groupCode = '';
+                const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
+                if (storedTutoredClasses) {
+                  const tutoredClasses = JSON.parse(storedTutoredClasses);
+                  const matchingClass = tutoredClasses.find(tClass => tClass.code === cls.code);
+                  if (matchingClass && matchingClass.groups) {
+                    const group = matchingClass.groups.find(g => g.name === cls.group);
+                    if (group && group.code) {
+                      groupCode = group.code;
+                    }
+                  }
+                }
+                // If no group code found, generate a fallback
+                if (!groupCode) {
+                  groupCode = 'GRP' + Math.floor(100000 + Math.random() * 900000);
+                }
+                
+                // Check if student has class today (simplified for demo - in a real app, you'd check schedule)
+                const today = new Date();
+                const dayOfWeek = today.getDay();
+                
+                // For demo: CS101 has class on Mon/Wed/Fri, CS201 has class on Tue/Thu, others daily
+                const hasClassToday = 
+                  cls.code === 'CS101' ? [1, 3, 5].includes(dayOfWeek) : 
+                  cls.code === 'CS201' ? [2, 4].includes(dayOfWeek) : 
+                  true;
+                
+                // Generate random attendance status for demo
+                let todayStatus = '';
+                let todayStatusClass = '';
+                
+                if (!hasClassToday) {
+                  todayStatus = '-';
+                  todayStatusClass = 'status-na';
+                } else {
+                  // For demo: randomly mark as present or absent
+                  const isPresent = Math.random() > 0.2; // 80% chance of being present
+                  todayStatus = isPresent ? 'Present' : 'Absent';
+                  todayStatusClass = isPresent ? 'status-present' : 'status-absent';
+                }
+                
+                classCard.innerHTML = `
+                  <h3 class="class-name">${cls.name}</h3>
+                  <div class="class-details">
+                    <div class="detail-row">
+                      <span class="detail-label">Group:</span>
+                      <span class="detail-value">${cls.group || 'Default Group'}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Attendance:</span>
+                      <span class="detail-value"><span style="color: ${attendanceColor}; font-weight: bold;">${cls.attendance.rate}%</span></span>
+                    </div>
+                    <div class="attendance-status">
+                      <span class="detail-label">Today:</span>
+                      <span class="${todayStatusClass}">${todayStatus}</span>
+                    </div>
+                  ${cls.attendance.rate < 75 ? `
+                  <div class="attendance-warning" style="color: var(--warning); font-size: 12px; margin-top: 8px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Warning: Missing 3+ classes may result in course failure!</span>
+                  </div>` : ''}
+                  </div>
+                  <div class="class-code-display">
+                    <span class="class-code-label">Group Code:</span>
+                    <span class="class-code-value">${groupCode}</span>
+                    <button class="class-code-copy-btn" title="Copy Code" data-code="${groupCode}">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                    <span class="class-code-copy-success">Copied!</span>
+                  </div>
+                  <div class="class-actions">
+                    <button class="btn btn-danger btn-sm quit-class-btn" data-class-id="${cls.code}">
+                      <i class="fas fa-sign-out-alt"></i> Leave Class
+                    </button>
+                  </div>
+                `;
+                
+                enrolledClassesList.appendChild(classCard);
+              });
+              
+              // Add event listeners to Quit Class buttons
+              const quitClassButtons = document.querySelectorAll('.quit-class-btn');
+              quitClassButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                  const classId = this.getAttribute('data-class-id');
+                
+                // Call the openQuitClassModal function
+                window.openQuitClassModal(classId);
+                });
+              });
+            
+            // Add event listeners to the copy code buttons
+            const copyCodeBtns = document.querySelectorAll('.class-code-copy-btn');
+            copyCodeBtns.forEach(button => {
+              button.addEventListener('click', function() {
+                const code = this.getAttribute('data-code');
+                const successMsg = this.nextElementSibling;
+                
+                // Copy to clipboard
+                navigator.clipboard.writeText(code)
+                  .then(() => {
+                    // Show success message
+                    successMsg.style.display = 'block';
+                    
+                    // Hide after 2 seconds
+                    setTimeout(() => {
+                      successMsg.style.display = 'none';
+                    }, 2000);
+                  })
+                  .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy code: ' + code);
+                  });
+                });
+              });
+            }
+          }
+          
+          // Parse tutored classes
+          if (storedTutoredClasses && tutoredClassesList) {
+            const tutoredClasses = JSON.parse(storedTutoredClasses);
+            
+            if (tutoredClasses.length > 0) {
+              // Clear the list
+              tutoredClassesList.innerHTML = '';
+              
+              // Add each tutored class
+              tutoredClasses.forEach(cls => {
+                const classCard = document.createElement('div');
+                classCard.className = 'class-card';
+                
+                // Format the creation date
+                const creationDate = new Date(cls.createdAt);
+                const formattedDate = creationDate.toLocaleDateString('en-US', {
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric'
+                });
+                
+                // Count students
+                let totalStudents = 0;
+                if (cls.groups) {
+                  cls.groups.forEach(group => {
+                    if (group.students) {
+                      totalStudents += group.students.length;
+                    }
+                  });
+                }
+                
+                classCard.innerHTML = `
+                  <h3 class="class-name">${cls.name}</h3>
+                  <div class="class-details">
+                    <div class="detail-row">
+                      <span class="detail-label">Groups:</span>
+                      <span class="detail-value">${cls.groups ? cls.groups.length : 0}</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Students:</span>
+                      <span class="detail-value">${totalStudents}</span>
+                    </div>
+                  </div>
+                  <div class="class-actions">
+                    <a href="students.html?class=${cls.code}" class="btn btn-primary btn-sm view-students-btn" style="padding: 4px 8px; font-size: 12px;">
+                      <i class="fas fa-user-graduate"></i> Students
+                    </a>
+                    <button class="btn btn-secondary btn-sm add-group-btn" data-class-id="${cls.code}" onclick="openAddGroupModal('${cls.code}')" style="padding: 4px 8px; font-size: 12px;">
+                      <i class="fas fa-users"></i> Add Group
+                    </button>
+                    <button class="btn btn-danger btn-sm delete-class-btn" data-class-id="${cls.code}" onclick="openDeleteClassModal('${cls.code}')" style="padding: 4px 8px; font-size: 12px;">
+                      <i class="fas fa-trash-alt"></i> Delete
+                    </button>
+                  </div>
+                  <span class="class-code-copy-success" style="display: none;">Copied!</span>
+                  <input type="hidden" class="hidden-class-code" value="${cls.code}">
+                `;
+                
+                tutoredClassesList.appendChild(classCard);
+              });
+              
+              // Add Group buttons now use onclick attributes directly in the HTML
+              
+              // Students button is now a direct link to students.html
+              
+              // Copy functionality is removed as class codes are no longer displayed
+              /*
+              const tutoredCopyCodeBtns = tutoredClassesList.querySelectorAll('.class-code-copy-btn');
+              tutoredCopyCodeBtns.forEach(button => {
+                button.addEventListener('click', function() {
+                  const code = this.getAttribute('data-code');
+                  const successMsg = this.nextElementSibling;
+                  
+                  // Copy to clipboard
+                  navigator.clipboard.writeText(code)
+                    .then(() => {
+                      // Show success message
+                      successMsg.style.display = 'block';
+                      
+                      // Hide after 2 seconds
+                      setTimeout(() => {
+                        successMsg.style.display = 'none';
+                      }, 2000);
+                    })
+                    .catch(err => {
+                      console.error('Failed to copy: ', err);
+                      alert('Failed to copy code: ' + code);
+                    });
+                });
+              });
+              */
+            }
+          }
+        }
+    </script>
+    
+    <!-- Delete Class Confirmation Modal -->
+    <div class="modal-overlay" id="deleteClassModalOverlay">
+      <div class="modal" id="deleteClassModal">
+        <div class="modal-content">
+                <div class="modal-header">
+        <h2 class="modal-title">Delete Class</h2>
+      </div>
+          <div class="modal-body">
+            <div class="modal-description">
+              <p>Are you sure you want to delete this class? This action cannot be undone.</p>
+              <p><strong>All students, groups, and data associated with this class will be permanently deleted.</strong></p>
+            </div>
+            <div class="generated-code">
+              <span id="classToDeleteName">Class Name</span>
+            </div>
+            <input type="hidden" id="classToDeleteCode">
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancelDeleteClass">Cancel</button>
+            <button class="btn btn-danger" id="confirmDeleteClass">Delete Class</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Function to open the delete class confirmation modal
+      function openDeleteClassModal(classCode) {
+        const storedClasses = localStorage.getItem('attendify_tutored_classes');
+        if (storedClasses) {
+          const classes = JSON.parse(storedClasses);
+          const classToDelete = classes.find(cls => cls.code === classCode);
+          
+          if (classToDelete) {
+            // Set data in the modal
+            document.getElementById('classToDeleteName').textContent = classToDelete.name;
+            document.getElementById('classToDeleteCode').value = classCode;
+            
+            // Show the modal
+            const modalOverlay = document.getElementById('deleteClassModalOverlay');
+            const modal = document.getElementById('deleteClassModal');
+            modalOverlay.classList.add('active');
+            
+            // Display and animate the modal
+            modal.style.display = 'block';
+            setTimeout(() => {
+              modal.style.opacity = '1';
+              modal.style.transform = 'translateY(0)';
+            }, 10);
+          }
+        }
+      }
+      
+      // Set up event listeners for delete class modal
+      document.addEventListener('DOMContentLoaded', function() {
+        const deleteClassModalOverlay = document.getElementById('deleteClassModalOverlay');
+        const deleteClassModal = document.getElementById('deleteClassModal');
+        const closeDeleteClassBtn = document.getElementById('closeDeleteClassModal');
+        const cancelDeleteClassBtn = document.getElementById('cancelDeleteClass');
+        const confirmDeleteClassBtn = document.getElementById('confirmDeleteClass');
+        
+        // Function to close the modal
+        function closeDeleteClassModal() {
+          deleteClassModal.style.opacity = '0';
+          deleteClassModal.style.transform = 'translateY(20px)';
+          
+          // Hide the overlay after animation
+          setTimeout(() => {
+            deleteClassModalOverlay.classList.remove('active');
+            deleteClassModal.style.display = 'none';
+          }, 300);
+        }
+        
+        // Close modal events
+        if (closeDeleteClassBtn) {
+          closeDeleteClassBtn.addEventListener('click', closeDeleteClassModal);
+        }
+        
+        if (cancelDeleteClassBtn) {
+          cancelDeleteClassBtn.addEventListener('click', closeDeleteClassModal);
+        }
+        
+        // Handle delete class confirmation
+        if (confirmDeleteClassBtn) {
+          confirmDeleteClassBtn.addEventListener('click', function() {
+            const classCode = document.getElementById('classToDeleteCode').value;
+            
+            if (classCode) {
+              // Delete class data
+              deleteClass(classCode);
+              
+              // Close modal
+              closeDeleteClassModal();
+              
+              // Refresh class lists
+              populateClassLists();
+            }
+          });
+        }
+      });
+      
+      // Function to delete a class and its associated data
+      function deleteClass(classCode) {
+        // Delete class from tutored classes
+        const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
+        if (storedTutoredClasses) {
+          const tutoredClasses = JSON.parse(storedTutoredClasses);
+          const updatedClasses = tutoredClasses.filter(cls => cls.code !== classCode);
+          localStorage.setItem('attendify_tutored_classes', JSON.stringify(updatedClasses));
+        }
+        
+        // Delete class students data
+        localStorage.removeItem(`attendify_class_students_${classCode}`);
+        
+        // Delete justified absences data
+        localStorage.removeItem(`attendify_justified_absences_${classCode}`);
+        
+        // Show success notification
+        showNotification('Class deleted successfully', 'success');
+      }
+      
+      // Function to display notifications
+      function showNotification(message, type = 'info') {
+        const container = document.getElementById('notificationContainer');
+        if (!container) return;
+        
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        
+        // Create notification content
+        notification.innerHTML = `
+          <span class="notification-text">${message}</span>
+          <button class="notification-close">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        
+        // Add to container
+        container.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+          notification.classList.add('show');
+        }, 10);
+        
+        // Set up auto dismiss
+        const dismissTimeout = setTimeout(() => {
+          dismissNotification(notification);
+        }, 5000);
+        
+        // Set up manual dismiss
+        const closeBtn = notification.querySelector('.notification-close');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function() {
+            clearTimeout(dismissTimeout);
+            dismissNotification(notification);
+          });
+        }
+        
+        // Click on notification to dismiss
+        notification.addEventListener('click', function(e) {
+          if (!e.target.closest('.notification-close')) {
+            clearTimeout(dismissTimeout);
+            dismissNotification(notification);
+          }
+        });
+      }
+      
+      // Function to dismiss a notification
+      function dismissNotification(notification) {
+        notification.classList.remove('show');
+        
+        // Remove from DOM after animation
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }
+    </script>
+  </body>
+</html>
