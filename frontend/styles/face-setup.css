@@ -1,10 +1,45 @@
-/* Face Setup Content */
-.face-setup-content {
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+:root {
+  --primary: #4f46e5;
+  --secondary: #818cf8;
+  --background: #0f172a;
+  --card-bg: #1e2536;
+  --text: #f8fafc;
+  --text-secondary: #94a3b8;
+  --success: #10b981;
+  --error: #ef4444;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.face-setup-container {
+  max-width: 600px;
+  width: 100%;
+  background-color: var(--card-bg);
   border-radius: 1rem;
   padding: 2rem;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .setup-header {
@@ -13,295 +48,210 @@
 }
 
 .setup-title {
-  font-size: 1.8rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   background: linear-gradient(to right, var(--text), var(--secondary));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.setup-description {
+.setup-subtitle {
   color: var(--text-secondary);
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-/* Setup Steps */
-.setup-steps {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  position: relative;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Line connecting the steps */
-.setup-steps::after {
-  content: '';
-  position: absolute;
-  top: 24px;
-  left: 50px;
-  right: 50px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.1);
-  z-index: 0;
-}
-
-.step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-  width: 33.333%;
-}
-
-.step-number {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.step.active .step-number {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  border-color: var(--text);
-}
-
-.step.completed .step-number {
-  background: var(--success);
-  border-color: var(--text);
-}
-
-.step-content {
-  text-align: center;
-  max-width: 200px;
-}
-
-.step-title {
   font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  line-height: 1.5;
 }
 
-.step-description {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-/* Face Scan Container */
-.face-scan-container {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
+.scan-container {
+  position: relative;
+  height: 300px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
 }
 
 .webcam-container {
-  width: 320px;
-  height: 320px;
-  margin: 0 auto 1.5rem;
-  position: relative;
-  border-radius: 1rem;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.2);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .webcam-placeholder {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   color: var(--text-secondary);
 }
 
 .webcam-placeholder i {
   font-size: 2.5rem;
-  margin-bottom: 1rem;
 }
 
-#webcam, #faceCanvas {
+#webcam {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: none;
 }
 
 .face-outline {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 70%;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
 }
 
 .face-position {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  height: 90%;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.3);
-  pointer-events: none;
-}
-
-/* Scan Progress */
-.scan-progress {
-  margin-bottom: 1.5rem;
-}
-
-.progress-bar-container {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 0.75rem;
-}
-
-.progress-bar {
-  height: 100%;
-  width: 0;
-  background: linear-gradient(to right, var(--primary), var(--secondary));
-  transition: width 0.3s ease;
-}
-
-.progress-text {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
+  width: 180px;
+  height: 220px;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
 }
 
 .scan-instructions {
+  text-align: center;
+  color: var(--text-secondary);
   margin-bottom: 1.5rem;
+}
+
+.scan-progress {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin-top: 1rem;
+  overflow: hidden;
+}
+
+.scan-progress-bar {
+  height: 100%;
+  width: 0;
+  background: var(--primary);
+  transition: width 0.2s linear;
+}
+
+.setup-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.btn-skip {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.btn-skip:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-scan {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.btn-scan:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.btn-scan:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.setup-benefits {
+  margin-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1.5rem;
+}
+
+.benefits-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
   color: var(--text);
 }
 
-.scan-actions {
+.benefits-list {
+  list-style-type: none;
+}
+
+.benefit-item {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
-/* Captured Faces */
-.captured-faces {
-  margin-top: 2rem;
-  text-align: center;
+.benefit-item i {
+  color: var(--success);
+  margin-right: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.scan-complete {
   display: none;
+  text-align: center;
+  animation: fadeIn 0.5s ease;
 }
 
-.captured-faces.show {
-  display: block;
-}
-
-.section-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+.complete-icon {
+  font-size: 3rem;
+  color: var(--success);
   margin-bottom: 1rem;
 }
 
-.faces-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 1rem;
+.complete-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
-.face-thumbnail {
-  width: 100px;
-  height: 100px;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.face-thumbnail img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Success Section */
-.success-icon {
-  font-size: 4rem;
-  color: var(--success);
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.success-message {
+.complete-message {
   color: var(--text-secondary);
-  margin-bottom: 2rem;
-  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
-/* Button Styles */
-.btn-success {
-  background: var(--success);
+.btn-continue {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 200px;
 }
 
-.btn-success:hover {
+.btn-continue:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .setup-steps {
-    flex-direction: column;
-    gap: 2rem;
-    align-items: center;
-  }
-  
-  .setup-steps::after {
-    display: none;
-  }
-  
-  .step {
-    width: 100%;
-  }
-  
-  .step-content {
-    max-width: 100%;
-  }
-  
-  .scan-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .scan-actions .btn {
-    width: 100%;
-  }
-  
-  .webcam-container {
-    width: 280px;
-    height: 280px;
-  }
-} 
