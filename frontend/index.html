@@ -1,11 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendify - AI-Powered Attendance System</title>
+    <link rel="icon" type="image/png" href="logo_attendify1.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/index.css">
 </head>
+
 <body>
-    <h1>HELLO WORLD !</h1>
+
+    <div class="background-animation"></div>
+    <div class="container">
+        <h1 class="logo">Attendify</h1>
+        <p class="tagline">AI-Powered Attendance Management System</p>
+        <div class="scan-animation">
+            <div class="scan-line"></div>
+            <div class="face-outline"></div>
+        </div>
+        <div class="cta-buttons">
+            <a href="login.html" class="btn btn-primary">Login</a>
+            <a href="signup.html" class="btn btn-secondary">Sign Up</a>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-camera"></i>
+                <h3>Face Recognition</h3>
+                <p>Advanced AI technology for accurate tracking</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-qrcode"></i>
+                <h3>QR Code Scanning</h3>
+                <p>Quick and efficient attendance marking with QR codes</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-chart-line"></i>
+                <h3>Analytics</h3>
+                <p>Detailed attendance reports and analytics</p>
+            </div>
+        </div>
+    </div>
+    <script src="scripts/index.js" defer></script>
 </body>
+
 </html>
