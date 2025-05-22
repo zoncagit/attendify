@@ -1039,7 +1039,7 @@
         <div class="class-header">
           <div class="class-info">
             <a href="dashboard.html" class="back-btn">
-              <i class="fas fa-arrow-left"></i> Back to dashboard
+              <i class="fas fa-arrow-left"></i> 
             </a>
             <h1 id="classTitle" class="class-title">Students</h1>
             <div class="current-date">
@@ -1058,7 +1058,12 @@
           
         <!-- Groups Info Section -->
         <div class="groups-info-section">
-          <h2 class="section-title">Groups</h2>
+           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+            <h2 class="section-title">Groups</h2>
+            <button id="addGroupBtn" class="btn btn-secondary btn-sm" style="padding: 6px 12px; display: flex; align-items: center; gap: 6px;">
+              <i class="fas fa-plus"></i> Add Group
+            </button>
+          </div>
           <div id="groupsList" class="groups-list">
             <!-- Groups will be dynamically added here -->
           </div>
@@ -1087,6 +1092,26 @@
           </div>
           </div>
           </div>
+     <!-- Add Group Modal -->
+    <div class="mini-modal" id="addGroupModal" style="display: none;">
+      <div class="mini-modal-content">
+        <div class="mini-modal-title">Add New Group</div>
+        <div style="margin: 20px 0;">
+          <div style="margin-bottom: 15px;">
+            <label for="groupName" style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Group Name</label>
+            <input type="text" id="groupName" class="group-input" style="width: 100%; padding: 8px 12px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; color: var(--text); font-size: 14px;" placeholder="Enter group name">
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary);">
+            A unique group code will be generated automatically
+          </div>
+        </div>
+        <div class="mini-modal-buttons">
+          <button class="btn btn-secondary" id="cancelAddGroupBtn">Cancel</button>
+          <button class="btn btn-primary" id="confirmAddGroupBtn">Create Group</button>
+        </div>
+      </div>
+    </div>
+
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -1124,8 +1149,157 @@
         
         // Setup delete confirmation modal
         setupDeleteConfirmation();
+        // Setup add group button
+        setupAddGroupButton(classCode);
       });
-      
+      // Function to setup add group button
+      function setupAddGroupButton(classCode) {
+        const addGroupBtn = document.getElementById('addGroupBtn');
+         const addGroupModal = document.getElementById('addGroupModal');
+        const confirmOverlay = document.getElementById('confirmOverlay');
+        const cancelAddGroupBtn = document.getElementById('cancelAddGroupBtn');
+        const confirmAddGroupBtn = document.getElementById('confirmAddGroupBtn');
+        const groupNameInput = document.getElementById('groupName');
+
+        if (!addGroupBtn) return;
+
+          // Function to show modal
+        function showAddGroupModal() {
+          addGroupModal.style.display = 'block';
+          confirmOverlay.style.display = 'block';
+          setTimeout(() => addGroupModal.classList.add('active'), 10);
+          groupNameInput.value = ''; // Clear previous input
+          groupNameInput.focus();
+        }
+
+        // Function to hide modal
+        function hideAddGroupModal() {
+          addGroupModal.classList.remove('active');
+          setTimeout(() => {
+            addGroupModal.style.display = 'none';
+            confirmOverlay.style.display = 'none';
+          }, 300);
+        }
+
+        // Show modal when add group button is clicked
+        addGroupBtn.addEventListener('click', showAddGroupModal);
+         // Show modal when add group button is clicked
+        addGroupBtn.addEventListener('click', showAddGroupModal);
+
+        // Hide modal when cancel button is clicked
+        cancelAddGroupBtn.addEventListener('click', hideAddGroupModal);
+
+        // Handle group creation when confirm button is clicked
+        confirmAddGroupBtn.addEventListener('click', function() {
+          const groupName = groupNameInput.value.trim();
+          
+          if (!groupName) {
+            groupNameInput.style.borderColor = 'var(--error)';
+            return;
+          }
+           // Generate a unique group code
+          function generateUniqueGroupCode() {
+            const prefix = 'GRP';
+            let code;
+            let isUnique = false;
+
+            while (!isUnique) {
+              // Generate a random 6-digit number
+              const randomNum = Math.floor(100000 + Math.random() * 900000);
+              code = `${prefix}${randomNum}`;
+
+              // Check if this code already exists
+              isUnique = !currentClass.groups || !currentClass.groups.some(g => g.code === code);
+            }
+
+            return code;
+          }
+
+ 
+
+          
+            // Get class data
+          const storedClasses = localStorage.getItem('attendify_tutored_classes');
+          if (!storedClasses) return;
+          
+          const classes = JSON.parse(storedClasses);
+          const currentClass = classes.find(cls => cls.code === classCode);
+          if (!currentClass) return;
+
+          // Check if group name already exists
+          if (currentClass.groups && currentClass.groups.some(g => g.name.toLowerCase() === groupName.toLowerCase())) {
+            groupNameInput.style.borderColor = 'var(--error)';
+            // Add error message
+            const errorMsg = document.createElement('div');
+            errorMsg.style.color = 'var(--error)';
+            errorMsg.style.fontSize = '12px';
+            errorMsg.style.marginTop = '5px';
+            errorMsg.textContent = 'A group with this name already exists';
+            groupNameInput.parentNode.appendChild(errorMsg);
+            setTimeout(() => errorMsg.remove(), 3000);
+            return;
+          }
+           // Create new group
+          const newGroup = {
+            name: groupName,
+            code: generateUniqueGroupCode(),
+            students: []
+          };
+
+          // Add group to class
+          if (!currentClass.groups) currentClass.groups = [];
+          currentClass.groups.push(newGroup);
+
+          // Save updated class data
+          const classIndex = classes.findIndex(cls => cls.code === classCode);
+          classes[classIndex] = currentClass;
+          localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
+           // Show success message
+          const successMsg = document.createElement('div');
+          successMsg.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            font-size: 14px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          `;
+          successMsg.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            Group "${groupName}" created with code: ${newGroup.code}
+          `;
+          document.body.appendChild(successMsg);
+          setTimeout(() => successMsg.remove(), 5000);
+
+
+          // Refresh the groups list and selector
+          loadGroupsList(classCode);
+          loadClassDetails(classCode);
+           // Hide modal
+          hideAddGroupModal();
+        });
+
+        // Reset input style on focus
+        groupNameInput.addEventListener('focus', function() {
+          this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        });
+
+        // Handle Enter key in input
+        groupNameInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            confirmAddGroupBtn.click();
+          }
+        });
+      }
+
       // Function to update the current date
       function updateCurrentDate() {
         const dateElement = document.getElementById('currentDate');
