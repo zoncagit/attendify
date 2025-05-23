@@ -3,20 +3,21 @@ from typing import Optional
 from datetime import datetime
 
 class UserBase(BaseModel):
-    name: str
-    prenom: str
     email: EmailStr
+    name: str
 
 class UserCreate(UserBase):
     password: str
 
-    class Config:
-        from_attributes = True
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    name: Optional[str] = None
+    password: Optional[str] = None
 
-class UserOut(UserBase):
-    user_id: int
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+class UserResponse(UserBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -26,7 +27,7 @@ class UserLogin(BaseModel):
     password: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class PasswordResetRequest(BaseModel):
     email: EmailStr
@@ -42,3 +43,10 @@ class PasswordReset(BaseModel):
     @property
     def passwords_match(self) -> bool:
         return self.new_password == self.confirm_password
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    email: Optional[str] = None
