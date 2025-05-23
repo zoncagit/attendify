@@ -28,24 +28,6 @@
         <div class="progress-fill" id="progressFill"></div>
       </div>
 
-      <form id="signupForm">
-        <div class="profile-picture-upload">
-          <div class="profile-picture-preview" id="profilePicturePreview">
-            <i class="fas fa-user"></i>
-            <img id="previewImage" src="#" alt="Profile Preview" />
-          </div>
-          <label for="profilePicture" class="profile-picture-label">
-            <i class="fas fa-camera"></i> Upload Photo
-          </label>
-
-          <input
-            type="file"
-            id="profilePicture"
-            class="profile-picture-input"
-            accept="image/*"
-          />
-        </div>
-
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="firstName">First Name</label>
@@ -133,6 +115,16 @@
           <span>Create Account</span>
           <div class="spinner"></div>
         </button>
+
+        <div class="signup-divider">
+         <span>OR</span>
+        </div>
+
+        <button type="button" class="btn-google-signup">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+          <span>Sign up with Google</span>
+        </button>
+
         <div class="login-link">
           Already have an account? <a href="login.html">Login</a>
         </div>
@@ -234,6 +226,7 @@
       </div>
     </div>
 
-    <script src="scripts/signup.js" defer></script>
+    <script src="scripts/signup.js" defer>// get the js without blocking the page that's loading</script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </body>
 </html>

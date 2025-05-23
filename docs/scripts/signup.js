@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const passwordStrengthText = document.getElementById(
     "passwordStrengthText"
   );
+  const googleSignupButton = document.querySelector(".btn-google-signup");
 
   //email verification elements
   const emailVerificationModal = document.getElementById(
@@ -207,12 +208,12 @@ document.addEventListener("DOMContentLoaded", function () {
     button.disabled = true;
 
     setTimeout(() => {
-      // Generate a verification code and show the verification modal
+      //generate a verification code and show the verification modal
       sendVerificationCode();
     }, 500);
   });
 
-  // Generate and "send" verification code
+  //generate and send verification code
   function sendVerificationCode() {
     //for testing only
     verificationCode = "123456";
@@ -224,21 +225,17 @@ document.addEventListener("DOMContentLoaded", function () {
     //show the verification modal
     emailVerificationModal.classList.add("active");
 
-    // Reset verification UI
     codeDigits.forEach((digit) => (digit.value = ""));
     codeDigits[0].focus();
     verificationError.style.display = "none";
 
-    // Start the resend timer
     startResendTimer();
 
-    // Remove loading state from signup button
     const button = signupForm.querySelector('button[type="submit"]');
     button.classList.remove("loading");
     button.disabled = false;
   }
 
-  // Start the countdown timer for resend code option
   function startResendTimer() {
     let timeLeft = 60;
     resendCountdown.textContent = timeLeft;
@@ -257,47 +254,40 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1000);
   }
 
-  // Close verification modal button
   closeVerificationModal.addEventListener("click", function () {
     emailVerificationModal.classList.remove("active");
   });
 
-  // Resend code button
   resendCodeBtn.addEventListener("click", function () {
     sendVerificationCode();
   });
 
-  // Verify code button
   verifyCodeBtn.addEventListener("click", function () {
     verifyCode();
   });
 
-  // Process verification code submission
   function verifyCode() {
-    // Get the entered code
     let enteredCode = "";
     codeDigits.forEach((digit) => {
       enteredCode += digit.value;
     });
 
-    // Check if code is complete
+    //check if code is complete
     if (enteredCode.length !== 6) {
       verificationError.textContent = "Please enter all 6 digits";
       verificationError.style.display = "block";
       return;
     }
 
-    // Add loading state to verify button
     verifyCodeBtn.classList.add("loading");
     verifyCodeBtn.disabled = true;
 
-    // Simulate verification process
     setTimeout(() => {
       if (enteredCode === verificationCode) {
-        // Code is correct
+        //Code is correct
         completeSignup();
       } else {
-        // Code is incorrect
+        //Code is incorrect
         verificationError.textContent =
           "Incorrect verification code. Please try again.";
         verificationError.style.display = "block";
@@ -307,38 +297,45 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1000);
   }
 
-  // Complete signup after successful verification
   function completeSignup() {
-    // Close verification modal
     emailVerificationModal.classList.remove("active");
 
-    // Store user info in localStorage
+    //store user info in localStorage
     localStorage.setItem(
       "userName",
       `${firstNameInput.value} ${lastNameInput.value}`
     );
-    localStorage.setItem("setupFaceScan", "true"); // Flag to indicate face scan setup is needed
+    localStorage.setItem("setupFaceScan", "true"); //flag to indicate face scan setup is needed
 
     window.location.href = "face-setup.html?from=signup";
   }
 
-  const profilePicture = document.getElementById("profilePicture");
-  const previewImage = document.getElementById("previewImage");
-  const profileIcon = document.querySelector(
-    ".profile-picture-preview i"
-  );
+  googleSignupButton.addEventListener('click', function() {
+    google.accounts.id.initialize({
+      client_id: 'YOUR_GOOGLE_CLIENT_ID',
+      callback: handleGoogleSignup
+    });
 
-  profilePicture.addEventListener("change", function (e) {
-    if (this.files && this.files[0]) {
-      const reader = new FileReader();
-
-      reader.onload = function (e) {
-        previewImage.src = e.target.result;
-        previewImage.style.display = "block";
-        profileIcon.style.display = "none";
-      };
-
-      reader.readAsDataURL(this.files[0]);
-    }
+    google.accounts.id.prompt();
   });
+
+  function handleGoogleSignUp(response){
+    if(response.credential){
+
+      try{
+        const payload= JSON.parse(atob(response.credential.split(".")[1]));
+
+        localStorage.setItem('uername', payload.name || 'Google User');
+        localStorage.setItem('userEmail', payload.email);
+        localStorage.setItem('googleAuth', 'true');
+
+        setTimeout(() => {
+          window.location.href ='dashboard.html'
+        }, 1500);
+      }
+      catch(error){
+         console.error('Error processing Google sign-up:',error);
+      }
+    }
+  }
 });
