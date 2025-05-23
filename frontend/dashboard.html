@@ -423,29 +423,11 @@
       .status-present {
         color: var(--success);
         font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-      }
-      
-      .status-present:before {
-        content: '•';
-        font-size: 20px;
-        line-height: 0;
       }
       
       .status-absent {
         color: var(--error);
         font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-      }
-      
-      .status-absent:before {
-        content: '•';
-        font-size: 20px;
-        line-height: 0;
       }
       
       .status-na {
@@ -1232,6 +1214,233 @@
       button {
         color: white !important;
       }
+
+      /* Warning for classes with no groups */
+      .no-groups-warning {
+        color: var(--warning);
+        font-size: 12px;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      
+      .no-groups-warning i {
+        font-size: 14px;
+        color: #f59e0b;
+      }
+      
+      .add-group-link {
+        color: #4f46e5;
+        text-decoration: underline;
+        font-weight: 500;
+        cursor: pointer;
+        margin-left: 3px;
+      }
+      
+      .add-group-link:hover {
+        color: #818cf8;
+      }
+
+      /* Manual Attendance Panel - REMOVED */
+      
+      /* Scanner with integrated manual entry */
+      .scanner-manual-section {
+        margin-top: 20px;
+        background: rgba(30, 41, 59, 0.5);
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .scanner-manual-section h3 {
+        font-size: 16px;
+        margin-bottom: 15px;
+        color: var(--text);
+        text-align: center;
+      }
+
+      .manual-form {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .manual-input {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        padding: 10px;
+        color: var(--text);
+        font-size: 14px;
+      }
+
+      .manual-input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      .mark-present-btn {
+        background: var(--success);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 15px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .mark-present-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+
+      .mark-present-btn:disabled {
+        background: var(--text-secondary);
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .manual-result {
+        font-size: 13px;
+        padding: 8px;
+        border-radius: 4px;
+        margin-top: 10px;
+        display: none;
+        text-align: center;
+      }
+
+      .manual-result.success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        display: block;
+      }
+
+      .manual-result.error {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        display: block;
+      }
+
+      /* Scanning Container */
+      .scanning-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(10px);
+        z-index: 999;
+        display: none;
+      }
+
+      .scanning-container.active {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .scanner-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .scanner-header {
+        text-align: center;
+        margin-bottom: 20px;
+        color: var(--text);
+      }
+
+      .scanner-header h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+
+      .scanner-header p {
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+
+      .scanner-view {
+        width: 100%;
+        height: 400px;
+        background: var(--card-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .scanner-actions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .close-scanner-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: var(--text);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .close-scanner-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .scan-type-switch {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .scan-type-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text);
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .scan-type-btn.active {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .scan-type-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .scan-type-btn.active:hover {
+        background: var(--primary);
+        opacity: 0.9;
+      }
     </style>
   </head>
   <body>
@@ -1406,15 +1615,22 @@
           <div class="settings-section">
             <h3 class="section-title">Profile</h3>
             <div class="profile-settings">
-              <div class="student-id-section">
-                <label>Student ID</label>
-                <p class="student-id-description">This is your unique student identifier used for attendance tracking. Teachers can use this ID to add you to their classes directly.</p>
-                <div class="student-id-display">
-                  <span id="studentId">STU123456</span>
-                  <button id="copyIdBtn" class="copy-btn" title="Copy ID">
-                    <i class="fas fa-copy"></i>
-                  </button>
-                  <span id="copyIdSuccess" class="copy-success" style="display: none;">Copied!</span>
+              <div class="user-profile">
+                <div class="user-avatar">
+                  <div class="avatar-circle">
+                    <img src="assets/default-avatar.png" alt="Profile" class="profile-image" id="settingsProfileImage" style="display: none;">
+                    <i class="fas fa-user avatar-icon" id="settingsAvatarIcon"></i>
+                  </div>
+                </div>
+                <div class="user-info">
+                  <span id="settingsUserName" class="user-name">Sididris Meriem</span>
+                  <div class="user-id-container">
+                    <span id="settingsStudentId" class="user-id">STU123456</span>
+                    <button id="settingsCopyIdBtn" class="copy-id-btn" title="Copy Student ID">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                    <span id="settingsCopySuccess" class="header-copy-success" style="display: none;">Copied!</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1424,7 +1640,6 @@
             <p class="settings-description">Set up face recognition for quick attendance marking</p>
             <div id="faceRecognitionStatus">
               <p class="settings-status" id="faceStatus">You haven't set up face recognition yet.</p>
-              <!-- Add the Start Scan button back -->
               <button class="btn btn-primary" id="startScanBtn">
                 <i class="fas fa-camera"></i> Start Scan
               </button>
@@ -2076,7 +2291,7 @@
               name: className,
               code: classCode,
               createdAt: new Date().toISOString(),
-              groups: [{ name: 'Default Group', students: [] }]
+              groups: [] // Initialize with empty groups array so warning is shown
             };
             
             // Save to localStorage
@@ -2150,22 +2365,18 @@
               modalOverlay.classList.add('active');
               settingsModal.classList.add('active');
               
-              // Use the same student ID from localStorage
-              const studentIdElement = document.getElementById('studentId');
-              if (studentIdElement) {
-                let studentId = localStorage.getItem('attendify_student_id');
-                if (!studentId) {
-                  // Generate a random student ID
-                  studentId = 'STU' + Math.floor(100000 + Math.random() * 900000);
-                  localStorage.setItem('attendify_student_id', studentId);
-                  
-                  // Also update the header student ID
-                  const headerStudentId = document.getElementById('headerStudentId');
-                  if (headerStudentId) {
-                    headerStudentId.textContent = studentId;
-                  }
-                }
-                studentIdElement.textContent = studentId;
+              // Copy profile data from header to settings modal
+              const headerStudentId = document.getElementById('headerStudentId');
+              const settingsStudentId = document.getElementById('settingsStudentId');
+              const headerUserName = document.getElementById('userName');
+              const settingsUserName = document.getElementById('settingsUserName');
+              
+              if (headerStudentId && settingsStudentId) {
+                settingsStudentId.textContent = headerStudentId.textContent;
+              }
+              
+              if (headerUserName && settingsUserName) {
+                settingsUserName.textContent = headerUserName.textContent;
               }
             }
           });
@@ -2322,6 +2533,34 @@
             );
           }
         };
+
+        // Set up copy button for student ID in settings modal
+        const settingsCopyIdBtn = document.getElementById('settingsCopyIdBtn');
+        if (settingsCopyIdBtn) {
+          settingsCopyIdBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const idElement = document.getElementById('settingsStudentId');
+            const copySuccess = document.getElementById('settingsCopySuccess');
+            
+            if (idElement) {
+              const studentId = idElement.textContent.trim();
+              navigator.clipboard.writeText(studentId)
+                .then(() => {
+                  console.log('Student ID copied from settings:', studentId);
+                  if (copySuccess) {
+                    copySuccess.style.display = 'inline';
+                    setTimeout(() => {
+                      copySuccess.style.display = 'none';
+                    }, 2000);
+                  }
+                })
+                .catch(err => {
+                  console.error('Copy failed:', err);
+                  alert('Failed to copy student ID: ' + studentId);
+                });
+            }
+          });
+        }
       });
         
         // Function to populate class lists
@@ -2484,6 +2723,12 @@
                       <span class="detail-value">${totalStudents}</span>
                     </div>
                   </div>
+                  ${(!cls.groups || cls.groups.length === 0) ? `
+                  <div class="no-groups-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>No groups available. Students cannot join until you <a href="javascript:void(0)" class="add-group-link" onclick="event.stopPropagation(); openAddGroupModal('${cls.code}')">add a group</a></span>
+                  </div>
+                  ` : ''}
                   <div class="class-actions">
                     <a href="students.html?class=${cls.code}" class="btn btn-primary btn-sm view-students-btn" style="padding: 4px 8px; font-size: 12px;">
                       <i class="fas fa-user-graduate"></i> Students
@@ -2696,14 +2941,200 @@
     <!-- Add event listener for the Start Scan button -->
     <script>
       const startScanBtn = document.getElementById('startScanBtn');
+      const scanningContainer = document.getElementById('scanningContainer');
+      const closeScannerBtn = document.getElementById('closeScannerBtn');
+      const qrScanBtn = document.getElementById('qrScanBtn');
+      const faceScanBtn = document.getElementById('faceScanBtn');
+      const scannerView = document.getElementById('scannerView');
+      
+      // Manual entry elements
+      const scannerManualStudentId = document.getElementById('scannerManualStudentId');
+      const scannerMarkPresentBtn = document.getElementById('scannerMarkPresentBtn');
+      const scannerManualResult = document.getElementById('scannerManualResult');
+
+      // Initialize on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialize any necessary components
+      });
+
+      // Function to start scanning
+      function startScanning() {
+        scanningContainer.classList.add('active');
+      }
+
+      // Function to stop scanning
+      function stopScanning() {
+        scanningContainer.classList.remove('active');
+        
+        // Clear any manual entry data
+        if (scannerManualStudentId) {
+          scannerManualStudentId.value = '';
+        }
+        
+        if (scannerManualResult) {
+          scannerManualResult.textContent = '';
+          scannerManualResult.classList.remove('success', 'error');
+          scannerManualResult.style.display = 'none';
+        }
+        
+        if (scannerMarkPresentBtn) {
+          scannerMarkPresentBtn.disabled = true;
+        }
+      }
+
+      // Handle scan type switching
+      function switchScanType(type) {
+        if (type === 'qr') {
+          qrScanBtn.classList.add('active');
+          faceScanBtn.classList.remove('active');
+          // Initialize QR scanner
+        } else {
+          faceScanBtn.classList.add('active');
+          qrScanBtn.classList.remove('active');
+          // Initialize face recognition
+        }
+      }
+
+      // Event Listeners
       if (startScanBtn) {
-        startScanBtn.addEventListener('click', function() {
-          // Add your scan functionality here
-          alert('Scanning started!');
-          // Example: Redirect to the face setup page
-          // window.location.href = 'face-setup.html';
+        startScanBtn.addEventListener('click', startScanning);
+      }
+
+      if (closeScannerBtn) {
+        closeScannerBtn.addEventListener('click', stopScanning);
+      }
+
+      if (qrScanBtn) {
+        qrScanBtn.addEventListener('click', () => switchScanType('qr'));
+      }
+
+      if (faceScanBtn) {
+        faceScanBtn.addEventListener('click', () => switchScanType('face'));
+      }
+
+      // Enable/disable mark present button based on input
+      if (scannerManualStudentId) {
+        scannerManualStudentId.addEventListener('input', function() {
+          scannerMarkPresentBtn.disabled = !this.value.trim();
+        });
+
+        // Allow submitting with Enter key
+        scannerManualStudentId.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter' && this.value.trim()) {
+            scannerMarkPresentBtn.click();
+          }
         });
       }
+
+      // Handle manual attendance marking
+      if (scannerMarkPresentBtn) {
+        scannerMarkPresentBtn.addEventListener('click', function() {
+          const studentId = scannerManualStudentId.value.trim();
+          
+          if (!studentId) return;
+
+          // Here you would typically make an API call to mark attendance
+          // For now, we'll simulate it with a success message
+          
+          // Show success message
+          scannerManualResult.textContent = `Marked present: ${studentId}`;
+          scannerManualResult.className = 'manual-result success';
+          scannerManualResult.style.display = 'block';
+
+          // Clear input
+          scannerManualStudentId.value = '';
+          scannerMarkPresentBtn.disabled = true;
+
+          // Hide success message after 3 seconds
+          setTimeout(() => {
+            scannerManualResult.style.display = 'none';
+          }, 3000);
+        });
+      }
+
+      // Handle scanning failures - shows error message in the scanner's manual result area
+      function handleScanningFailure(error) {
+        // Show error message
+        scannerManualResult.textContent = 'Recognition failed. Please enter student ID manually.';
+        scannerManualResult.className = 'manual-result error';
+        scannerManualResult.style.display = 'block';
+        
+        // Focus the manual input
+        scannerManualStudentId.focus();
+        
+        // Hide error message after 5 seconds
+        setTimeout(() => {
+          if (scannerManualResult.className.includes('error')) {
+            scannerManualResult.style.display = 'none';
+          }
+        }, 5000);
+      }
     </script>
+
+    <!-- Scanning Container -->
+    <div id="scanningContainer" class="scanning-container">
+      <div class="scanner-wrapper">
+        <button id="closeScannerBtn" class="close-scanner-btn">
+          <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="scanner-header">
+          <div class="scan-type-switch">
+            <button id="qrScanBtn" class="scan-type-btn active">
+              <i class="fas fa-qrcode"></i> QR Code
+            </button>
+            <button id="faceScanBtn" class="scan-type-btn">
+              <i class="fas fa-camera"></i> Face Recognition
+            </button>
+          </div>
+          <h2>Scanning Attendance</h2>
+          <p>Position the QR code or face in the frame</p>
+        </div>
+
+        <div class="scanner-view" id="scannerView">
+          <!-- Camera feed will be inserted here -->
+        </div>
+        
+        <!-- Always visible manual entry section within the scanner -->
+        <div class="scanner-manual-section">
+          <h3>Manual Attendance</h3>
+          <div class="manual-form">
+            <input 
+              type="text" 
+              id="scannerManualStudentId" 
+              class="manual-input" 
+              placeholder="Enter Student ID manually"
+              autocomplete="off"
+            >
+            <button id="scannerMarkPresentBtn" class="mark-present-btn" disabled>
+              <i class="fas fa-check"></i>
+              Mark Present
+            </button>
+          </div>
+          <div id="scannerManualResult" class="manual-result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manual Attendance Panel - Completely separate from scanning container -->
+    <div id="manualAttendancePanel" class="manual-attendance-panel">
+      <h3>Manual Attendance</h3>
+      <div class="manual-attendance-form">
+        <input 
+          type="text" 
+          id="manualStudentId" 
+          class="manual-attendance-input" 
+          placeholder="Enter Student ID for unrecognized student"
+          autocomplete="off"
+        >
+        <button id="markPresentBtn" class="mark-present-btn" disabled>
+          <i class="fas fa-check"></i>
+          Mark Present
+        </button>
+        <div id="manualAttendanceResult" class="manual-attendance-result"></div>
+      </div>
+    </div>
+
+    <!-- Add event listener for the Start Scan button -->
   </body>
 </html>

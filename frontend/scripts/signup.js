@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const passwordStrengthText = document.getElementById(
     "passwordStrengthText"
   );
+  const googleSignupButton = document.querySelector(".btn-google-signup");
 
   //email verification elements
   const emailVerificationModal = document.getElementById(
@@ -341,4 +342,48 @@ document.addEventListener("DOMContentLoaded", function () {
       reader.readAsDataURL(this.files[0]);
     }
   });
+
+  // Google Sign-Up functionality
+  googleSignupButton.addEventListener('click', function() {
+    // Initialize Google Sign-In
+    google.accounts.id.initialize({
+      client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+      callback: handleGoogleSignUp
+    });
+
+    google.accounts.id.prompt();
+  });
+
+  function handleGoogleSignUp(response) {
+    // Handle the sign-up response from Google
+    if (response.credential) {
+      // User successfully authenticated with Google
+      // We can skip email verification here since Google already verified the email
+
+      try {
+        // Parse the JWT token to get user info
+        const payload = JSON.parse(atob(response.credential.split(".")[1]));
+        
+        // Store user info in localStorage
+        localStorage.setItem('userName', payload.name || 'Google User');
+        localStorage.setItem('userEmail', payload.email);
+        localStorage.setItem('googleAuth', 'true');
+        
+        // Show success message if possible
+        const successMessage = document.createElement('div');
+        successMessage.className = 'success-message show';
+        successMessage.innerHTML = '<i class="fas fa-check-circle"></i> Sign up successful! Redirecting...';
+        document.querySelector('.signup-container').prepend(successMessage);
+        
+        // Redirect to dashboard after a delay
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      } catch (error) {
+        console.error('Error processing Google sign-up:', error);
+        // Fallback to simple redirect
+        window.location.href = 'dashboard.html';
+      }
+    }
+  }
 });

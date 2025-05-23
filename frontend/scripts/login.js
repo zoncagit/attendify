@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
   const passwordInput = document.getElementById('password');
   const rememberMeCheckbox = document.getElementById('rememberMe');
   const successMessage = document.getElementById('successMessage');
+  const googleLoginButton = document.querySelector('.btn-google-login');
 
   if (localStorage.getItem('rememberedEmail')){//3nd l user 
       emailInput.value = localStorage.getItem('rememberedEmail');
@@ -65,4 +66,45 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
           }, 1500);
       }, 1500);//1500: 1.5s (changes with fetch)
   });
+
+  // Google Sign-In functionality
+  googleLoginButton.addEventListener('click', function() {
+    // Initialize Google Sign-In
+    google.accounts.id.initialize({
+      client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+      callback: handleGoogleSignIn
+    });
+
+    google.accounts.id.prompt();
+  });
+
+  function handleGoogleSignIn(response) {
+    // Handle the sign-in response from Google
+    if (response.credential) {
+      try {
+        // Parse the JWT token to get user info
+        const payload = JSON.parse(atob(response.credential.split(".")[1]));
+        
+        // Store user info in localStorage
+        localStorage.setItem('userName', payload.name || 'Google User');
+        localStorage.setItem('userEmail', payload.email);
+        localStorage.setItem('googleAuth', 'true');
+        
+        // Show success message
+        successMessage.classList.add('show');
+
+        // Redirect to dashboard after a delay
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      } catch (error) {
+        console.error('Error processing Google sign-in:', error);
+        // Fallback to simple redirect
+        successMessage.classList.add('show');
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      }
+    }
+  }
 });
