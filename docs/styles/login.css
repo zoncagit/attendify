@@ -236,5 +236,49 @@ body{
   }
 }
 
+.login-divider{
+  display: flex;
+  align-items:center;
+  text-align: center;
+  margin: 20px 0;
+}
 
+.login-divider::before, .login-divider::after{ /*create 2 horizontal lines*/
+  content:""; /*crucial for ::before and ::after to display*/
+  flex: 1;
+  border-bottom: 1px solid var(--text-secondary);
+}
 
+.login-divider span{
+  padding: 0 10px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.btn-google-login{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  background-color: var(--text);
+  color: #444;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.3s;
+  margin-bottom: 20px;
+}
+
+.btn-google-login img{
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
+.btn-google-login:hover{
+  background-color: #f8f8f8;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}

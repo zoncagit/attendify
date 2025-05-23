@@ -1,3 +1,5 @@
+const { useCallback } = require("react");
+
 document.addEventListener('DOMContentLoaded', function() {//waiting until the entire html document is loaded
 
   const loginForm = document.getElementById('loginForm');
@@ -5,6 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
   const passwordInput = document.getElementById('password');
   const rememberMeCheckbox = document.getElementById('rememberMe');
   const successMessage = document.getElementById('successMessage');
+    const googleLoginButton = document.querySelector('.btn-google-login');
+
 
   if (localStorage.getItem('rememberedEmail')){//3nd l user 
       emailInput.value = localStorage.getItem('rememberedEmail');
@@ -65,4 +69,35 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
           }, 1500);
       }, 1500);//1500: 1.5s (changes with fetch)
   });
+
+ //google log in
+ googleLoginButton.addEventListener('click', function(){
+    //crucial for GIS library
+    google.accounts.id.initialize({
+        client_id: 'YOUR_GOOGLE_CLIENT_ID', //replace with google client id
+        callback: handleGoogleSignIn //function that gets called after the user signed in
+    })
+    google.accounts.id.prompt();//show the gg interface
+ });
+
+ function handleGoogleSignIn(response) {
+    if(response.credential){
+        try{
+            //parse the jwt token to get user info
+            const payload= JSON.parse(atob(response.credential.split(".")[1]));//decode the JWT to access the user's info
+
+            localStorage.setItem('userName', payload.name || 'Google User');
+            localStorage.setItem('userEmail', payload.email);
+            localStorage.setItem('googleAuth', 'true');
+            successMessage.classList.add('show');
+
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';   
+            }, 1500);
+        } catch(error) {
+            console.error('Error processing Google sign-in: ', error);
+            successMessage.classList.add('show');
+        }
+    }
+ }
 });
