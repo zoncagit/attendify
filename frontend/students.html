@@ -1984,18 +1984,27 @@
     }
 
     // Setup add group button
-    setupAddGroupButton(classCode);
+    // Make sure classCode is passed to setupAddGroupButton
+    const urlParamsForAddGroup = new URLSearchParams(window.location.search);
+    const classCodeForAddGroup = urlParamsForAddGroup.get('class');
+    setupAddGroupButton(classCodeForAddGroup);
 
     // Function to setup add group button
-    function setupAddGroupButton(classCode) {
+    function setupAddGroupButton(currentClassCode) { // Renamed parameter to avoid conflict
       const addGroupBtn = document.getElementById('addGroupBtn');
       const addGroupModal = document.getElementById('addGroupModal');
-      const confirmOverlay = document.getElementById('confirmOverlay');
+      // Ensure you're selecting the correct overlay for this modal.
+      // If confirmOverlay is for a different modal, this might be an issue.
+      // Let's assume mini-modal-overlay is the generic one for mini-modals for now.
+      const miniModalOverlay = document.getElementById('confirmOverlay'); // Assuming this is the correct overlay for addGroupModal
       const cancelAddGroupBtn = document.getElementById('cancelAddGroupBtn');
       const confirmAddGroupBtn = document.getElementById('confirmAddGroupBtn');
       const groupNameInput = document.getElementById('groupName');
 
-      if (!addGroupBtn) return;
+      if (!addGroupBtn || !addGroupModal || !miniModalOverlay || !cancelAddGroupBtn || !confirmAddGroupBtn || !groupNameInput) {
+        console.error('One or more elements for Add Group functionality are missing.');
+        return;
+      }
 
       // Function to show modal
       function showAddGroupModal() {
