@@ -323,26 +323,6 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "face-setup.html?from=signup";
   }
 
-  const profilePicture = document.getElementById("profilePicture");
-  const previewImage = document.getElementById("previewImage");
-  const profileIcon = document.querySelector(
-    ".profile-picture-preview i"
-  );
-
-  profilePicture.addEventListener("change", function (e) {
-    if (this.files && this.files[0]) {
-      const reader = new FileReader();
-
-      reader.onload = function (e) {
-        previewImage.src = e.target.result;
-        previewImage.style.display = "block";
-        profileIcon.style.display = "none";
-      };
-
-      reader.readAsDataURL(this.files[0]);
-    }
-  });
-
   // Google Sign-Up functionality
   googleSignupButton.addEventListener('click', function() {
     // Initialize Google Sign-In

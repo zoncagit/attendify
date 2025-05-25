@@ -12,7 +12,6 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="styles/dashboard.css" />
     <style>
       :root {
         --primary: #4f46e5;
@@ -85,7 +84,7 @@
         display: block;
       }
       
-      .generated-code {
+      .generated-code {/**/
         display: flex;
         align-items: center;
         background: rgba(255, 255, 255, 0.05);
@@ -96,7 +95,7 @@
         position: relative;
       }
       
-      #generatedClassCode {
+      #generatedClassCode {/**/
         font-family: monospace;
         font-size: 18px;
         font-weight: bold;
@@ -105,7 +104,7 @@
         flex: 1;
       }
       
-      .copy-code-btn {
+      .copy-code-btn {/**/
         background: none;
         border: none;
         color: var(--secondary);
@@ -115,11 +114,11 @@
         border-radius: 4px;
       }
       
-      .copy-code-btn:hover {
+      .copy-code-btn:hover {/**/
         background-color: rgba(79, 70, 229, 0.1);
       }
       
-      .copy-success {
+      .copy-success {/**/
         position: absolute;
         right: 10px;
         bottom: -20px;
@@ -134,7 +133,7 @@
         z-index: 5;
       }
       
-      .code-info {
+      .code-info {/**/
         margin-top: 10px;
         font-size: 12px;
         color: var(--text-secondary);
@@ -410,7 +409,7 @@
       }
       
       /* Attendance status styling */
-      .attendance-status {
+      .attendance-status { /**/
         display: flex;
         align-items: center;
         gap: 10px;
@@ -420,22 +419,22 @@
         border-radius: 8px;
       }
       
-      .status-present {
+      .status-present { /**/
         color: var(--success);
         font-weight: 600;
       }
       
-      .status-absent {
+      .status-absent { /**/
         color: var(--error);
         font-weight: 600;
       }
       
-      .status-na {
+      .status-na { /**/
         color: var(--text-secondary);
         font-style: italic;
       }
       
-      .class-code-display {
+      .class-code-display { /**/
         display: flex;
         align-items: center;
         gap: 10px;
@@ -447,18 +446,18 @@
         border: 1px solid rgba(255, 255, 255, 0.05);
       }
       
-      .class-code-label {
+      .class-code-label { /**/
         font-size: 12px;
         color: var(--text-secondary);
       }
       
-      .class-code-value {
+      .class-code-value { /**/
         font-family: monospace;
         font-weight: 600;
         color: var(--text);
       }
       
-      .class-actions {
+      .class-actions { /**/
         display: flex;
         gap: 10px;
         margin-top: 20px;
@@ -491,7 +490,7 @@
       }
       
       /* Small button style for class cards */
-      .btn-sm {
+      .btn-sm { /**/
         padding: 10px 20px;
         font-size: 14px;
         border-radius: 8px;
@@ -611,12 +610,12 @@
         transform: translateY(-1px);
       }
       
-      .btn-danger {
+      .btn-danger {/**/
         background: rgba(239, 68, 68, 0.25);
         border: 1px solid rgba(239, 68, 68, 0.3);
       }
       
-      .btn-danger:hover {
+      .btn-danger:hover {/**/
         background: rgba(239, 68, 68, 0.3);
         transform: translateY(-1px);
       }
@@ -646,16 +645,6 @@
         justify-content: center;
         overflow: hidden;
         border: 2px solid rgba(255, 255, 255, 0.2);
-      }
-      
-      .profile-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1;
       }
       
       .avatar-icon {
@@ -857,64 +846,6 @@
         font-style: italic;
       }
       
-      /* Enhanced Group Dropdown Styles */
-      #groupSelectionContainer {
-        margin-top: 15px;
-        margin-bottom: 20px;
-      }
-      
-      #groupSelectionContainer label {
-        font-weight: 600;
-        color: var(--text);
-        font-size: 1.05rem;
-        margin-bottom: 10px;
-        display: block;
-      }
-      
-      #groupSelection {
-        width: 100%;
-        padding: 12px 15px;
-        background: rgba(255, 255, 255, 0.08);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        color: var(--text);
-        font-size: 16px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        appearance: auto;
-        font-family: 'Inter', sans-serif;
-      }
-      
-      #groupSelection:hover {
-        background: rgba(255, 255, 255, 0.12);
-        border-color: rgba(255, 255, 255, 0.3);
-      }
-      
-      #groupSelection:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
-      }
-      
-      #groupSelection option {
-        background-color: var(--card-bg);
-        color: var(--text);
-        padding: 12px;
-        font-size: 16px;
-      }
-      
-      #groupSelection option:hover {
-        background-color: var(--primary);
-      }
-      
-      .group-info {
-        font-size: 13px;
-        color: var(--text-secondary);
-        margin-top: 8px;
-        margin-bottom: 5px;
-        font-style: italic;
-      }
-      
       /* Current Date Display */
       .current-date-display {
         display: flex;
@@ -933,7 +864,7 @@
       }
       
       /* Daily Attendance Status */
-      .attendance-status {
+      .attendance-status {/**/
         display: flex;
         align-items: center;
         justify-content: center;
@@ -941,17 +872,17 @@
         margin-top: 10px;
       }
       
-      .status-present {
+      .status-present {/**/
         color: var(--success);
         font-weight: 600;
       }
       
-      .status-absent {
+      .status-absent {/**/
         color: var(--error);
         font-weight: 600;
       }
       
-      .status-na {
+      .status-na {/**/
         color: var(--text-secondary);
         font-style: italic;
       }
@@ -1100,7 +1031,7 @@
       }
       
       /* Notification styles */
-      .notification-container {
+      .notification-container {/**/ 
         position: fixed;
         top: 20px;
         right: 20px;
@@ -1111,7 +1042,7 @@
         gap: 10px;
       }
       
-      .notification {
+      .notification {/**/
         padding: 12px 16px;
         border-radius: 6px;
         color: white;
@@ -1127,37 +1058,37 @@
         cursor: pointer;
       }
       
-      .notification.show {
+      .notification.show {/**/
         transform: translateX(0);
         opacity: 1;
       }
       
-      .notification.success {
+      .notification.success {/**/   
         background-color: var(--success);
         border-left: 4px solid rgba(255, 255, 255, 0.5);
       }
       
-      .notification.error {
+      .notification.error {/**/
         background-color: var(--error);
         border-left: 4px solid rgba(255, 255, 255, 0.5);
       }
       
-      .notification.info {
+      .notification.info {/**/
         background-color: var(--primary);
         border-left: 4px solid rgba(255, 255, 255, 0.5);
       }
       
-      .notification.warning {
+      .notification.warning {/**/
         background-color: var(--warning);
         border-left: 4px solid rgba(255, 255, 255, 0.5);
       }
       
-      .notification-text {
+      .notification-text {/**/
         flex: 1;
         margin-right: 10px;
       }
       
-      .notification-close {
+      .notification-close {/**/
         background: none;
         border: none;
         color: white;
@@ -1167,7 +1098,7 @@
         transition: opacity 0.2s ease;
       }
       
-      .notification-close:hover {
+      .notification-close:hover {/**/
         opacity: 1;
       }
       
@@ -1241,11 +1172,9 @@
       .add-group-link:hover {
         color: #818cf8;
       }
-
-      /* Manual Attendance Panel - REMOVED */
       
       /* Scanner with integrated manual entry */
-      .scanner-manual-section {
+      .scanner-manual-section {/**/
         margin-top: 20px;
         background: rgba(30, 41, 59, 0.5);
         padding: 20px;
@@ -1253,20 +1182,20 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
       }
 
-      .scanner-manual-section h3 {
+      .scanner-manual-section h3 {/**/
         font-size: 16px;
         margin-bottom: 15px;
         color: var(--text);
         text-align: center;
       }
 
-      .manual-form {
+      .manual-form {/**/
         display: flex;
         gap: 10px;
         margin-bottom: 10px;
       }
 
-      .manual-input {
+      .manual-input {/**/
         flex: 1;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1276,12 +1205,12 @@
         font-size: 14px;
       }
 
-      .manual-input:focus {
+      .manual-input:focus {/**/
         outline: none;
         border-color: var(--primary);
       }
 
-      .mark-present-btn {
+      .mark-present-btn {/**/
         background: var(--success);
         color: white;
         border: none;
@@ -1297,18 +1226,18 @@
         white-space: nowrap;
       }
 
-      .mark-present-btn:hover {
+      .mark-present-btn:hover {/**/
         opacity: 0.9;
         transform: translateY(-1px);
       }
 
-      .mark-present-btn:disabled {
+      .mark-present-btn:disabled {/**/
         background: var(--text-secondary);
         cursor: not-allowed;
         transform: none;
       }
 
-      .manual-result {
+      .manual-result {/**/
         font-size: 13px;
         padding: 8px;
         border-radius: 4px;
@@ -1317,14 +1246,14 @@
         text-align: center;
       }
 
-      .manual-result.success {
+      .manual-result.success {/**/
         background: rgba(16, 185, 129, 0.1);
         color: var(--success);
         border: 1px solid rgba(16, 185, 129, 0.2);
         display: block;
       }
 
-      .manual-result.error {
+      .manual-result.error {/**/
         background: rgba(239, 68, 68, 0.1);
         color: var(--error);
         border: 1px solid rgba(239, 68, 68, 0.2);
@@ -1332,7 +1261,7 @@
       }
 
       /* Scanning Container */
-      .scanning-container {
+      .scanning-container {/**/
         position: fixed;
         top: 0;
         left: 0;
@@ -1344,13 +1273,13 @@
         display: none;
       }
 
-      .scanning-container.active {
+      .scanning-container.active {/**/
         display: flex;
         justify-content: center;
         align-items: center;
       }
 
-      .scanner-wrapper {
+      .scanner-wrapper {/**/
         position: relative;
         width: 100%;
         max-width: 600px;
@@ -1358,23 +1287,23 @@
         padding: 20px;
       }
 
-      .scanner-header {
+      .scanner-header {/**/
         text-align: center;
         margin-bottom: 20px;
         color: var(--text);
       }
 
-      .scanner-header h2 {
+      .scanner-header h2 {/**/
         font-size: 24px;
         margin-bottom: 10px;
       }
 
-      .scanner-header p {
+      .scanner-header p {/**/
         color: var(--text-secondary);
         font-size: 14px;
       }
 
-      .scanner-view {
+      .scanner-view {/**/
         width: 100%;
         height: 400px;
         background: var(--card-bg);
@@ -1383,14 +1312,14 @@
         position: relative;
       }
 
-      .scanner-actions {
+      .scanner-actions {/**/
         display: flex;
         justify-content: center;
         gap: 10px;
         margin-top: 20px;
       }
 
-      .close-scanner-btn {
+      .close-scanner-btn {/**/
         position: absolute;
         top: 20px;
         right: 20px;
@@ -1407,18 +1336,18 @@
         transition: all 0.2s ease;
       }
 
-      .close-scanner-btn:hover {
+      .close-scanner-btn:hover {/**/
         background: rgba(255, 255, 255, 0.2);
       }
 
-      .scan-type-switch {
+      .scan-type-switch {/**/   
         display: flex;
         justify-content: center;
         gap: 10px;
         margin-bottom: 20px;
       }
 
-      .scan-type-btn {
+      .scan-type-btn {/**/
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: var(--text);
@@ -1428,16 +1357,16 @@
         transition: all 0.2s ease;
       }
 
-      .scan-type-btn.active {
+      .scan-type-btn.active {/**/
         background: var(--primary);
         border-color: var(--primary);
       }
 
-      .scan-type-btn:hover {
+      .scan-type-btn:hover {/**/
         background: rgba(255, 255, 255, 0.15);
       }
 
-      .scan-type-btn.active:hover {
+      .scan-type-btn.active:hover {/**/
         background: var(--primary);
         opacity: 0.9;
       }
@@ -1563,14 +1492,6 @@
             <input type="text" id="classCode" placeholder="Enter class code" class="form-input" autocomplete="off">
             <span id="enrollClassError" class="error-message" style="display: none;"></span>
           </div>
-          <div class="form-group" id="groupSelectionContainer">
-            <label for="groupSelection">Select Group</label>
-            <select id="groupSelection">
-              <option value="" disabled selected>Select a group to join</option>
-              <!-- Group options will be populated dynamically -->
-            </select>
-            <div class="group-info">Choose the appropriate group for this class</div>
-          </div>
           <div class="modal-footer">
             <button id="cancelEnrollBtn" class="btn btn-secondary">Cancel</button>
             <button id="confirmEnrollBtn" class="btn btn-primary">Enroll</button>
@@ -1588,19 +1509,6 @@
             <input type="text" id="className" placeholder="Enter class name" class="form-input" autocomplete="off">
             <span id="createClassError" class="error-message" style="display: none;"></span>
           </div>
-          <div class="form-group">
-            <label>Class Code</label>
-            <div class="generated-code">
-              <span id="generatedClassCode"></span>
-              <button id="copyCodeBtn" class="copy-code-btn" title="Copy Code">
-                <i class="fas fa-copy"></i>
-              </button>
-              <span id="copySuccess" class="copy-success" style="display: none;">Copied!</span>
-            </div>
-            <div class="code-info">
-              <span class="code-help">This code will be used by students to join your class</span>
-            </div>
-          </div>
           <div class="modal-footer">
             <button id="cancelCreateClassBtn" class="btn btn-secondary">Cancel</button>
             <button id="confirmCreateClassBtn" class="btn btn-primary">Create Class</button>
@@ -1612,29 +1520,6 @@
       <div id="settingsModal" class="modal">
         <div class="modal-content">
           <h2 class="modal-title">Settings</h2>
-          <div class="settings-section">
-            <h3 class="section-title">Profile</h3>
-            <div class="profile-settings">
-              <div class="user-profile">
-                <div class="user-avatar">
-                  <div class="avatar-circle">
-                    <img src="assets/default-avatar.png" alt="Profile" class="profile-image" id="settingsProfileImage" style="display: none;">
-                    <i class="fas fa-user avatar-icon" id="settingsAvatarIcon"></i>
-                  </div>
-                </div>
-                <div class="user-info">
-                  <span id="settingsUserName" class="user-name">Sididris Meriem</span>
-                  <div class="user-id-container">
-                    <span id="settingsStudentId" class="user-id">STU123456</span>
-                    <button id="settingsCopyIdBtn" class="copy-id-btn" title="Copy Student ID">
-                      <i class="fas fa-copy"></i>
-                    </button>
-                    <span id="settingsCopySuccess" class="header-copy-success" style="display: none;">Copied!</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
           <div class="settings-section" id="faceRecognitionSection">
             <h3 class="section-title">Face Recognition</h3>
             <p class="settings-description">Set up face recognition for quick attendance marking</p>
@@ -1696,8 +1581,6 @@
       </div>
     </div>
 
-          <!-- Include scripts -->
-    <script src="scripts/dashboard-main.js"></script>
     <script>
         // Update current date in navbar
       function updateCurrentDate() {
@@ -1993,16 +1876,6 @@
         if (confirmEnrollBtn) {
           confirmEnrollBtn.addEventListener('click', function() {
             const classCode = document.getElementById('classCode').value.trim();
-            const groupSelection = document.getElementById('groupSelection');
-            const groupSelectionContainer = document.getElementById('groupSelectionContainer');
-            let selectedGroup = 'Group A';
-            
-            // Check if group selection is visible and has a value
-            if (groupSelection && groupSelection.value) {
-              selectedGroup = groupSelection.value;
-              console.log("Selected group:", selectedGroup);
-            }
-            
             const enrollClassError = document.getElementById('enrollClassError');
             
             if (classCode === '') {
@@ -2022,7 +1895,7 @@
             }
             
             // Check if class exists in tutored classes
-            const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
+            const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');/////////
             if (storedTutoredClasses) {
               const tutoredClasses = JSON.parse(storedTutoredClasses);
               const matchingClass = tutoredClasses.find(cls => cls.code === classCode);
@@ -2094,7 +1967,7 @@
         localStorage.setItem('attendify_is_new_user', false);
         
         // Set up copy button for class code
-        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');/////////////
         if (copyCodeBtn) {
           copyCodeBtn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -2164,12 +2037,12 @@
         if (confirmAddGroupBtn) {
           confirmAddGroupBtn.addEventListener('click', function() {
             if (!currentClassId) {
-              console.error('No class ID set for adding group');
+              console.error('No class set for adding group');
               alert('Error: No class selected');
               return;
             }
             
-            console.log('Adding group to class ID:', currentClassId);
+            console.log('Adding group to class:', currentClassId);
             
             const groupNameInput = document.getElementById('groupName');
             const addGroupError = document.getElementById('addGroupError');
@@ -2184,7 +2057,7 @@
               return;
             }
             
-            // Get tutored classes from localStorage
+            // Get tutored classes from localStorage////////////////////////////////////////
             const storedClasses = localStorage.getItem('attendify_tutored_classes');
             
             if (storedClasses) {
@@ -3115,26 +2988,5 @@
         </div>
       </div>
     </div>
-
-    <!-- Manual Attendance Panel - Completely separate from scanning container -->
-    <div id="manualAttendancePanel" class="manual-attendance-panel">
-      <h3>Manual Attendance</h3>
-      <div class="manual-attendance-form">
-        <input 
-          type="text" 
-          id="manualStudentId" 
-          class="manual-attendance-input" 
-          placeholder="Enter Student ID for unrecognized student"
-          autocomplete="off"
-        >
-        <button id="markPresentBtn" class="mark-present-btn" disabled>
-          <i class="fas fa-check"></i>
-          Mark Present
-        </button>
-        <div id="manualAttendanceResult" class="manual-attendance-result"></div>
-      </div>
-    </div>
-
-    <!-- Add event listener for the Start Scan button -->
   </body>
 </html>
