@@ -12,7 +12,6 @@ from tensorflow.keras.utils import to_categorical
 import tensorflow.keras.backend as K
 from tensorflow.keras.layers import Layer
 
-
 class L2Normalization(Layer):
     def __init__(self, **kwargs):
         super(L2Normalization, self).__init__(**kwargs)
@@ -23,12 +22,10 @@ class L2Normalization(Layer):
     def get_config(self):
         config = super().get_config()
         return config
-
+#main model(embedding_model)
 input_shape = (160, 160, 3)
 
-
 input_layer = Input(shape=input_shape, name='InputImage')
-
 
 x = layers.Conv2D(32, (3, 3), activation='relu', padding='same')(input_layer)
 x = layers.BatchNormalization()(x)
@@ -45,13 +42,11 @@ x = layers.Dense(128)(x)
 output = L2Normalization(name='L2_Normalized_Embedding')(x)
 embedding_model = Model(inputs=input_layer, outputs=output, name='EmbeddingModel')
 
-# Preprocess image
 def preprocess(image):
     image = cv2.resize(image, (160, 160))
     image = image.astype('float32') / 255.0
     return image
 
-# Triplet loss function
 def triplet_loss(alpha=0.2):
     def loss(y_true, y_pred):
         anchor, positive, negative = y_pred[:, 0:128], y_pred[:, 128:256], y_pred[:, 256:384]
@@ -62,7 +57,6 @@ def triplet_loss(alpha=0.2):
         return loss
     return loss
 
-# Load and preprocess triplet dataset
 def load_triplet_images(triplet_folder_path):
     anchors, positives, negatives = [], [], []
 
@@ -93,8 +87,7 @@ def load_triplet_images(triplet_folder_path):
     negatives = np.array(negatives)
     dummy_labels = np.zeros((len(anchors),))
     return [anchors, positives, negatives], dummy_labels
-
-# Define triplet model
+#triplet model(uses the main model to generate triplet embeddings in a single tensor )
 anchor_input = Input(shape=(160, 160, 3), name='anchor_input')
 positive_input = Input(shape=(160, 160, 3), name='positive_input')
 negative_input = Input(shape=(160, 160, 3), name='negative_input')
@@ -114,19 +107,18 @@ callbacks = [
     EarlyStopping(patience=3, restore_best_weights=True),
     ModelCheckpoint('triplet_model.keras', save_best_only=True)
 ]
-
+#the training process(the training should be allowed in the model men9bel)
 history = triplet_model.fit(
     X, y,
-    batch_size=16,
-    epochs=4,
+    batch_size=8,
+    epochs=20,
     validation_split=0.2,
     callbacks=callbacks
 )
-
-# Save the embedding model separately
+#hada the the new trained model that's gonna be loaded and used later
 embedding_model.save('trained_embedding_model.keras')
 
-# Visualize loss curves
+# progress visualization 
 plt.figure(figsize=(10, 5))
 plt.plot(history.history['loss'], label='Training Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
