@@ -33,27 +33,32 @@ const utils = {
   },
 
   // Show notification message
-  showNotification(message, type = 'info') {
-    const successMessage = document.getElementById('successMessage');
-    if (successMessage) {
-      successMessage.textContent = message;
-      successMessage.className = `success-message show ${type}`;
-      setTimeout(() => {
-        successMessage.classList.remove('show');
-      }, 3000);
-    }
+  showNotification(message, type = 'success') {
+    const notificationElement = document.createElement('div');
+    notificationElement.className = `notification ${type}`;
+    notificationElement.innerHTML = `
+      <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+      <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notificationElement);
+    
+    setTimeout(() => {
+      notificationElement.remove();
+    }, 3000);
   },
 
   // Make authenticated API calls
   async fetchWithAuth(endpoint, options = {}) {
-    const token = this.getAuthToken();
+    const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+    
     const defaultHeaders = {
       'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      ...(token && { 'Authorization': `Bearer ${token}` })
     };
 
     try {
-      const response = await fetch(`${CONFIG.API_URL}${endpoint}`, {
+      const response = await fetch(endpoint, {
         ...options,
         headers: {
           ...defaultHeaders,
@@ -61,19 +66,11 @@ const utils = {
         }
       });
 
-      if (response.status === 401) {
-        // Token expired or invalid
-        this.removeAuthToken();
-        this.removeUser();
-        window.location.href = '/login.html';
-        return null;
-      }
-
       const data = await response.json();
       return { ok: response.ok, data };
     } catch (error) {
-      console.error('API call failed:', error);
-      return { ok: false, error: error.message };
+      console.error('API Error:', error);
+      return { ok: false, data: { message: 'Network error occurred' } };
     }
   },
 
@@ -89,6 +86,12 @@ const utils = {
       isValid: password.length >= 8,
       message: password.length < 8 ? 'Password must be at least 8 characters' : ''
     };
+  },
+
+  logout() {
+    localStorage.removeItem(CONFIG.TOKEN_KEY);
+    localStorage.removeItem(CONFIG.USER_KEY);
+    window.location.href = '/login.html';
   }
 };
 

@@ -588,7 +588,7 @@ body {
 .toggle-password {
   position: absolute;
   right: 0.9rem;
-  top: 2.4rem;
+  top: 0.9rem;
   color: var(--text-secondary);
   cursor: pointer;
   z-index: 10;

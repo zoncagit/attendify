@@ -1788,6 +1788,7 @@
           code: "CS101",
           enrolledAt: new Date(2023, 8, 15).toISOString(),
           group: "Group A",
+          groupCode: "GRP101",
           attendance: {
             rate: 95,
             sessions: []
@@ -1798,6 +1799,7 @@
           code: "CS201",
           enrolledAt: new Date(2023, 8, 16).toISOString(),
           group: "Group B",
+          groupCode: "GRP102",
           attendance: {
             rate: 88,
             sessions: []
@@ -1808,6 +1810,7 @@
           code: "WD110",
           enrolledAt: new Date(2023, 8, 17).toISOString(),
           group: "Default Group",
+          groupCode: "GRP000",
           attendance: {
             rate: 100,
             sessions: []
@@ -2602,15 +2605,17 @@
               cls.attendance.rate > 75 ? 'var(--warning)' : 'var(--error)';
 
             // Look up the group code for this enrollment
-            let groupCode = '';
-            const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
-            if (storedTutoredClasses) {
-              const tutoredClasses = JSON.parse(storedTutoredClasses);
-              const matchingClass = tutoredClasses.find(tClass => tClass.code === cls.code);
-              if (matchingClass && matchingClass.groups) {
-                const group = matchingClass.groups.find(g => g.name === cls.group);
-                if (group && group.code) {
-                  groupCode = group.code;
+            let groupCode = cls.groupCode || '';  // Use the stored groupCode directly
+            if (!groupCode) {  // Fallback to looking it up only if not stored
+              const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
+              if (storedTutoredClasses) {
+                const tutoredClasses = JSON.parse(storedTutoredClasses);
+                const matchingClass = tutoredClasses.find(tClass => tClass.code === cls.code);
+                if (matchingClass && matchingClass.groups) {
+                  const group = matchingClass.groups.find(g => g.name === cls.group);
+                  if (group && group.code) {
+                    groupCode = group.code;
+                  }
                 }
               }
             }
