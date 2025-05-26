@@ -6,6 +6,25 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
   const rememberMeCheckbox = document.getElementById('rememberMe');
   const successMessage = document.getElementById('successMessage');
   const googleLoginButton = document.querySelector('.btn-google-login');
+  const togglePassword = document.getElementById('togglePassword');
+
+  // Setup password toggle functionality
+  togglePassword.addEventListener('click', function() {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    
+    // Toggle the eye icon
+    const icon = this.querySelector('i');
+    icon.className = type === 'password' ? 'fas fa-eye-slash' : 'fas fa-eye';
+  });
+
+  // Also toggle password when user presses Enter or Space on the toggle button
+  togglePassword.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      this.click();
+    }
+  });
 
   if (localStorage.getItem('rememberedEmail')){//3nd l user 
       emailInput.value = localStorage.getItem('rememberedEmail');

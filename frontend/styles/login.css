@@ -71,7 +71,7 @@ body{
 
 .form-input{
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 3rem 0.75rem 1rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.5rem;
@@ -101,12 +101,48 @@ body{
   display: block;
 }
 
-
-.input-icon{
+/* Input icons (envelope) */
+.input-icon {
   position: absolute;
   right: 1rem;
-  top: 2.5rem;
+  top: 65%;
+  transform: translateY(-50%);
   color: var(--text-secondary);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+/* Password toggle icon */
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 65%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  z-index: 1;
+}
+
+.toggle-password:hover {
+  color: var(--text);
+}
+
+.toggle-password:focus {
+  outline: none;
+  color: var(--primary);
+}
+
+.toggle-password i {
+  font-size: 1rem;
 }
 
 .form-options{

@@ -12,7 +12,6 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="styles/dashboard.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -556,7 +555,6 @@
       .header-nav {
         display: flex;
         justify-content: center;
-        align-items: center;
         flex: 1;
       }
       
@@ -589,6 +587,8 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        position: relative;
+        z-index: 2100;
       }
       
       .user-avatar {
@@ -628,32 +628,76 @@
         margin-bottom: 2px;
       }
       
+      .user-id-container {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .user-id {
+        font-family: monospace;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      
+      .copy-id-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0;
+        font-size: 10px;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+      }
+      
+      .copy-id-btn:hover {
+        opacity: 1;
+      }
+      
+      .header-copy-success {
+        font-size: 10px;
+        color: var(--success);
+        opacity: 0.9;
+        margin-left: 5px;
+        display: inline-block;
+        position: absolute;
+        right: -60px;
+        top: 2px;
+      }
+      
       .profile-dropdown {
         position: relative;
-        z-index: 2100;
       }
       
       .profile-dropdown-btn {
         background: none;
         border: none;
-        color: white;
+        color: var(--text-secondary);
         cursor: pointer;
         padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+      }
+      
+      .profile-dropdown-btn:hover {
+        color: var(--text);
       }
       
       .profile-dropdown-menu {
         position: absolute;
-        top: calc(100% + 10px);
+        top: 100%;
         right: 0;
-        background: rgba(30, 41, 59, 0.95);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: var(--card-bg);
+        border: 1px solid var(--border);
         border-radius: 8px;
-        width: 180px;
-        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        padding: 8px 0;
+        min-width: 180px;
         display: none;
-        z-index: 2000;
-        backdrop-filter: blur(10px);
-        overflow: hidden;
+        z-index: 2200;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       }
       
       .profile-dropdown-menu.show {
@@ -665,23 +709,34 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 12px 15px;
+        padding: 8px 16px;
         color: var(--text);
         text-decoration: none;
         transition: background-color 0.2s ease;
       }
       
       .dropdown-item:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: var(--hover);
       }
       
       .dropdown-item i {
-        font-size: 16px;
-        width: 20px;
+        color: var(--text-secondary);
+        width: 16px;
         text-align: center;
       }
       
       /* Add animation keyframes */
+      @keyframes modalSlideIn {
+        from { 
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to { 
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
       @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -921,45 +976,44 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.7);
+        background: rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(5px);
         display: none;
         align-items: center;
         justify-content: center;
         z-index: 2000;
         opacity: 0;
-        transition: opacity 0.3s ease;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
       }
       
       .modal-overlay.active {
         display: flex;
         opacity: 1;
+        visibility: visible;
+        animation: fadeIn 0.3s ease;
       }
       
       .modal {
-        background: var(--card-bg);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        width: 90%;
-        max-width: 600px;
-        margin: 20px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        transform: translateY(20px);
-        opacity: 0;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-        overflow: hidden;
+        display: none;
         position: fixed;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) scale(0.95);
-        z-index: 2100;
-        display: none;
+        transform: translate(-50%, -50%) scale(0.8);
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 90%;
+        width: 500px;
+        z-index: 2001;
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        border: 1px solid var(--border);
       }
       
       .modal.active {
         transform: translate(-50%, -50%) scale(1);
         opacity: 1;
-        display: block;
       }
       
       .modal-content {
@@ -1552,6 +1606,7 @@
         display: flex;
         align-items: center;
         gap: 5px;
+        position: relative;
       }
       
       .user-id {
@@ -1579,6 +1634,8 @@
         font-size: 10px;
         color: var(--success);
         opacity: 0.9;
+        margin-left: 5px;
+        display: inline-block;
       }
       
       .current-date-display {
@@ -1595,39 +1652,6 @@
       
       .current-date-display i {
         color: var(--secondary);
-      }
-      
-      .header-copy-success {
-        font-size: 10px;
-        color: var(--success);
-        opacity: 0.9;
-      }
-      
-      .user-id-container {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-      }
-      
-      .user-id {
-        font-family: monospace;
-        font-size: 12px;
-        color: var(--text-secondary);
-      }
-      
-      .copy-id-btn {
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        cursor: pointer;
-        padding: 0;
-        font-size: 10px;
-        opacity: 0.7;
-        transition: opacity 0.2s ease;
-      }
-      
-      .copy-id-btn:hover {
-        opacity: 1;
       }
       
       .profile-dropdown-menu.show {
@@ -1647,6 +1671,87 @@
       .settings-section:last-child {
         border-bottom: none;
         margin-bottom: 0;
+      }
+      
+      /* Modal Overlay */
+      #modalOverlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9998;
+        opacity: 0;
+        transition: all 0.3s ease;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #modalOverlay.active {
+        opacity: 1;
+      }
+
+      /* Make sure modals display properly */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 90%;
+        width: 500px;
+        z-index: 9999;
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        border: 1px solid var(--border);
+      }
+
+      .modal.active {
+        display: block !important;
+        opacity: 1 !important;
+        transform: translate(-50%, -50%) scale(1) !important;
+      }
+      
+      /* Add Group Modal specific styles */
+      #addGroupModal {
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        will-change: transform, opacity;
+      }
+      
+      .form-group {
+        margin-bottom: 20px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+      
+      .form-input {
+        width: 100%;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: var(--text);
+        font-size: 14px;
+      }
+      
+      .form-help {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      
+      .section-title {
+        position: relative;
       }
       
       .section-title:after {
@@ -1703,18 +1808,14 @@
       }
       
       .header-copy-success {
-        position: absolute;
-        font-size: 12px;
+        font-size: 10px;
         color: var(--success);
+        opacity: 0.9;
         margin-left: 5px;
-        animation: fadeIn 0.2s ease;
-        top: -20px;
-        right: -5px;
-        background: rgba(16, 185, 129, 0.1);
-        padding: 2px 8px;
-        border-radius: 4px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        white-space: nowrap;
+        display: inline-block;
+        position: absolute;
+        right: -60px;
+        top: 2px;
       }
       
       @keyframes fadeIn {
@@ -1849,7 +1950,7 @@
           <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
           <button class="btn btn-danger" id="confirmDeleteBtn">Remove Student</button>
           </div>
-          </div>
+          </div>    
     <!-- Scan Options Modal -->
     <div class="modal-overlay" id="scanModalOverlay">
       <div class="modal" id="scanOptionsModal">
@@ -1915,61 +2016,46 @@
         </div>
       </div>
     </div>
-     <!-- Add Group Modal -->
-    <div class="mini-modal" id="addGroupModal" style="display: none;">
-      <div class="mini-modal-content">
-        <div class="mini-modal-title">Add New Group</div>
-        <div style="margin: 20px 0;">
-          <div style="margin-bottom: 15px;">
-            <label for="groupName" style="display: block; margin-bottom: 8px; color: var(--text-secondary);">Group Name</label>
-            <input type="text" id="groupName" class="group-input" style="width: 100%; padding: 8px 12px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; color: var(--text); font-size: 14px;" placeholder="Enter group name">
+
+
+    <!-- Settings Modal Overlay -->
+    <div id="modalOverlay" class="modal-overlay">
+      <!-- Settings Modal -->
+      <div id="settingsModal" class="modal">
+        <div class="modal-content">
+          <h2 class="modal-title">Settings</h2>
+          <div class="settings-section" id="faceRecognitionSection">
+            <h3 class="section-title">Face Recognition</h3>
+            <p class="settings-description">Set up face recognition for quick attendance marking</p>
+            <div id="faceRecognitionStatus">
+              <p class="settings-status" id="faceStatus">You haven't set up face recognition yet.</p>
+              <button class="btn btn-primary" id="startScanBtn">
+                <i class="fas fa-camera"></i> Start Scan
+              </button>
+            </div>
           </div>
-          <div style="font-size: 12px; color: var(--text-secondary);">
-            A unique group code will be generated automatically
+          <div class="modal-footer">
+            <button id="closeSettingsBtn" class="btn btn-secondary">Close</button>
           </div>
-        </div>
-        <div class="mini-modal-buttons">
-          <button class="btn btn-secondary" id="cancelAddGroupBtn">Cancel</button>
-          <button class="btn btn-primary" id="confirmAddGroupBtn">Create Group</button>
         </div>
       </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal">
-      <div class="modal-content">
-        <h2 class="modal-title">Settings</h2>
-        <div class="settings-section">
-          <h3 class="section-title">Account Information</h3>
-          <div class="settings-info">
-            <div class="info-row">
-              <span class="info-label">Name:</span>
-              <span id="settingsName">Sididris Meriem</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">ID:</span>
-              <div class="id-copy-container">
-                <span id="settingsId">STU123456</span>
-                <button id="settingsCopyIdBtn" class="copy-id-btn" title="Copy ID">
-                  <i class="far fa-copy"></i>
-                </button>
-                <span id="settingsCopySuccess" class="header-copy-success" style="display: none;">Copied!</span>
-              </div>
-            </div>
+    <!-- Add Group Modal Overlay -->
+    <div id="addGroupModalOverlay" class="modal-overlay">
+      <!-- Add Group Modal -->
+      <div id="addGroupModal" class="modal">
+        <div class="modal-content">
+          <h2 class="modal-title">Add New Group</h2>
+          <div class="form-group">
+            <label for="groupName">Group Name</label>
+            <input type="text" id="groupName" class="form-input" placeholder="Enter group name" autocomplete="off">
+            <p class="form-help">A unique group code will be generated automatically</p>
           </div>
-        </div>
-        <div class="settings-section" id="faceRecognitionSection">
-          <h3 class="section-title">Face Recognition</h3>
-          <p class="settings-description">Set up face recognition for quick attendance marking</p>
-          <div id="faceRecognitionStatus">
-            <p class="settings-status" id="faceStatus">You haven't set up face recognition yet.</p>
-            <button class="btn btn-primary" id="startScanBtn">
-              <i class="fas fa-camera"></i> Start Scan
-            </button>
+          <div class="modal-footer">
+            <button id="cancelAddGroupBtn" class="btn btn-secondary">Cancel</button>
+            <button id="confirmAddGroupBtn" class="btn btn-primary">Create Group</button>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button id="closeSettingsBtn" class="btn btn-secondary">Close</button>
         </div>
       </div>
     </div>
@@ -1980,6 +2066,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const classCode = urlParams.get('class');
         
+        console.log('Page loaded with class code:', classCode);
+        
         // Set current date
         updateCurrentDate();
         
@@ -1989,20 +2077,23 @@
         // First load the class data to ensure groups exist
         preloadClassData(classCode);
         
+        // Setup profile dropdown (do this early)
+        setupProfileDropdown();
+        
+        // Setup settings modal
+        setupSettingsModal();
+        
         // Then load class details for UI
         loadClassDetails(classCode);
         
         // Load groups list
         loadGroupsList(classCode);
         
-        // Load students list
-        loadStudents(classCode);
-        
-        // Setup profile dropdown
-        setupProfileDropdown();
-        
         // Setup delete confirmation modal
         setupDeleteConfirmation();
+        
+        // Load students list
+        loadStudents(classCode);
         
         // Setup search functionality
         setupSearchFunctionality(classCode);
@@ -2022,158 +2113,264 @@
             startAttendanceSession(classCode);
           });
         }
-
-        // Setup settings modal
-        setupSettingsModal();
+        
+        // Add group button will be set up after groups list is loaded
       });
+      
+      // Function to add a group
+      function addGroup(classCode, groupName) {
+        // Get class data
+        const storedClasses = localStorage.getItem('attendify_tutored_classes');
+        if (!storedClasses) return;
+        
+        const classes = JSON.parse(storedClasses);
+        const currentClass = classes.find(cls => cls.code === classCode);
+        if (!currentClass) return;
+
+        // Generate a unique group code
+        function generateUniqueGroupCode() {
+          const prefix = 'GRP';
+          let code;
+          let isUnique = false;
+
+          while (!isUnique) {
+            // Generate a random 6-digit number
+            const randomNum = Math.floor(100000 + Math.random() * 900000);
+            code = `${prefix}${randomNum}`;
+
+            // Check if this code already exists in the current class
+            isUnique = !currentClass.groups || !currentClass.groups.some(g => g.code === code);
+          }
+
+          return code;
+        }
+
+        // Check if group name already exists
+        if (currentClass.groups && currentClass.groups.some(g => g.name.toLowerCase() === groupName.toLowerCase())) {
+          const groupNameInput = document.getElementById('groupName');
+          if (groupNameInput) {
+            groupNameInput.style.borderColor = 'var(--error)';
+            // Add error message
+            const errorMsg = document.createElement('div');
+            errorMsg.style.color = 'var(--error)';
+            errorMsg.style.fontSize = '12px';
+            errorMsg.style.marginTop = '5px';
+            errorMsg.textContent = 'A group with this name already exists';
+            groupNameInput.parentNode.appendChild(errorMsg);
+            setTimeout(() => errorMsg.remove(), 3000);
+          }
+          return;
+        }
+        
+        // Create new group
+        const newGroup = {
+          name: groupName,
+          code: generateUniqueGroupCode(),
+          students: []
+        };
+
+        // Add group to class
+        if (!currentClass.groups) currentClass.groups = [];
+        currentClass.groups.push(newGroup);
+
+        // Save updated class data
+        const classIndex = classes.findIndex(cls => cls.code === classCode);
+        classes[classIndex] = currentClass;
+        localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: rgba(16, 185, 129, 0.1);
+          color: var(--success);
+          padding: 12px 20px;
+          border-radius: 8px;
+          border: 1px solid rgba(16, 185, 129, 0.2);
+          font-size: 14px;
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        `;
+        successMsg.innerHTML = `
+          <i class="fas fa-check-circle"></i>
+          Group "${groupName}" created with code: ${newGroup.code}
+        `;
+        document.body.appendChild(successMsg);
+        setTimeout(() => successMsg.remove(), 5000);
+
+        // Refresh the groups list and selector
+        loadGroupsList(classCode);
+        loadClassDetails(classCode);
+        
+        // Hide modal
+        const addGroupModalOverlay = document.getElementById('addGroupModalOverlay');
+        const addGroupModal = document.getElementById('addGroupModal');
+        if (addGroupModalOverlay && addGroupModal) {
+          addGroupModalOverlay.classList.remove('active');
+          addGroupModal.classList.remove('active');
+          
+          setTimeout(() => {
+            addGroupModalOverlay.style.display = 'none';
+            addGroupModal.style.display = 'none';
+          }, 300);
+        }
+      }
 
       // Function to setup settings modal
       function setupSettingsModal() {
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsModal = document.getElementById('settingsModal');
-        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-        
-        // Create modal overlay if it doesn't exist
-        let modalOverlay = document.getElementById('modalOverlay');
-        if (!modalOverlay) {
-          modalOverlay = document.createElement('div');
-          modalOverlay.id = 'modalOverlay';
-          modalOverlay.className = 'modal-overlay';
-          document.body.appendChild(modalOverlay);
-        }
-        
-        // Open settings modal
-        if (settingsBtn && settingsModal) {
-          settingsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Make sure the modal is visible first
-            settingsModal.style.display = 'block';
-            
-            // Then add active classes for animation
-            setTimeout(() => {
-            modalOverlay.classList.add('active');
-            settingsModal.classList.add('active');
-            
-            // Update face scan status when opening settings
-            updateFaceScanStatus();
-            }, 10);
-          });
-        }
-        
-        // Close settings modal
-        if (closeSettingsBtn) {
-          closeSettingsBtn.addEventListener('click', function() {
-            closeSettingsModal(modalOverlay, settingsModal);
-          });
-        }
-        
-        // Close modal when clicking outside
-        modalOverlay.addEventListener('click', function() {
-          closeSettingsModal(modalOverlay, settingsModal);
-        });
-        
-        // Function to close settings modal with animation
-        function closeSettingsModal(overlay, modal) {
-          overlay.classList.remove('active');
-          modal.classList.remove('active');
-          
-          // Hide modal after animation completes
-          setTimeout(() => {
-            modal.style.display = 'none';
-          }, 300);
-        }
-        
-        // Start Scan button event listener
-        const startScanBtn = document.getElementById('startScanBtn');
-        if (startScanBtn) {
-          startScanBtn.addEventListener('click', function() {
-            window.location.href = 'face-setup.html';
-          });
-      }
-      
-        // Setup copy ID functionality in settings
-        const settingsCopyIdBtn = document.getElementById('settingsCopyIdBtn');
-        if (settingsCopyIdBtn) {
-          // Create a success message element if it doesn't exist
-          let settingsCopySuccess = document.getElementById('settingsCopySuccess');
-          if (!settingsCopySuccess) {
-            settingsCopySuccess = document.createElement('span');
-            settingsCopySuccess.id = 'settingsCopySuccess';
-            settingsCopySuccess.className = 'header-copy-success';
-            settingsCopySuccess.textContent = 'Copied!';
-            settingsCopySuccess.style.display = 'none';
-            
-            // Add it to the parent container
-            const idCopyContainer = document.querySelector('.id-copy-container');
-            if (idCopyContainer) {
-              idCopyContainer.appendChild(settingsCopySuccess);
-            }
-          }
-          
-          settingsCopyIdBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const settingsId = document.getElementById('settingsId');
-            if (settingsId) {
-              navigator.clipboard.writeText(settingsId.textContent)
-                .then(() => {
-                  settingsCopySuccess.style.display = 'inline';
-                  setTimeout(() => {
-                    settingsCopySuccess.style.display = 'none';
-                  }, 2000);
-                });
-            }
-          });
-      }
+        // This is just a placeholder function now
+        // All functionality is handled in setupProfileDropdown
       }
       
       // Function to setup profile dropdown
       function setupProfileDropdown() {
         const profileDropdownBtn = document.getElementById('profileDropdownBtn');
         const profileDropdownMenu = document.getElementById('profileDropdownMenu');
-        
-        if (profileDropdownBtn && profileDropdownMenu) {
-          profileDropdownBtn.addEventListener('click', function() {
-            profileDropdownMenu.classList.toggle('show');
-          });
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const startScanBtn = document.getElementById('startScanBtn');
+        const faceStatus = document.getElementById('faceStatus');
+        const modalOverlay = document.getElementById('modalOverlay');
+
+        // Function to update face scan status in settings
+        function updateFaceScanStatus() {
+          const hasFaceScan = localStorage.getItem('faceScanComplete') === 'true';
           
-          // Close dropdown when clicking outside
-          document.addEventListener('click', function(e) {
-            if (!profileDropdownBtn.contains(e.target) && !profileDropdownMenu.contains(e.target)) {
-              profileDropdownMenu.classList.remove('show');
+          if (hasFaceScan) {
+            faceStatus.textContent = 'Face recognition has been set up.';
+            faceStatus.style.color = 'var(--success)';
+            startScanBtn.style.display = 'none';
+          } else {
+            faceStatus.textContent = 'You haven\'t set up face recognition yet.';
+            faceStatus.style.color = 'var(--text-secondary)';
+            startScanBtn.style.display = 'block';
+          }
+        }
+
+        // Function to show settings modal
+        function showSettingsModal() {
+          if (modalOverlay && settingsModal) {
+            modalOverlay.style.display = 'flex';
+            modalOverlay.style.alignItems = 'center';
+            modalOverlay.style.justifyContent = 'center';
+            settingsModal.style.display = 'block';
+            settingsModal.style.opacity = '0';
+            settingsModal.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            
+            // Force a reflow
+            void modalOverlay.offsetHeight;
+            void settingsModal.offsetHeight;
+            
+            // Add active classes
+            modalOverlay.classList.add('active');
+            settingsModal.classList.add('active');
+            
+            // Update face scan status
+            updateFaceScanStatus();
+          }
+        }
+
+        // Function to hide settings modal
+        function hideSettingsModal() {
+          if (modalOverlay && settingsModal) {
+            modalOverlay.classList.remove('active');
+            settingsModal.classList.remove('active');
+            
+            // Reset transform and opacity
+            settingsModal.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            settingsModal.style.opacity = '0';
+            
+            setTimeout(() => {
+              modalOverlay.style.display = 'none';
+              settingsModal.style.display = 'none';
+            }, 300);
+          }
+        }
+
+        // Toggle dropdown on button click
+        if (profileDropdownBtn && profileDropdownMenu) {
+          profileDropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdownMenu.classList.toggle('show');
+            
+            // Rotate chevron icon
+            const chevron = this.querySelector('i');
+            if (chevron) {
+              chevron.style.transform = profileDropdownMenu.classList.contains('show') ? 'rotate(180deg)' : '';
+              chevron.style.transition = 'transform 0.2s ease';
             }
           });
-      }
-      
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+          if (profileDropdownMenu && !profileDropdownMenu.contains(e.target) && !profileDropdownBtn.contains(e.target)) {
+            profileDropdownMenu.classList.remove('show');
+            
+            // Reset chevron rotation
+            const chevron = profileDropdownBtn.querySelector('i');
+            if (chevron) {
+              chevron.style.transform = '';
+            }
+          }
+        });
+
+        // Show settings modal when clicking settings button
+        if (settingsBtn) {
+          settingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            profileDropdownMenu.classList.remove('show');
+            showSettingsModal();
+          });
+        }
+
+        // Close settings modal when clicking close button
+        if (closeSettingsBtn) {
+          closeSettingsBtn.addEventListener('click', hideSettingsModal);
+        }
+
+        // Start Scan button event listener
+        if (startScanBtn) {
+          startScanBtn.addEventListener('click', function() {
+            // Only redirect if face scan is not completed
+            if (localStorage.getItem('faceScanComplete') !== 'true') {
+              window.location.href = 'face-setup.html';
+            }
+          });
+        }
+
         // Set user name and ID
         const userName = document.getElementById('userName');
         const headerStudentId = document.getElementById('headerStudentId');
-        const settingsName = document.getElementById('settingsName');
-        const settingsId = document.getElementById('settingsId');
         
         if (userName && headerStudentId) {
-          // Default user data
-          userName.textContent = 'Sididris Meriem';
+          // Get user data from localStorage
+          const storedName = localStorage.getItem('attendify_user_name') || 'Sididris Meriem';
+          const storedId = localStorage.getItem('attendify_student_id') || 'STU123456';
           
-          let studentId = localStorage.getItem('attendify_student_id');
-          if (!studentId) {
-            studentId = 'STU123456';
-            localStorage.setItem('attendify_student_id', studentId);
+          userName.textContent = storedName;
+          headerStudentId.textContent = storedId;
+          
+          // Save to localStorage if not already there
+          if (!localStorage.getItem('attendify_user_name')) {
+            localStorage.setItem('attendify_user_name', storedName);
+          }
+          if (!localStorage.getItem('attendify_student_id')) {
+            localStorage.setItem('attendify_student_id', storedId);
+          }
         }
-          headerStudentId.textContent = studentId;
-          
-          // Also update settings modal
-          if (settingsName) settingsName.textContent = userName.textContent;
-          if (settingsId) settingsId.textContent = studentId;
-      }
-      
+
         // Setup copy button for header student ID
         const headerCopyIdBtn = document.getElementById('headerCopyIdBtn');
         const headerCopySuccess = document.getElementById('headerCopySuccess');
         
-        if (headerCopyIdBtn && headerCopySuccess) {
+        if (headerCopyIdBtn && headerCopySuccess && headerStudentId) {
           headerCopyIdBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -2188,10 +2385,11 @@
               })
               .catch(err => {
                 console.error('Copy failed:', err);
+                alert('Failed to copy student ID: ' + studentId);
               });
           });
-      }
-      
+        }
+
         // Setup logout button
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
@@ -2200,27 +2398,18 @@
             window.location.href = 'index.html';
           });
         }
-      }
-      
-      // Function to update face scan status
-      function updateFaceScanStatus() {
-        const faceStatus = document.getElementById('faceStatus');
-        const startScanBtn = document.getElementById('startScanBtn');
-        
-        if (faceStatus && startScanBtn) {
-          const hasFaceScan = localStorage.getItem('faceScanComplete') === 'true';
-          
-          if (hasFaceScan) {
-            faceStatus.textContent = 'Face recognition has been set up.';
-            faceStatus.style.color = 'var(--success)';
-            startScanBtn.textContent = 'Update Scan';
-          } else {
-            faceStatus.textContent = 'You haven\'t set up face recognition yet.';
-            faceStatus.style.color = 'var(--text-secondary)';
-            startScanBtn.textContent = 'Start Scan';
-          }
+
+        // Close modals when clicking overlay
+        if (modalOverlay) {
+          modalOverlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+              hideSettingsModal();
+            }
+          });
         }
       }
+      
+      // Function to update face scan status - now handled directly within setupProfileDropdown
       
       // Function to update current date in navbar
       function updateCurrentDate() {
@@ -2235,7 +2424,7 @@
           };
           dateElement.textContent = now.toLocaleDateString('en-US', options);
         }
-        }
+      }
       
       // Setup search functionality
       function setupSearchFunctionality(classCode) {
@@ -2298,42 +2487,87 @@
         }
       }
       
-      // Setup add group button
+      // Setup add group button after loading groups list
+      function onGroupsListLoaded() {
         setupAddGroupButton(classCode);
+        console.log("Add group button setup completed");
+      }
       
       // Function to setup add group button
       function setupAddGroupButton(classCode) {
         const addGroupBtn = document.getElementById('addGroupBtn');
-         const addGroupModal = document.getElementById('addGroupModal');
-        const confirmOverlay = document.getElementById('confirmOverlay');
+        const addGroupModal = document.getElementById('addGroupModal');
+        const addGroupModalOverlay = document.getElementById('addGroupModalOverlay');
         const cancelAddGroupBtn = document.getElementById('cancelAddGroupBtn');
         const confirmAddGroupBtn = document.getElementById('confirmAddGroupBtn');
         const groupNameInput = document.getElementById('groupName');
 
-        if (!addGroupBtn) return;
+        if (!addGroupBtn) {
+          console.error('Add group button not found');
+          return;
+        }
+        
+        console.log('Setting up add group button with elements:', {
+          addGroupBtn: !!addGroupBtn,
+          addGroupModal: !!addGroupModal,
+          addGroupModalOverlay: !!addGroupModalOverlay,
+          cancelAddGroupBtn: !!cancelAddGroupBtn,
+          confirmAddGroupBtn: !!confirmAddGroupBtn,
+          groupNameInput: !!groupNameInput
+        });
 
-          // Function to show modal
+                  // Function to show modal
         function showAddGroupModal() {
-          addGroupModal.style.display = 'block';
-          confirmOverlay.style.display = 'block';
-          setTimeout(() => addGroupModal.classList.add('active'), 10);
-          groupNameInput.value = ''; // Clear previous input
-          groupNameInput.focus();
+          if (addGroupModalOverlay && addGroupModal) {
+            console.log('Showing add group modal');
+            // First set display
+            addGroupModalOverlay.style.display = 'flex';
+            addGroupModalOverlay.style.alignItems = 'center';
+            addGroupModalOverlay.style.justifyContent = 'center';
+            addGroupModal.style.display = 'block';
+            addGroupModal.style.opacity = '0';
+            addGroupModal.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            
+            // Force a reflow to ensure the display change is processed
+            void addGroupModalOverlay.offsetHeight;
+            void addGroupModal.offsetHeight;
+            
+            // Then add active class for animation
+            addGroupModalOverlay.classList.add('active');
+            addGroupModal.classList.add('active');
+            
+            if (groupNameInput) {
+              groupNameInput.value = ''; // Clear previous input
+              setTimeout(() => groupNameInput.focus(), 100);
+            }
+          }
         }
 
         // Function to hide modal
         function hideAddGroupModal() {
-          addGroupModal.classList.remove('active');
-          setTimeout(() => {
-            addGroupModal.style.display = 'none';
-            confirmOverlay.style.display = 'none';
-          }, 300);
+          if (addGroupModalOverlay && addGroupModal) {
+            // First remove active class
+            addGroupModalOverlay.classList.remove('active');
+            addGroupModal.classList.remove('active');
+            
+            // Reset transform and opacity
+            addGroupModal.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            addGroupModal.style.opacity = '0';
+            
+            // Hide elements after animation
+            setTimeout(() => {
+              addGroupModalOverlay.style.display = 'none';
+              addGroupModal.style.display = 'none';
+            }, 300);
+          }
         }
 
         // Show modal when add group button is clicked
-        addGroupBtn.addEventListener('click', showAddGroupModal);
-         // Show modal when add group button is clicked
-        addGroupBtn.addEventListener('click', showAddGroupModal);
+        addGroupBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('Add group button clicked');
+          showAddGroupModal();
+        });
 
         // Hide modal when cancel button is clicked
         cancelAddGroupBtn.addEventListener('click', hideAddGroupModal);
@@ -2346,7 +2580,15 @@
             groupNameInput.style.borderColor = 'var(--error)';
             return;
           }
-           // Generate a unique group code
+           // Get class data
+          const storedClasses = localStorage.getItem('attendify_tutored_classes');
+          if (!storedClasses) return;
+          
+          const classes = JSON.parse(storedClasses);
+          const currentClass = classes.find(cls => cls.code === classCode);
+          if (!currentClass) return;
+
+          // Generate a unique group code
           function generateUniqueGroupCode() {
             const prefix = 'GRP';
             let code;
@@ -2357,23 +2599,12 @@
               const randomNum = Math.floor(100000 + Math.random() * 900000);
               code = `${prefix}${randomNum}`;
 
-              // Check if this code already exists
+              // Check if this code already exists in the current class
               isUnique = !currentClass.groups || !currentClass.groups.some(g => g.code === code);
             }
 
             return code;
           }
-
- 
-
-          
-            // Get class data
-          const storedClasses = localStorage.getItem('attendify_tutored_classes');
-          if (!storedClasses) return;
-          
-          const classes = JSON.parse(storedClasses);
-          const currentClass = classes.find(cls => cls.code === classCode);
-          if (!currentClass) return;
 
           // Check if group name already exists
           if (currentClass.groups && currentClass.groups.some(g => g.name.toLowerCase() === groupName.toLowerCase())) {
@@ -2678,6 +2909,9 @@
         
         const groupsList = document.getElementById('groupsList');
         if (!groupsList) return;
+        
+        // Call onGroupsListLoaded after a short delay to ensure DOM is updated
+        setTimeout(onGroupsListLoaded, 100);
         
         // Get class from localStorage
         const storedClasses = localStorage.getItem('attendify_tutored_classes');
@@ -3389,78 +3623,7 @@
         });
       }
       
-      // Setup profile dropdown
-      function setupProfileDropdown() {
-        const profileDropdownBtn = document.getElementById('profileDropdownBtn');
-        const profileDropdownMenu = document.getElementById('profileDropdownMenu');
-        
-        if (profileDropdownBtn && profileDropdownMenu) {
-          profileDropdownBtn.addEventListener('click', function() {
-            profileDropdownMenu.classList.toggle('show');
-          });
-          
-          // Close dropdown when clicking outside
-          document.addEventListener('click', function(e) {
-            if (!profileDropdownBtn.contains(e.target) && !profileDropdownMenu.contains(e.target)) {
-              profileDropdownMenu.classList.remove('show');
-            }
-          });
-        }
-        
-        // Set user name and ID
-        const userName = document.getElementById('userName');
-        const headerStudentId = document.getElementById('headerStudentId');
-        const settingsName = document.getElementById('settingsName');
-        const settingsId = document.getElementById('settingsId');
-        
-        if (userName && headerStudentId) {
-          // Default user data
-          userName.textContent = 'Sididris Meriem';
-          
-          let studentId = localStorage.getItem('attendify_student_id');
-          if (!studentId) {
-            studentId = 'STU123456';
-            localStorage.setItem('attendify_student_id', studentId);
-          }
-          headerStudentId.textContent = studentId;
-          
-          // Also update settings modal
-          if (settingsName) settingsName.textContent = userName.textContent;
-          if (settingsId) settingsId.textContent = studentId;
-        }
-        
-        // Setup copy button for header student ID
-        const headerCopyIdBtn = document.getElementById('headerCopyIdBtn');
-        const headerCopySuccess = document.getElementById('headerCopySuccess');
-        
-        if (headerCopyIdBtn && headerCopySuccess) {
-          headerCopyIdBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const studentId = headerStudentId.textContent;
-            navigator.clipboard.writeText(studentId)
-              .then(() => {
-                headerCopySuccess.style.display = 'inline';
-                setTimeout(() => {
-                  headerCopySuccess.style.display = 'none';
-                }, 2000);
-              })
-              .catch(err => {
-                console.error('Copy failed:', err);
-              });
-          });
-        }
-        
-        // Setup logout button
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-          logoutBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = 'index.html';
-          });
-        }
-      }
+      // Function to determine if a student would be present today (for demo purposes)
 
       // Function to determine if a student would be present today (for demo purposes)
       function getStudentAttendanceStatus(studentId) {
@@ -4513,4 +4676,4 @@
        }
     </script>
   </body>
-</html>
+</html> 

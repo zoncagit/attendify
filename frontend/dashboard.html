@@ -2649,7 +2649,7 @@
                 
                 enrolledClassesList.appendChild(classCard);
               });
-              
+            
             // Add event listeners to the copy code buttons
             const copyCodeBtns = document.querySelectorAll('.class-code-copy-btn');
             copyCodeBtns.forEach(button => {
@@ -2734,9 +2734,9 @@
                   <button class="view-students-link" data-class-code="${cls.code}">
                     <i class="fas fa-chevron-right"></i>
                     <span>Click to view students</span>
-                  </button>
+                    </button>
                 `;
-                
+
                 // Add click event listener for delete button
                 const deleteBtn = classCard.querySelector('.delete-class-icon');
                 if (deleteBtn) {
@@ -2825,27 +2825,27 @@
             const classCode = document.getElementById('classToDeleteCode').value;
             
             if (classCode) {
-        // Delete class from tutored classes
-        const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
-        if (storedTutoredClasses) {
-          const tutoredClasses = JSON.parse(storedTutoredClasses);
-          const updatedClasses = tutoredClasses.filter(cls => cls.code !== classCode);
-          localStorage.setItem('attendify_tutored_classes', JSON.stringify(updatedClasses));
-        }
-        
-                // Close modal
-                closeDeleteClassModal();
-        
-        // Show success notification
-        showNotification('Class deleted successfully', 'success');
+                // Delete class from tutored classes
+                const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
+                if (storedTutoredClasses) {
+                  const tutoredClasses = JSON.parse(storedTutoredClasses);
+                  const updatedClasses = tutoredClasses.filter(cls => cls.code !== classCode);
+                  localStorage.setItem('attendify_tutored_classes', JSON.stringify(updatedClasses));
+                }
+              
+              // Close modal
+              closeDeleteClassModal();
                 
-                // Refresh class lists
-                populateClassLists();
-              }
-            });
-          }
-        });
-        
+                // Show success notification
+                showNotification('Class deleted successfully', 'success');
+              
+              // Refresh class lists
+              populateClassLists();
+            }
+          });
+        }
+      });
+      
         // Add these styles to the existing <style> section
         const styleSheet = document.createElement('style');
         styleSheet.textContent = `
@@ -2854,8 +2854,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
-          }
-
+        }
+        
           .delete-class-icon {
             background: none;
             border: none;
@@ -2864,8 +2864,8 @@
             padding: 8px;
             border-radius: 4px;
             transition: all 0.2s ease;
-          }
-
+      }
+      
           .delete-class-icon:hover {
             color: var(--error);
             background: rgba(239, 68, 68, 0.1);
@@ -2876,7 +2876,7 @@
           }
         `;
         document.head.appendChild(styleSheet);
-
+        
         // Add these styles to the existing style section
         const tutoredClassStyles = document.createElement('style');
         tutoredClassStyles.textContent = `

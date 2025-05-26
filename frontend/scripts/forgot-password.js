@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add loading state to button
     sendResetLinkBtn.classList.add('loading');
     sendResetLinkBtn.disabled = true;
-    
+
     // Simulate sending reset link
     setTimeout(() => {
       // In a real application, this would make an API call to your backend
@@ -32,11 +32,11 @@ document.addEventListener('DOMContentLoaded', function() {
       // For demo purposes, we'll create a reset link with the email parameter
       const resetLink = `reset-password.html?email=${encodeURIComponent(emailInput.value)}&token=demo-token`;
       console.log('Reset link generated:', resetLink);
-
+      
       // Show success message
       successMessage.classList.add('show');
-
-    // Remove loading state
+      
+      // Remove loading state
       sendResetLinkBtn.classList.remove('loading');
       sendResetLinkBtn.disabled = false;
       
