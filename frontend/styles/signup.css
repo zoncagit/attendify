@@ -572,3 +572,46 @@ body {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-container .form-input {
+  width: 100%;
+  padding-right: 3rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 2.5rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  z-index: 10;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1rem;
+  transition: color 0.2s;
+  outline: none;
+}
+
+.toggle-password:focus,
+.toggle-password:hover {
+  color: var(--primary);
+}
+
+.toggle-password i {
+  pointer-events: none;
+  font-size: 1rem;
+}
+
+@media (max-width: 640px) {
+  .toggle-password {
+    right: 0.75rem;
+  }
+}

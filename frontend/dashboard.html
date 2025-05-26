@@ -1370,6 +1370,153 @@
         background: var(--primary);
         opacity: 0.9;
       }
+
+      .class-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .delete-class-icon {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .delete-class-icon:hover {
+        color: var(--error);
+        background: rgba(239, 68, 68, 0.1);
+      }
+
+      .class-name {
+        margin-bottom: 0;
+      }
+
+      .leave-class-icon {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .leave-class-icon:hover {
+        color: var(--error);
+        background: rgba(239, 68, 68, 0.1);
+        transform: translateX(2px);
+      }
+
+      .leave-class-icon i {
+        transform: rotate(0deg);
+        transition: transform 0.2s ease;
+      }
+
+      .leave-class-icon:hover i {
+        transform: rotate(-90deg);
+      }
+
+      .tutored-class-card {
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .tutored-class-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .tutored-class-card:hover::after {
+        opacity: 1;
+      }
+
+      .tutored-class-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+      }
+
+      .view-students-hint {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .view-students-hint i {
+        font-size: 12px;
+        transition: transform 0.2s ease;
+      }
+
+      .tutored-class-card:hover .view-students-hint {
+        color: var(--primary);
+      }
+
+      .tutored-class-card:hover .view-students-hint i {
+        transform: translateX(4px);
+      }
+
+      .view-students-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-top: 15px;
+        padding: 12px 15px;
+        width: 100%;
+        background: none;
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .view-students-link:hover {
+        color: var(--primary);
+        background: rgba(79, 70, 229, 0.1);
+      }
+
+      .view-students-link i {
+        font-size: 12px;
+        transition: transform 0.2s ease;
+      }
+
+      .view-students-link:hover i {
+        transform: translateX(4px);
+      }
+
+      .delete-class-icon {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .delete-class-icon:hover {
+        color: var(--error);
+        background: rgba(239, 68, 68, 0.1);
+      }
     </style>
   </head>
   <body>
@@ -1486,10 +1633,10 @@
       <div id="enrollModal" class="modal">
         <div class="modal-content">
           <h2 class="modal-title">Enroll in Class</h2>
-          <p class="modal-description">Enter the class code provided by your instructor to join their class.</p>
+          <p class="modal-description">Enter the group code provided by your instructor to join their class.</p>
           <div class="form-group">
-            <label for="classCode">Class Code</label>
-            <input type="text" id="classCode" placeholder="Enter class code" class="form-input" autocomplete="off">
+            <label for="groupCode">Group Code</label>
+            <input type="text" id="groupCode" placeholder="Enter group code (e.g., GRP123456)" class="form-input" autocomplete="off">
             <span id="enrollClassError" class="error-message" style="display: none;"></span>
           </div>
           <div class="modal-footer">
@@ -1503,7 +1650,7 @@
       <div id="createClassModal" class="modal">
         <div class="modal-content">
           <h2 class="modal-title">Create New Class</h2>
-          <p class="modal-description">Set up your new class and share the generated code with your students.</p>
+          <p class="modal-description">Enter a name for your new class.</p>
           <div class="form-group">
             <label for="className">Class Name</label>
             <input type="text" id="className" placeholder="Enter class name" class="form-input" autocomplete="off">
@@ -1747,101 +1894,7 @@
         }
         
         // Class code input event listener
-        const classCodeInput = document.getElementById('classCode');
-        const groupSelectionContainer = document.getElementById('groupSelectionContainer');
-        
-        if (classCodeInput && groupSelectionContainer) {
-          // Add test class code to the input initially
-          classCodeInput.value = "TEST123";
-          
-          // Populate the group dropdown with test data immediately
-          const groupSelection = document.getElementById('groupSelection');
-          if (groupSelection) {
-            groupSelection.innerHTML = '';
-            
-            // Add test group options
-            const groups = ["Group A", "Group B", "Group C", "Group D"];
-            groups.forEach(group => {
-              const option = document.createElement('option');
-              option.value = group;
-              option.textContent = group;
-              groupSelection.appendChild(option);
-            });
-            
-            // Make sure the Group A option is selected
-            if (groupSelection.options.length > 0) {
-              groupSelection.options[0].selected = true;
-            }
-          }
-          
-          // Function to update the group selection based on the class code
-          function updateGroupSelection() {
-            const code = classCodeInput.value.trim();
-            console.log("Checking code:", code);
-            
-            // DEBUG: Show groupSelectionContainer to verify it exists
-            console.log("Group selection container:", groupSelectionContainer);
-            
-            if (code.length >= 3) {  // Reduced minimum length to start checking earlier
-              // Check if the class exists and has groups
-              const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
-              if (storedTutoredClasses) {
-                const tutoredClasses = JSON.parse(storedTutoredClasses);
-                const matchingClass = tutoredClasses.find(cls => cls.code === code);
-                console.log("Found matching class:", matchingClass);
-                
-                if (matchingClass) {
-                  if (matchingClass.groups && matchingClass.groups.length > 0) {
-                  // Populate the group dropdown
-                  const groupSelection = document.getElementById('groupSelection');
-                  groupSelection.innerHTML = '<option value="" disabled selected>Select a group to join</option>';
-                  
-                    // Sort groups alphabetically
-                    const sortedGroups = [...matchingClass.groups].sort((a, b) => 
-                      a.name.localeCompare(b.name)
-                    );
-                    
-                    sortedGroups.forEach(group => {
-                    const option = document.createElement('option');
-                    option.value = group.name;
-                    option.textContent = group.name;
-                    groupSelection.appendChild(option);
-                  });
-                  
-                  // Show the group selection container
-                  groupSelectionContainer.style.display = 'block';
-                    console.log("Group selection shown with multiple groups");
-                  } else {
-                    // If class exists but has no groups, create Group A as default
-                    const groupSelection = document.getElementById('groupSelection');
-                    groupSelection.innerHTML = '';
-                    
-                    const option = document.createElement('option');
-                    option.value = 'Group A';
-                    option.textContent = 'Group A';
-                    option.selected = true;
-                    groupSelection.appendChild(option);
-                    
-                    // Show the group selection container
-                    groupSelectionContainer.style.display = 'block';
-                    console.log("Group selection shown with default group");
-                  }
-                } else {
-                  groupSelectionContainer.style.display = 'none';
-                }
-              }
-            } else {
-              groupSelectionContainer.style.display = 'none';
-            }
-          }
-          
-          // Attach input event listener
-          classCodeInput.addEventListener('input', updateGroupSelection);
-          
-          // Also trigger it immediately to show the dropdown for the test class
-          updateGroupSelection();
-                    
-        }
+        const groupCodeInput = document.getElementById('groupCode');
         
         // Enroll in class button
         const dashboardEnrollClassBtn = document.getElementById('dashboardEnrollClassBtn');
@@ -1855,14 +1908,14 @@
             modalOverlay.classList.add('active');
             enrollModal.classList.add('active');
             
-            // Clear previous input
-            const classCodeInput = document.getElementById('classCode');
-            const groupSelectionContainer = document.getElementById('groupSelectionContainer');
-            if (classCodeInput) {
-              classCodeInput.value = '';
+            // Clear previous input and error message
+            const groupCodeInput = document.getElementById('groupCode');
+            const enrollClassError = document.getElementById('enrollClassError');
+            if (groupCodeInput) {
+              groupCodeInput.value = '';
             }
-            if (groupSelectionContainer) {
-              groupSelectionContainer.style.display = 'none';
+            if (enrollClassError) {
+              enrollClassError.style.display = 'none';
             }
           });
         }
@@ -1875,59 +1928,46 @@
         
         if (confirmEnrollBtn) {
           confirmEnrollBtn.addEventListener('click', function() {
-            const classCode = document.getElementById('classCode').value.trim();
+            const groupCode = document.getElementById('groupCode').value.trim();
             const enrollClassError = document.getElementById('enrollClassError');
             
-            if (classCode === '') {
+            if (groupCode === '') {
               if (enrollClassError) {
-                enrollClassError.textContent = 'Please enter a class code';
+                enrollClassError.textContent = 'Please enter a group code';
                 enrollClassError.style.display = 'block';
               }
               return;
             }
             
-            if (groupSelectionContainer.style.display !== 'none' && !selectedGroup) {
-              if (enrollClassError) {
-                enrollClassError.textContent = 'Please select a group';
-                enrollClassError.style.display = 'block';
-              }
-              return;
-            }
-            
-            // Check if class exists in tutored classes
-            const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');/////////
+            // Check if group exists in any tutored class
+            const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
             if (storedTutoredClasses) {
               const tutoredClasses = JSON.parse(storedTutoredClasses);
-              const matchingClass = tutoredClasses.find(cls => cls.code === classCode);
-              
-              if (matchingClass) {
-                // Enroll in class
-                // Remove 'Class ' prefix from the name if it exists
-                let className = matchingClass.name;
-                if (className.startsWith('Class ')) {
-                  className = className.substring(6);
-                }
-                
-                const newEnrollment = {
-                  name: className,
-                  code: matchingClass.code,
-                  enrolledAt: new Date().toISOString(),
-                  group: selectedGroup,
-                  attendance: {
-                    rate: 100,
-                    sessions: []
+              let foundClass = null;
+              let foundGroup = null;
+
+              // Search for the group in all classes
+              for (const cls of tutoredClasses) {
+                if (cls.groups) {
+                  const group = cls.groups.find(g => g.code === groupCode);
+                  if (group) {
+                    foundClass = cls;
+                    foundGroup = group;
+                    break;
                   }
-                };
-                
-                // Save to localStorage
+                }
+              }
+              
+              if (foundClass && foundGroup) {
+                // Check if already enrolled
                 const storedEnrolledClasses = localStorage.getItem('attendify_enrolled_classes');
                 let enrolledClasses = [];
                 
                 if (storedEnrolledClasses) {
                   enrolledClasses = JSON.parse(storedEnrolledClasses);
                   
-                  // Check if already enrolled
-                  const alreadyEnrolled = enrolledClasses.some(cls => cls.code === classCode);
+                  // Check if already enrolled in this class
+                  const alreadyEnrolled = enrolledClasses.some(cls => cls.code === foundClass.code);
                   if (alreadyEnrolled) {
                     if (enrollClassError) {
                       enrollClassError.textContent = 'You are already enrolled in this class';
@@ -1937,26 +1977,40 @@
                   }
                 }
                 
+                // Create new enrollment
+                const newEnrollment = {
+                  name: foundClass.name,
+                  code: foundClass.code,
+                  enrolledAt: new Date().toISOString(),
+                  group: foundGroup.name,
+                  groupCode: foundGroup.code,
+                  attendance: {
+                    rate: 100,
+                    sessions: []
+                  }
+                };
+                
+                // Add to enrolled classes
                 enrolledClasses.push(newEnrollment);
                 localStorage.setItem('attendify_enrolled_classes', JSON.stringify(enrolledClasses));
                 
                 // Close modal
                 closeAllModals();
                 
-                // Show success message
-                alert('Successfully enrolled in class!');
+                // Show success notification
+                showNotification('Successfully enrolled in ' + foundClass.name, 'success');
                 
                 // Refresh the page
                 window.location.reload();
               } else {
                 if (enrollClassError) {
-                  enrollClassError.textContent = 'Invalid class code';
+                  enrollClassError.textContent = 'Invalid group code';
                   enrollClassError.style.display = 'block';
                 }
               }
             } else {
               if (enrollClassError) {
-                enrollClassError.textContent = 'Invalid class code';
+                enrollClassError.textContent = 'Invalid group code';
                 enrollClassError.style.display = 'block';
               }
             }
@@ -2137,20 +2191,49 @@
         }
 
         // Create Class button functionality
+        const dashboardCreateClassBtn = document.getElementById('dashboardCreateClassBtn');
+        const createClassModal = document.getElementById('createClassModal');
+        
+        // Function to generate a unique class code
+        function generateClassCode() {
+          return 'CLS' + Math.floor(100000 + Math.random() * 900000);
+        }
+        
+        // Show create class modal
+        if (dashboardCreateClassBtn && createClassModal) {
+          dashboardCreateClassBtn.addEventListener('click', function() {
+            const modalOverlay = document.getElementById('modalOverlay');
+            if (modalOverlay) {
+              // Clear previous input and error
+              const classNameInput = document.getElementById('className');
+              const createClassError = document.getElementById('createClassError');
+              if (classNameInput) {
+                classNameInput.value = '';
+              }
+              if (createClassError) {
+                createClassError.style.display = 'none';
+              }
+              
+              modalOverlay.classList.add('active');
+              createClassModal.classList.add('active');
+            }
+          });
+        }
+
+        // Cancel create class
         if (cancelCreateClassBtn) {
           cancelCreateClassBtn.addEventListener('click', function() {
-            console.log('Cancel create class clicked');
             closeAllModals();
           });
         }
         
+        // Confirm create class
         if (confirmCreateClassBtn) {
           confirmCreateClassBtn.addEventListener('click', function() {
-            console.log('Confirm create class clicked');
             const className = document.getElementById('className').value.trim();
-            const classCode = document.getElementById('generatedClassCode').textContent.trim();
             const createClassError = document.getElementById('createClassError');
             
+            // Validate class name
             if (className === '') {
               if (createClassError) {
                 createClassError.textContent = 'Please enter a class name';
@@ -2159,32 +2242,53 @@
               return;
             }
             
-            // Create class object
-            const newClass = {
-              name: className,
-              code: classCode,
-              createdAt: new Date().toISOString(),
-              groups: [] // Initialize with empty groups array so warning is shown
-            };
-            
-            // Save to localStorage
+            // Get existing classes
             const storedClasses = localStorage.getItem('attendify_tutored_classes');
             let classes = [];
-            
             if (storedClasses) {
               classes = JSON.parse(storedClasses);
+              
+              // Check if class name already exists
+              const classExists = classes.some(cls => 
+                cls.name.toLowerCase() === className.toLowerCase()
+              );
+              
+              if (classExists) {
+                if (createClassError) {
+                  createClassError.textContent = 'A class with this name already exists';
+                  createClassError.style.display = 'block';
+                }
+                return;
+              }
             }
             
+            // Create new class object
+            const newClass = {
+              name: className,
+              code: generateClassCode(), // Generate code here instead
+              createdAt: new Date().toISOString(),
+              groups: [
+                {
+                  name: "Default Group",
+                  code: 'GRP' + Math.floor(100000 + Math.random() * 900000),
+                  students: []
+                }
+              ]
+            };
+            
+            // Add to classes array
             classes.push(newClass);
+            
+            // Save to localStorage
             localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
             
             // Close modal
             closeAllModals();
             
-            // Show success message
-            alert('Class created successfully!');
+            // Show success notification
+            showNotification('Class "' + className + '" created successfully', 'success');
             
-            // Refresh the current page instead of redirecting
+            // Refresh the page
             window.location.reload();
           });
         }
@@ -2213,6 +2317,23 @@
         const settingsBtn = document.getElementById('settingsBtn');
         const settingsModal = document.getElementById('settingsModal');
         const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const startScanBtn = document.getElementById('startScanBtn');
+        const faceStatus = document.getElementById('faceStatus');
+
+        // Function to update face scan status in settings
+        function updateFaceScanStatus() {
+          const hasFaceScan = localStorage.getItem('faceScanComplete') === 'true';
+          
+          if (hasFaceScan) {
+            faceStatus.textContent = 'Face recognition has been set up.';
+            faceStatus.style.color = 'var(--success)';
+            startScanBtn.style.display = 'none';
+          } else {
+            faceStatus.textContent = 'You haven\'t set up face recognition yet.';
+            faceStatus.style.color = 'var(--text-secondary)';
+            startScanBtn.style.display = 'block';
+          }
+        }
         
         // Toggle profile dropdown
         if (profileDropdownBtn && profileDropdownMenu) {
@@ -2237,6 +2358,9 @@
             if (modalOverlay) {
               modalOverlay.classList.add('active');
               settingsModal.classList.add('active');
+              
+              // Update face scan status when opening settings
+              updateFaceScanStatus();
               
               // Copy profile data from header to settings modal
               const headerStudentId = document.getElementById('headerStudentId');
@@ -2266,6 +2390,21 @@
             }
           });
         }
+
+        // Start Scan button event listener
+        if (startScanBtn) {
+          startScanBtn.addEventListener('click', function() {
+            // Only redirect if face scan is not completed
+            if (localStorage.getItem('faceScanComplete') !== 'true') {
+              window.location.href = 'face-setup.html';
+            }
+          });
+        }
+
+        // Call updateFaceScanStatus on page load
+        document.addEventListener('DOMContentLoaded', function() {
+          updateFaceScanStatus();
+        });
         
         // Call populateClassLists to show the classes when the page loads
         populateClassLists();
@@ -2475,13 +2614,14 @@
                     }
                   }
                 }
-                // If no group code found, generate a fallback
-                if (!groupCode) {
-                  groupCode = 'GRP' + Math.floor(100000 + Math.random() * 900000);
-                }
                 
                 classCard.innerHTML = `
+                  <div class="class-header">
                   <h3 class="class-name">${cls.name}</h3>
+                    <button class="leave-class-icon" onclick="event.stopPropagation(); openQuitClassModal('${cls.code}')">
+                      <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                  </div>
                   <div class="class-details">
                     <div class="detail-row">
                       <span class="detail-label">Group:</span>
@@ -2505,27 +2645,11 @@
                     </button>
                     <span class="class-code-copy-success">Copied!</span>
                   </div>
-                  <div class="class-actions">
-                    <button class="btn btn-danger btn-sm quit-class-btn" data-class-id="${cls.code}">
-                      <i class="fas fa-sign-out-alt"></i> Leave Class
-                    </button>
-                  </div>
                 `;
                 
                 enrolledClassesList.appendChild(classCard);
               });
               
-              // Add event listeners to Quit Class buttons
-              const quitClassButtons = document.querySelectorAll('.quit-class-btn');
-              quitClassButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                  const classId = this.getAttribute('data-class-id');
-                
-                // Call the openQuitClassModal function
-                window.openQuitClassModal(classId);
-                });
-              });
-            
             // Add event listeners to the copy code buttons
             const copyCodeBtns = document.querySelectorAll('.class-code-copy-btn');
             copyCodeBtns.forEach(button => {
@@ -2585,7 +2709,12 @@
                 }
                 
                 classCard.innerHTML = `
+                  <div class="class-header">
                   <h3 class="class-name">${cls.name}</h3>
+                    <button class="delete-class-icon" data-class-code="${cls.code}">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
                   <div class="class-details">
                     <div class="detail-row">
                       <span class="detail-label">Groups:</span>
@@ -2599,34 +2728,204 @@
                   ${(!cls.groups || cls.groups.length === 0) ? `
                   <div class="no-groups-warning">
                     <i class="fas fa-exclamation-triangle"></i>
-                    <span>No groups available. Students cannot join until you <a href="javascript:void(0)" class="add-group-link" onclick="event.stopPropagation(); openAddGroupModal('${cls.code}')">add a group</a></span>
+                    <span>No groups available.</span>
                   </div>
                   ` : ''}
-                  <div class="class-actions">
-                    <a href="students.html?class=${cls.code}" class="btn btn-primary btn-sm view-students-btn" style="padding: 4px 8px; font-size: 12px;">
-                      <i class="fas fa-user-graduate"></i> Students
-                    </a>
-                    <button class="btn btn-secondary btn-sm add-group-btn" data-class-id="${cls.code}" onclick="openAddGroupModal('${cls.code}')" style="padding: 4px 8px; font-size: 12px;">
-                      <i class="fas fa-users"></i> Add Group
-                    </button>
-                    <button class="btn btn-danger btn-sm delete-class-btn" data-class-id="${cls.code}" onclick="openDeleteClassModal('${cls.code}')" style="padding: 4px 8px; font-size: 12px;">
-                      <i class="fas fa-trash-alt"></i> Delete
-                    </button>
-                  </div>
-                  <span class="class-code-copy-success" style="display: none;">Copied!</span>
-                  <input type="hidden" class="hidden-class-code" value="${cls.code}">
+                  <button class="view-students-link" data-class-code="${cls.code}">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Click to view students</span>
+                  </button>
                 `;
                 
-                // Add click event listener to the entire class card
-                classCard.addEventListener('click', function() {
-                  window.location.href = `students.html?class=${cls.code}`;
+                // Add click event listener for delete button
+                const deleteBtn = classCard.querySelector('.delete-class-icon');
+                if (deleteBtn) {
+                  deleteBtn.addEventListener('click', function() {
+                    const classCode = this.getAttribute('data-class-code');
+                    openDeleteClassModal(classCode);
+                  });
+                }
+                
+                // Add click event listener for view students button
+                const viewStudentsBtn = classCard.querySelector('.view-students-link');
+                if (viewStudentsBtn) {
+                  viewStudentsBtn.addEventListener('click', function() {
+                    const classCode = this.getAttribute('data-class-code');
+                    window.location.href = `students.html?class=${classCode}`;
                 });
+                }
                 
                 tutoredClassesList.appendChild(classCard);
               });
             }
           }
         }
+        
+        // Function to delete a class and its associated data
+        function deleteClass(classCode) {
+          if (confirm('Are you sure you want to delete this class? This action cannot be undone.')) {
+            // Delete class from tutored classes
+            const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
+            if (storedTutoredClasses) {
+              const tutoredClasses = JSON.parse(storedTutoredClasses);
+              const updatedClasses = tutoredClasses.filter(cls => cls.code !== classCode);
+              localStorage.setItem('attendify_tutored_classes', JSON.stringify(updatedClasses));
+            }
+            
+            // Show success notification
+            showNotification('Class deleted successfully', 'success');
+            
+            // Refresh the class lists
+            populateClassLists();
+          }
+        }
+
+      // Function to open the delete class confirmation modal
+      function openDeleteClassModal(classCode) {
+        const storedClasses = localStorage.getItem('attendify_tutored_classes');
+        if (storedClasses) {
+          const classes = JSON.parse(storedClasses);
+          const classToDelete = classes.find(cls => cls.code === classCode);
+          
+          if (classToDelete) {
+            // Set data in the modal
+            document.getElementById('classToDeleteName').textContent = classToDelete.name;
+            document.getElementById('classToDeleteCode').value = classCode;
+            
+            // Show the modal
+            const modalOverlay = document.getElementById('deleteClassModalOverlay');
+            const modal = document.getElementById('deleteClassModal');
+            modalOverlay.classList.add('active');
+              modal.classList.add('active');
+          }
+        }
+      }
+      
+      // Set up event listeners for delete class modal
+      document.addEventListener('DOMContentLoaded', function() {
+        const deleteClassModalOverlay = document.getElementById('deleteClassModalOverlay');
+        const deleteClassModal = document.getElementById('deleteClassModal');
+        const cancelDeleteClassBtn = document.getElementById('cancelDeleteClass');
+        const confirmDeleteClassBtn = document.getElementById('confirmDeleteClass');
+        
+        // Function to close the modal
+        function closeDeleteClassModal() {
+            deleteClassModal.classList.remove('active');
+            deleteClassModalOverlay.classList.remove('active');
+        }
+        
+        // Close modal events
+        if (cancelDeleteClassBtn) {
+          cancelDeleteClassBtn.addEventListener('click', closeDeleteClassModal);
+        }
+        
+        // Handle delete class confirmation
+        if (confirmDeleteClassBtn) {
+          confirmDeleteClassBtn.addEventListener('click', function() {
+            const classCode = document.getElementById('classToDeleteCode').value;
+            
+            if (classCode) {
+        // Delete class from tutored classes
+        const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
+        if (storedTutoredClasses) {
+          const tutoredClasses = JSON.parse(storedTutoredClasses);
+          const updatedClasses = tutoredClasses.filter(cls => cls.code !== classCode);
+          localStorage.setItem('attendify_tutored_classes', JSON.stringify(updatedClasses));
+        }
+        
+                // Close modal
+                closeDeleteClassModal();
+        
+        // Show success notification
+        showNotification('Class deleted successfully', 'success');
+                
+                // Refresh class lists
+                populateClassLists();
+              }
+            });
+          }
+        });
+        
+        // Add these styles to the existing <style> section
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+          .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+          }
+
+          .delete-class-icon {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+          }
+
+          .delete-class-icon:hover {
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+          }
+
+          .class-name {
+            margin-bottom: 0;
+          }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Add these styles to the existing style section
+        const tutoredClassStyles = document.createElement('style');
+        tutoredClassStyles.textContent = `
+          .view-students-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-top: 15px;
+            padding: 12px 15px;
+            width: 100%;
+            background: none;
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+
+          .view-students-link:hover {
+            color: var(--primary);
+            background: rgba(79, 70, 229, 0.1);
+          }
+
+          .view-students-link i {
+            font-size: 12px;
+            transition: transform 0.2s ease;
+          }
+
+          .view-students-link:hover i {
+            transform: translateX(4px);
+          }
+
+          .delete-class-icon {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+          }
+
+          .delete-class-icon:hover {
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+          }
+        `;
+        document.head.appendChild(tutoredClassStyles);
     </script>
     
     <!-- Delete Class Confirmation Modal -->
@@ -2653,163 +2952,6 @@
         </div>
       </div>
     </div>
-
-    <script>
-      // Function to open the delete class confirmation modal
-      function openDeleteClassModal(classCode) {
-        const storedClasses = localStorage.getItem('attendify_tutored_classes');
-        if (storedClasses) {
-          const classes = JSON.parse(storedClasses);
-          const classToDelete = classes.find(cls => cls.code === classCode);
-          
-          if (classToDelete) {
-            // Set data in the modal
-            document.getElementById('classToDeleteName').textContent = classToDelete.name;
-            document.getElementById('classToDeleteCode').value = classCode;
-            
-            // Show the modal
-            const modalOverlay = document.getElementById('deleteClassModalOverlay');
-            const modal = document.getElementById('deleteClassModal');
-            modalOverlay.classList.add('active');
-            
-            // Display and animate the modal
-            modal.style.display = 'block';
-            setTimeout(() => {
-              modal.style.opacity = '1';
-              modal.style.transform = 'translateY(0)';
-            }, 10);
-          }
-        }
-      }
-      
-      // Set up event listeners for delete class modal
-      document.addEventListener('DOMContentLoaded', function() {
-        const deleteClassModalOverlay = document.getElementById('deleteClassModalOverlay');
-        const deleteClassModal = document.getElementById('deleteClassModal');
-        const closeDeleteClassBtn = document.getElementById('closeDeleteClassModal');
-        const cancelDeleteClassBtn = document.getElementById('cancelDeleteClass');
-        const confirmDeleteClassBtn = document.getElementById('confirmDeleteClass');
-        
-        // Function to close the modal
-        function closeDeleteClassModal() {
-          deleteClassModal.style.opacity = '0';
-          deleteClassModal.style.transform = 'translateY(20px)';
-          
-          // Hide the overlay after animation
-          setTimeout(() => {
-            deleteClassModalOverlay.classList.remove('active');
-            deleteClassModal.style.display = 'none';
-          }, 300);
-        }
-        
-        // Close modal events
-        if (closeDeleteClassBtn) {
-          closeDeleteClassBtn.addEventListener('click', closeDeleteClassModal);
-        }
-        
-        if (cancelDeleteClassBtn) {
-          cancelDeleteClassBtn.addEventListener('click', closeDeleteClassModal);
-        }
-        
-        // Handle delete class confirmation
-        if (confirmDeleteClassBtn) {
-          confirmDeleteClassBtn.addEventListener('click', function() {
-            const classCode = document.getElementById('classToDeleteCode').value;
-            
-            if (classCode) {
-              // Delete class data
-              deleteClass(classCode);
-              
-              // Close modal
-              closeDeleteClassModal();
-              
-              // Refresh class lists
-              populateClassLists();
-            }
-          });
-        }
-      });
-      
-      // Function to delete a class and its associated data
-      function deleteClass(classCode) {
-        // Delete class from tutored classes
-        const storedTutoredClasses = localStorage.getItem('attendify_tutored_classes');
-        if (storedTutoredClasses) {
-          const tutoredClasses = JSON.parse(storedTutoredClasses);
-          const updatedClasses = tutoredClasses.filter(cls => cls.code !== classCode);
-          localStorage.setItem('attendify_tutored_classes', JSON.stringify(updatedClasses));
-        }
-        
-        // Delete class students data
-        localStorage.removeItem(`attendify_class_students_${classCode}`);
-        
-        // Delete justified absences data
-        localStorage.removeItem(`attendify_justified_absences_${classCode}`);
-        
-        // Show success notification
-        showNotification('Class deleted successfully', 'success');
-      }
-      
-      // Function to display notifications
-      function showNotification(message, type = 'info') {
-        const container = document.getElementById('notificationContainer');
-        if (!container) return;
-        
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        
-        // Create notification content
-        notification.innerHTML = `
-          <span class="notification-text">${message}</span>
-          <button class="notification-close">
-            <i class="fas fa-times"></i>
-          </button>
-        `;
-        
-        // Add to container
-        container.appendChild(notification);
-        
-        // Animate in
-        setTimeout(() => {
-          notification.classList.add('show');
-        }, 10);
-        
-        // Set up auto dismiss
-        const dismissTimeout = setTimeout(() => {
-          dismissNotification(notification);
-        }, 5000);
-        
-        // Set up manual dismiss
-        const closeBtn = notification.querySelector('.notification-close');
-        if (closeBtn) {
-          closeBtn.addEventListener('click', function() {
-            clearTimeout(dismissTimeout);
-            dismissNotification(notification);
-          });
-        }
-        
-        // Click on notification to dismiss
-        notification.addEventListener('click', function(e) {
-          if (!e.target.closest('.notification-close')) {
-            clearTimeout(dismissTimeout);
-            dismissNotification(notification);
-          }
-        });
-      }
-      
-      // Function to dismiss a notification
-      function dismissNotification(notification) {
-        notification.classList.remove('show');
-        
-        // Remove from DOM after animation
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 300);
-      }
-    </script>
 
     <!-- Add event listener for the Start Scan button -->
     <script>
@@ -2870,7 +3012,10 @@
 
       // Event Listeners
       if (startScanBtn) {
-        startScanBtn.addEventListener('click', startScanning);
+        startScanBtn.addEventListener('click', function() {
+          // Redirect to face setup page
+          window.location.href = 'face-setup.html';
+        });
       }
 
       if (closeScannerBtn) {

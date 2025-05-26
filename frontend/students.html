@@ -586,94 +586,99 @@
       }
       
       .user-profile {
-        position: relative;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 0.5rem;
-        border-radius: 0.75rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-      
-      .user-profile:hover {
-        background-color: var(--hover);
+        gap: 10px;
       }
       
       .user-avatar {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 40px;
+        height: 40px;
+        position: relative;
+      }
+      
+      .avatar-circle {
+        width: 100%;
+        height: 100%;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--primary), var(--secondary));
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .avatar-icon {
+        font-size: 24px;
         color: white;
-        font-weight: 600;
-        font-size: 1rem;
+        opacity: 0.9;
+        position: relative;
+        z-index: 0;
+      }
+      
+      .user-info {
+        display: flex;
+        flex-direction: column;
       }
       
       .user-name {
-        color: var(--text);
         font-weight: 500;
+        color: white;
+        margin-bottom: 2px;
       }
       
       .profile-dropdown {
         position: relative;
+        z-index: 2100;
       }
       
       .profile-dropdown-btn {
         background: none;
         border: none;
-        color: var(--text-secondary);
+        color: white;
         cursor: pointer;
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-        transition: all 0.2s ease;
-      }
-      
-      .profile-dropdown-btn:hover {
-        color: var(--text);
-        background-color: var(--hover);
+        padding: 5px;
       }
       
       .profile-dropdown-menu {
         position: absolute;
-        top: 100%;
+        top: calc(100% + 10px);
         right: 0;
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-radius: 0.75rem;
-        padding: 0.5rem;
-        min-width: 200px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.2s ease;
-        z-index: 1000;
+        background: rgba(30, 41, 59, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        width: 180px;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        display: none;
+        z-index: 2000;
+        backdrop-filter: blur(10px);
+        overflow: hidden;
       }
       
-      .profile-dropdown-menu.active {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
+      .profile-dropdown-menu.show {
+        display: block;
+        animation: fadeIn 0.2s ease;
       }
       
       .dropdown-item {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
+        gap: 10px;
+        padding: 12px 15px;
         color: var(--text);
         text-decoration: none;
-        border-radius: 0.5rem;
-        transition: all 0.2s ease;
+        transition: background-color 0.2s ease;
       }
       
       .dropdown-item:hover {
-        background-color: var(--hover);
-        color: var(--primary);
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      
+      .dropdown-item i {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
       }
       
       /* Add animation keyframes */
@@ -943,11 +948,18 @@
         opacity: 0;
         transition: transform 0.3s ease, opacity 0.3s ease;
         overflow: hidden;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.95);
+        z-index: 2100;
+        display: none;
       }
       
       .modal.active {
-        transform: translateY(0);
+        transform: translate(-50%, -50%) scale(1);
         opacity: 1;
+        display: block;
       }
       
       .modal-content {
@@ -1568,6 +1580,167 @@
         color: var(--success);
         opacity: 0.9;
       }
+      
+      .current-date-display {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--text);
+        font-weight: 500;
+      }
+      
+      .current-date-display i {
+        color: var(--secondary);
+      }
+      
+      .header-copy-success {
+        font-size: 10px;
+        color: var(--success);
+        opacity: 0.9;
+      }
+      
+      .user-id-container {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .user-id {
+        font-family: monospace;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+      
+      .copy-id-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0;
+        font-size: 10px;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+      }
+      
+      .copy-id-btn:hover {
+        opacity: 1;
+      }
+      
+      .profile-dropdown-menu.show {
+        display: block;
+        animation: fadeIn 0.2s ease;
+      }
+      
+      /* Settings Modal Styles */
+      .settings-section {
+        margin-bottom: 35px;
+        padding-bottom: 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        animation: fadeIn 0.5s ease;
+        padding: 5px 10px;
+      }
+      
+      .settings-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+      }
+      
+      .section-title:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -6px;
+        width: 40px;
+        height: 3px;
+        background: linear-gradient(to right, var(--primary), var(--secondary));
+        border-radius: 3px;
+      }
+      
+      .settings-description {
+        color: var(--text-secondary);
+        margin-bottom: 15px;
+        font-size: 14px;
+      }
+      
+      .settings-status {
+        color: var(--text-secondary);
+        margin-bottom: 15px;
+        font-style: italic;
+      }
+      
+      /* Settings Modal Styles */
+      .settings-info {
+        margin: 15px 0;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+      }
+      
+      .info-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        gap: 10px;
+      }
+      
+      .info-row:last-child {
+        margin-bottom: 0;
+      }
+      
+      .info-label {
+        color: var(--text-secondary);
+        min-width: 60px;
+      }
+      
+      .id-copy-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .header-copy-success {
+        position: absolute;
+        font-size: 12px;
+        color: var(--success);
+        margin-left: 5px;
+        animation: fadeIn 0.2s ease;
+        top: -20px;
+        right: -5px;
+        background: rgba(16, 185, 129, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        white-space: nowrap;
+      }
+      
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .copy-id-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 2px 5px;
+        transition: color 0.2s ease;
+        position: relative;
+      }
+      
+      .copy-id-btn:hover {
+        color: var(--primary);
+      }
     </style>
   </head>
   <body>
@@ -1579,10 +1752,9 @@
       <header class="dashboard-header">
         <h1 class="logo"><a href="index.html">Attendify</a></h1>
         <div class="header-nav">
-          <!-- Navigation content can be added here if needed -->
-          <div class="current-date">
-            <i class="fas fa-calendar"></i>
-            <span id="currentDate">Loading...</span>
+          <div class="current-date-display">
+            <i class="fas fa-calendar-day"></i>
+            <span id="currentDateDisplay"></span>
           </div>
         </div>
         <div class="user-profile">
@@ -1593,7 +1765,7 @@
             </div>
           </div>
           <div class="user-info">
-          <span id="userName" class="user-name">Sididris Meriem</span>
+            <span id="userName" class="user-name">Sididris Meriem</span>
             <div class="user-id-container">
               <span id="headerStudentId" class="user-id">STU123456</span>
               <button id="headerCopyIdBtn" class="copy-id-btn" title="Copy Student ID">
@@ -1678,7 +1850,6 @@
           <button class="btn btn-danger" id="confirmDeleteBtn">Remove Student</button>
           </div>
           </div>
-          </div>    
     <!-- Scan Options Modal -->
     <div class="modal-overlay" id="scanModalOverlay">
       <div class="modal" id="scanOptionsModal">
@@ -1764,7 +1935,44 @@
       </div>
     </div>
 
-
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+      <div class="modal-content">
+        <h2 class="modal-title">Settings</h2>
+        <div class="settings-section">
+          <h3 class="section-title">Account Information</h3>
+          <div class="settings-info">
+            <div class="info-row">
+              <span class="info-label">Name:</span>
+              <span id="settingsName">Sididris Meriem</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">ID:</span>
+              <div class="id-copy-container">
+                <span id="settingsId">STU123456</span>
+                <button id="settingsCopyIdBtn" class="copy-id-btn" title="Copy ID">
+                  <i class="far fa-copy"></i>
+                </button>
+                <span id="settingsCopySuccess" class="header-copy-success" style="display: none;">Copied!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section" id="faceRecognitionSection">
+          <h3 class="section-title">Face Recognition</h3>
+          <p class="settings-description">Set up face recognition for quick attendance marking</p>
+          <div id="faceRecognitionStatus">
+            <p class="settings-status" id="faceStatus">You haven't set up face recognition yet.</p>
+            <button class="btn btn-primary" id="startScanBtn">
+              <i class="fas fa-camera"></i> Start Scan
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="closeSettingsBtn" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -1790,10 +1998,8 @@
         // Load students list
         loadStudents(classCode);
         
-        // Handle profile dropdown
+        // Setup profile dropdown
         setupProfileDropdown();
-        
-        // Group selection now handled by clickable group cards
         
         // Setup delete confirmation modal
         setupDeleteConfirmation();
@@ -1816,7 +2022,220 @@
             startAttendanceSession(classCode);
           });
         }
+
+        // Setup settings modal
+        setupSettingsModal();
       });
+
+      // Function to setup settings modal
+      function setupSettingsModal() {
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        
+        // Create modal overlay if it doesn't exist
+        let modalOverlay = document.getElementById('modalOverlay');
+        if (!modalOverlay) {
+          modalOverlay = document.createElement('div');
+          modalOverlay.id = 'modalOverlay';
+          modalOverlay.className = 'modal-overlay';
+          document.body.appendChild(modalOverlay);
+        }
+        
+        // Open settings modal
+        if (settingsBtn && settingsModal) {
+          settingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Make sure the modal is visible first
+            settingsModal.style.display = 'block';
+            
+            // Then add active classes for animation
+            setTimeout(() => {
+            modalOverlay.classList.add('active');
+            settingsModal.classList.add('active');
+            
+            // Update face scan status when opening settings
+            updateFaceScanStatus();
+            }, 10);
+          });
+        }
+        
+        // Close settings modal
+        if (closeSettingsBtn) {
+          closeSettingsBtn.addEventListener('click', function() {
+            closeSettingsModal(modalOverlay, settingsModal);
+          });
+        }
+        
+        // Close modal when clicking outside
+        modalOverlay.addEventListener('click', function() {
+          closeSettingsModal(modalOverlay, settingsModal);
+        });
+        
+        // Function to close settings modal with animation
+        function closeSettingsModal(overlay, modal) {
+          overlay.classList.remove('active');
+          modal.classList.remove('active');
+          
+          // Hide modal after animation completes
+          setTimeout(() => {
+            modal.style.display = 'none';
+          }, 300);
+        }
+        
+        // Start Scan button event listener
+        const startScanBtn = document.getElementById('startScanBtn');
+        if (startScanBtn) {
+          startScanBtn.addEventListener('click', function() {
+            window.location.href = 'face-setup.html';
+          });
+      }
+      
+        // Setup copy ID functionality in settings
+        const settingsCopyIdBtn = document.getElementById('settingsCopyIdBtn');
+        if (settingsCopyIdBtn) {
+          // Create a success message element if it doesn't exist
+          let settingsCopySuccess = document.getElementById('settingsCopySuccess');
+          if (!settingsCopySuccess) {
+            settingsCopySuccess = document.createElement('span');
+            settingsCopySuccess.id = 'settingsCopySuccess';
+            settingsCopySuccess.className = 'header-copy-success';
+            settingsCopySuccess.textContent = 'Copied!';
+            settingsCopySuccess.style.display = 'none';
+            
+            // Add it to the parent container
+            const idCopyContainer = document.querySelector('.id-copy-container');
+            if (idCopyContainer) {
+              idCopyContainer.appendChild(settingsCopySuccess);
+            }
+          }
+          
+          settingsCopyIdBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const settingsId = document.getElementById('settingsId');
+            if (settingsId) {
+              navigator.clipboard.writeText(settingsId.textContent)
+                .then(() => {
+                  settingsCopySuccess.style.display = 'inline';
+                  setTimeout(() => {
+                    settingsCopySuccess.style.display = 'none';
+                  }, 2000);
+                });
+            }
+          });
+      }
+      }
+      
+      // Function to setup profile dropdown
+      function setupProfileDropdown() {
+        const profileDropdownBtn = document.getElementById('profileDropdownBtn');
+        const profileDropdownMenu = document.getElementById('profileDropdownMenu');
+        
+        if (profileDropdownBtn && profileDropdownMenu) {
+          profileDropdownBtn.addEventListener('click', function() {
+            profileDropdownMenu.classList.toggle('show');
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', function(e) {
+            if (!profileDropdownBtn.contains(e.target) && !profileDropdownMenu.contains(e.target)) {
+              profileDropdownMenu.classList.remove('show');
+            }
+          });
+      }
+      
+        // Set user name and ID
+        const userName = document.getElementById('userName');
+        const headerStudentId = document.getElementById('headerStudentId');
+        const settingsName = document.getElementById('settingsName');
+        const settingsId = document.getElementById('settingsId');
+        
+        if (userName && headerStudentId) {
+          // Default user data
+          userName.textContent = 'Sididris Meriem';
+          
+          let studentId = localStorage.getItem('attendify_student_id');
+          if (!studentId) {
+            studentId = 'STU123456';
+            localStorage.setItem('attendify_student_id', studentId);
+        }
+          headerStudentId.textContent = studentId;
+          
+          // Also update settings modal
+          if (settingsName) settingsName.textContent = userName.textContent;
+          if (settingsId) settingsId.textContent = studentId;
+      }
+      
+        // Setup copy button for header student ID
+        const headerCopyIdBtn = document.getElementById('headerCopyIdBtn');
+        const headerCopySuccess = document.getElementById('headerCopySuccess');
+        
+        if (headerCopyIdBtn && headerCopySuccess) {
+          headerCopyIdBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const studentId = headerStudentId.textContent;
+            navigator.clipboard.writeText(studentId)
+              .then(() => {
+                headerCopySuccess.style.display = 'inline';
+                setTimeout(() => {
+                  headerCopySuccess.style.display = 'none';
+                }, 2000);
+              })
+              .catch(err => {
+                console.error('Copy failed:', err);
+              });
+          });
+      }
+      
+        // Setup logout button
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = 'index.html';
+          });
+        }
+      }
+      
+      // Function to update face scan status
+      function updateFaceScanStatus() {
+        const faceStatus = document.getElementById('faceStatus');
+        const startScanBtn = document.getElementById('startScanBtn');
+        
+        if (faceStatus && startScanBtn) {
+          const hasFaceScan = localStorage.getItem('faceScanComplete') === 'true';
+          
+          if (hasFaceScan) {
+            faceStatus.textContent = 'Face recognition has been set up.';
+            faceStatus.style.color = 'var(--success)';
+            startScanBtn.textContent = 'Update Scan';
+          } else {
+            faceStatus.textContent = 'You haven\'t set up face recognition yet.';
+            faceStatus.style.color = 'var(--text-secondary)';
+            startScanBtn.textContent = 'Start Scan';
+          }
+        }
+      }
+      
+      // Function to update current date in navbar
+      function updateCurrentDate() {
+        const dateElement = document.getElementById('currentDateDisplay');
+        if (dateElement) {
+          const now = new Date();
+          const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          };
+          dateElement.textContent = now.toLocaleDateString('en-US', options);
+        }
+        }
       
       // Setup search functionality
       function setupSearchFunctionality(classCode) {
@@ -2028,21 +2447,6 @@
             confirmAddGroupBtn.click();
           }
         });
-      }
-
-      // Function to update the current date
-      function updateCurrentDate() {
-        const dateElement = document.getElementById('currentDate');
-        if (dateElement) {
-          const now = new Date();
-          const options = { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          };
-          dateElement.textContent = now.toLocaleDateString('en-US', options);
-        }
       }
       
       // Helper function to make sure the class exists
@@ -2992,13 +3396,13 @@
         
         if (profileDropdownBtn && profileDropdownMenu) {
           profileDropdownBtn.addEventListener('click', function() {
-            profileDropdownMenu.classList.toggle('active');
+            profileDropdownMenu.classList.toggle('show');
           });
           
           // Close dropdown when clicking outside
           document.addEventListener('click', function(e) {
             if (!profileDropdownBtn.contains(e.target) && !profileDropdownMenu.contains(e.target)) {
-              profileDropdownMenu.classList.remove('active');
+              profileDropdownMenu.classList.remove('show');
             }
           });
         }
@@ -3006,16 +3410,55 @@
         // Set user name and ID
         const userName = document.getElementById('userName');
         const headerStudentId = document.getElementById('headerStudentId');
+        const settingsName = document.getElementById('settingsName');
+        const settingsId = document.getElementById('settingsId');
         
         if (userName && headerStudentId) {
-          // You could get this from localStorage if you have it saved
+          // Default user data
           userName.textContent = 'Sididris Meriem';
           
           let studentId = localStorage.getItem('attendify_student_id');
           if (!studentId) {
             studentId = 'STU123456';
+            localStorage.setItem('attendify_student_id', studentId);
           }
           headerStudentId.textContent = studentId;
+          
+          // Also update settings modal
+          if (settingsName) settingsName.textContent = userName.textContent;
+          if (settingsId) settingsId.textContent = studentId;
+        }
+        
+        // Setup copy button for header student ID
+        const headerCopyIdBtn = document.getElementById('headerCopyIdBtn');
+        const headerCopySuccess = document.getElementById('headerCopySuccess');
+        
+        if (headerCopyIdBtn && headerCopySuccess) {
+          headerCopyIdBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const studentId = headerStudentId.textContent;
+            navigator.clipboard.writeText(studentId)
+              .then(() => {
+                headerCopySuccess.style.display = 'inline';
+                setTimeout(() => {
+                  headerCopySuccess.style.display = 'none';
+                }, 2000);
+              })
+              .catch(err => {
+                console.error('Copy failed:', err);
+              });
+          });
+        }
+        
+        // Setup logout button
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = 'index.html';
+          });
         }
       }
 
@@ -4070,4 +4513,4 @@
        }
     </script>
   </body>
-</html> 
+</html>

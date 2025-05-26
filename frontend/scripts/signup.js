@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+  console.log("DOM Content Loaded");
+  
   const signupForm = document.getElementById("signupForm");
   const firstNameInput = document.getElementById("firstName");
   const lastNameInput = document.getElementById("lastName");
@@ -6,21 +8,45 @@ document.addEventListener("DOMContentLoaded", function () {
   const passwordInput = document.getElementById("password");
   const confirmPasswordInput = document.getElementById("confirmPassword");
   const progressFill = document.getElementById("progressFill");
-  const passwordStrengthBar = document.getElementById(
-    "passwordStrengthBar"
-  );
-  const passwordStrengthText = document.getElementById(
-    "passwordStrengthText"
-  );
+  const passwordStrengthBar = document.getElementById("passwordStrengthBar");
+  const passwordStrengthText = document.getElementById("passwordStrengthText");
   const googleSignupButton = document.querySelector(".btn-google-signup");
 
+  // Password toggle functionality
+  function setupPasswordToggle(inputId, toggleId) {
+    const input = document.getElementById(inputId);
+    const toggle = document.getElementById(toggleId);
+    if (!input || !toggle) return;
+    
+    function toggleVisibility() {
+      const icon = toggle.querySelector('i');
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+      } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+      }
+    }
+    
+    toggle.addEventListener("click", toggleVisibility);
+    toggle.addEventListener("keydown", function(e) {
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+        e.preventDefault();
+        toggleVisibility();
+      }
+    });
+  }
+
+  // Setup both password toggles
+  setupPasswordToggle("password", "togglePassword");
+  setupPasswordToggle("confirmPassword", "toggleConfirmPassword");
+
   //email verification elements
-  const emailVerificationModal = document.getElementById(
-    "emailVerificationModal"
-  );
-  const closeVerificationModal = document.getElementById(
-    "closeVerificationModal"
-  );
+  const emailVerificationModal = document.getElementById("emailVerificationModal");
+  const closeVerificationModal = document.getElementById("closeVerificationModal");
   const verificationEmail = document.getElementById("verificationEmail");
   const verifyCodeBtn = document.getElementById("verifyCodeBtn");
   const resendCodeBtn = document.getElementById("resendCodeBtn");
