@@ -1,7 +1,24 @@
 import os
 import cv2
-import numpy as np 
-from generate_emb import embedding_model
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+from tensorflow.keras.layers import Layer
+
+from numpy.linalg import norm
+class L2Normalization(Layer):
+    def __init__(self, **kwargs):
+        super(L2Normalization, self).__init__(**kwargs)
+
+    def call(self, inputs):
+        return tf.nn.l2_normalize(inputs, axis=1)
+
+    def get_config(self):
+        config = super().get_config()
+        return config
+    
+embedding_model = load_model("trained_embedding_model.keras", custom_objects={"L2Normalization": L2Normalization})
+
 
 xml_path = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml')
 video =cv2.VideoCapture(0)
