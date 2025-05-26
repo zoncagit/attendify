@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
   // Constants for local storage keys
   const STORAGE_KEYS = {
-    USER_DATA: 'attendify_user_data',
-    ENROLLED_CLASSES: 'attendify_enrolled_classes',
-    TUTORED_CLASSES: 'attendify_tutored_classes'
+    USER_DATA: 'attendify_user_data', //store user info
+    ENROLLED_CLASSES: 'attendify_enrolled_classes', //store lsit of classes in enrolled
+    TUTORED_CLASSES: 'attendify_tutored_classes' // store list of classes in tutored
   };
 
   // DOM Elements
@@ -28,15 +28,14 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   // State
-  let userData = {};
-  let classData = null;
-  let currentClassCode = '';
-  let currentGroupName = '';
+  let userData = {}; //hold information about the user(name, initials, role)
+  let classData = null; //hold information about the class(name, code, groups, students)
+  let currentClassCode = '';//string for currently selected class code
+  let currentGroupName = ''; //string for currently selected group
   let userRole = ''; // 'teacher' or 'student'
 
   // Initialize the page
-  initPage();
-
+  initPage(); //reading url parameters(class, group, role) and loading data from localStorage, setting up event listeners, initializing UI, etc.
   function initPage() {
     // Parse URL parameters
     const urlParams = new URLSearchParams(window.location.search);
@@ -44,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
     currentGroupName = urlParams.get('group') || 'all';
     userRole = urlParams.get('role') || 'student';
 
-    // Load data from localStorage
+    // Load data  from localStorage
     loadData();
 
     // Ensure all groups have unique codes
@@ -199,105 +198,48 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function setupProfileDropdown() {
-    const profileBtn = document.querySelector('.user-profile');
-    const dropdownMenu = document.querySelector('.profile-dropdown-menu');
-
-    if (profileBtn && dropdownMenu) {
-      // Toggle dropdown on profile button click
-      profileBtn.addEventListener('click', (e) => {
+    if (elements.profileDropdownBtn && elements.profileDropdownMenu) {
+      elements.profileDropdownBtn.addEventListener('click', function (e) {
         e.stopPropagation();
-        dropdownMenu.classList.toggle('active');
+        elements.profileDropdownMenu.classList.toggle('show');
       });
 
       // Close dropdown when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!profileBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
-          dropdownMenu.classList.remove('active');
-        }
-      });
-
-      // Close dropdown when pressing Escape
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          dropdownMenu.classList.remove('active');
-        }
+      document.addEventListener('click', function () {
+        elements.profileDropdownMenu.classList.remove('show');
       });
     }
   }
 
   function setupCopyButtons() {
-    const copyButtons = document.querySelectorAll('.copy-student-id');
+    const copyButtons = document.querySelectorAll('.copy-code-btn, .copy-btn');
 
     copyButtons.forEach(button => {
-      button.addEventListener('click', async (e) => {
+      button.addEventListener('click', function (e) {
         e.stopPropagation();
-        const studentId = button.getAttribute('data-id');
 
-        try {
-          await navigator.clipboard.writeText(studentId);
+        // Find the nearest code value to copy
+        const codeElement = this.parentElement.querySelector('.code-value');
 
-          // Show success notification
-          const notification = document.createElement('div');
-          notification.className = 'notification success';
-          notification.innerHTML = `
-            <i class="fas fa-check-circle"></i>
-            <span>Student ID copied to clipboard!</span>
-          `;
-
-          document.body.appendChild(notification);
-
-          // Remove notification after 3 seconds
-          setTimeout(() => {
-            notification.remove();
-          }, 3000);
-        } catch (err) {
-          console.error('Failed to copy student ID:', err);
-
-          // Show error notification
-          const notification = document.createElement('div');
-          notification.className = 'notification error';
-          notification.innerHTML = `
-            <i class="fas fa-exclamation-circle"></i>
-            <span>Failed to copy student ID</span>
-          `;
-
-          document.body.appendChild(notification);
-
-          // Remove notification after 3 seconds
-          setTimeout(() => {
-            notification.remove();
-          }, 3000);
-        }
-      });
-    });
-
-    // Set up copy button for header student ID
-    const headerCopyIdBtn = document.getElementById('headerCopyIdBtn');
-    if (headerCopyIdBtn) {
-      headerCopyIdBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        const idElement = document.getElementById('headerStudentId');
-        const copySuccess = document.getElementById('headerCopySuccess');
-
-        if (idElement) {
-          const studentId = idElement.textContent.trim();
-          navigator.clipboard.writeText(studentId)
+        if (codeElement) {
+          // Copy the text
+          navigator.clipboard.writeText(codeElement.textContent.trim())
             .then(() => {
-              console.log('Student ID copied from header:', studentId);
-              if (copySuccess) {
-                copySuccess.style.display = 'inline';
-                setTimeout(() => {
-                  copySuccess.style.display = 'none';
-                }, 2000);
-              }
+              // Show feedback
+              const originalIcon = this.innerHTML;
+              this.innerHTML = '<i class="fas fa-check"></i>';
+
+              // Reset icon after a delay
+              setTimeout(() => {
+                this.innerHTML = originalIcon;
+              }, 1500);
             })
             .catch(err => {
-              console.error('Copy failed:', err);
-              alert('Failed to copy student ID: ' + studentId);
+              console.error('Failed to copy: ', err);
             });
         }
       });
-    }
+    });
   }
 
   function initializeUI() {

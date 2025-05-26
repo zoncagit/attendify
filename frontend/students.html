@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="styles/dashboard.css" />
+  <link rel="stylesheet" href="styles/students.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -80,7 +81,8 @@
       align-items: center;
       gap: 20px;
       width: 100%;
-      justify-content: center;
+      justify-content: space-between;
+      /* Changed from center to space-between for even spacing */
       background: rgba(30, 41, 59, 0.4);
       border-radius: 8px;
       padding: 10px 15px;
@@ -93,7 +95,7 @@
       padding: 6px 12px;
       font-size: 13px;
       white-space: nowrap;
-      margin-left: auto;
+      /* margin-left: auto;  Remove this to allow flex spacing to work */
       height: 36px;
       align-self: center;
       flex-shrink: 0;
@@ -103,9 +105,12 @@
     .checkmarks-container.small {
       margin: 0;
       flex: 1;
+      display: flex;
+      align-items: center;
+      min-width: 0;
     }
 
-    /* Smaller attendance counter */
+    /* Ensure attendance counter stays compact */
     .attendance-counter.small {
       transform: none;
       padding: 6px 10px;
@@ -114,10 +119,18 @@
       background: rgba(79, 70, 229, 0.08);
       border: 1px solid rgba(79, 70, 229, 0.12);
       border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .attendance-counter.small .attendance-count {
       font-size: 16px;
+    }
+
+    .attendance-counter.small .attendance-count .slash {
+      color: var(--warning);
+      font-weight: bold;
     }
 
     .attendance-counter.small .attendance-label {
@@ -607,9 +620,6 @@
       transition: all 0.2s ease;
     }
 
-    .user-profile:hover {
-      background-color: var(--hover);
-    }
 
     .user-avatar {
       width: 2.5rem;
@@ -999,11 +1009,15 @@
       opacity: 0;
       transition: transform 0.3s ease, opacity 0.3s ease;
       overflow: hidden;
+      display: none;
+      /* Ensure modals are hidden by default */
     }
 
     .modal.active {
       transform: translateY(0);
       opacity: 1;
+      display: block;
+      /* Ensure modals are visible when active */
     }
 
     .modal-content {
@@ -1665,6 +1679,300 @@
       color: var(--success);
       opacity: 0.9;
     }
+
+    /* Settings Modal Styles */
+    #settingsModalOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #settingsModalOverlay.active {
+      opacity: 1;
+    }
+
+    #settingsModal {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      width: 90%;
+      max-width: 600px;
+      margin: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      overflow: hidden;
+      display: none;
+      z-index: 9999;
+    }
+
+    #settingsModal.active {
+      transform: translateY(0);
+      opacity: 1;
+      display: block;
+    }
+
+    .settings-section {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .settings-section:last-child {
+      border-bottom: none;
+    }
+
+    .settings-description {
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .settings-status {
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+    }
+
+    #faceRecognitionSection {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .profile-settings {
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    .profile-settings .user-profile {
+      padding: 0;
+      cursor: default;
+    }
+
+    .profile-settings .user-profile:hover {
+      background: none;
+    }
+
+    /* Settings Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+      visibility: visible;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 500px;
+      backdrop-filter: blur(10px);
+      display: none;
+      margin: 1rem;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+
+    .modal::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .modal::-webkit-scrollbar-track {
+      background: transparent;
+      margin: 10px 0;
+    }
+
+    .modal::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+    }
+
+    .modal::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .modal.active {
+      display: block;
+      transform: translateY(0);
+      opacity: 1;
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    .modal-content {
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, var(--text), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .settings-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .settings-description {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .avatar-circle {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .user-id-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .user-id {
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .copy-id-btn {
+      background: none;
+      border: none;
+      color: var(--secondary);
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 0.25rem;
+      transition: all 0.2s ease;
+    }
+
+    .copy-id-btn:hover {
+      color: var(--primary);
+      background-color: var(--hover);
+    }
+
+    .header-copy-success {
+      font-size: 12px;
+      color: var(--success);
+      background: rgba(16, 185, 129, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      transition: opacity 0.3s ease;
+      font-weight: 600;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .profile-image,
+    #settingsProfileImage {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
   </style>
 </head>
 
@@ -1673,14 +1981,15 @@
 
   <!-- Main Dashboard Container -->
   <div class="dashboard-container">
-    <!-- Top Navigation -->
+    <!-- Dashboard Header -->
     <header class="dashboard-header">
-      <h1 class="logo"><a href="index.html">Attendify</a></h1>
+      <div class="logo">
+        <a href="index.html">Attendify</a>
+      </div>
       <div class="header-nav">
-        <!-- Navigation content can be added here if needed -->
-        <div class="current-date">
-          <i class="fas fa-calendar"></i>
-          <span id="currentDate">Loading...</span>
+        <div class="current-date-display">
+          <i class="fas fa-calendar-day"></i>
+          <span id="currentDateDisplay">Loading...</span>
         </div>
       </div>
       <div class="user-profile">
@@ -1868,7 +2177,52 @@
     </div>
   </div>
 
-
+  <!-- Modal Overlay -->
+  <div id="settingsModalOverlay" class="modal-overlay">
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+      <div class="modal-content">
+        <h2 class="modal-title">Settings</h2>
+        <div class="settings-section">
+          <h3 class="section-title">Profile</h3>
+          <div class="profile-settings">
+            <div class="user-profile">
+              <div class="user-avatar">
+                <div class="avatar-circle">
+                  <img src="assets/default-avatar.png" alt="Profile" class="profile-image" id="settingsProfileImage"
+                    style="display: none;">
+                  <i class="fas fa-user avatar-icon" id="settingsAvatarIcon"></i>
+                </div>
+              </div>
+              <div class="user-info">
+                <span id="settingsUserName" class="user-name">Sididris Meriem</span>
+                <div class="user-id-container">
+                  <span id="settingsStudentId" class="user-id">STU123456</span>
+                  <button id="settingsCopyIdBtn" class="copy-id-btn" title="Copy Student ID">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                  <span id="settingsCopySuccess" class="header-copy-success" style="display: none;">Copied!</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section" id="faceRecognitionSection">
+          <h3 class="section-title">Face Recognition</h3>
+          <p class="settings-description">Set up face recognition for quick attendance marking</p>
+          <div id="faceRecognitionStatus">
+            <p class="settings-status" id="faceStatus">You haven't set up face recognition yet.</p>
+            <button class="btn btn-primary" id="startScanBtn">
+              <i class="fas fa-camera"></i> Start Scan
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="closeSettingsBtn" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -1920,6 +2274,18 @@
           startAttendanceSession(classCode);
         });
       }
+
+      // Setup add group button
+      // Make sure classCode is passed to setupAddGroupButton
+      const urlParamsForAddGroup = new URLSearchParams(window.location.search);
+      const classCodeForAddGroup = urlParamsForAddGroup.get('class');
+      setupAddGroupButton(classCodeForAddGroup);
+
+      // Setup header copy ID button
+      setupHeaderCopyButton();
+
+      // Setup Settings Modal and its copy button
+      setupSettingsModal();
     });
 
     // Setup search functionality
@@ -2009,7 +2375,7 @@
       // Function to show modal
       function showAddGroupModal() {
         addGroupModal.style.display = 'block';
-        confirmOverlay.style.display = 'block';
+        miniModalOverlay.style.display = 'block'; // Use the correct overlay
         setTimeout(() => addGroupModal.classList.add('active'), 10);
         groupNameInput.value = ''; // Clear previous input
         groupNameInput.focus();
@@ -2020,17 +2386,22 @@
         addGroupModal.classList.remove('active');
         setTimeout(() => {
           addGroupModal.style.display = 'none';
-          confirmOverlay.style.display = 'none';
+          miniModalOverlay.style.display = 'none'; // Use the correct overlay
         }, 300);
       }
 
       // Show modal when add group button is clicked
       addGroupBtn.addEventListener('click', showAddGroupModal);
-      // Show modal when add group button is clicked
-      addGroupBtn.addEventListener('click', showAddGroupModal);
 
       // Hide modal when cancel button is clicked
       cancelAddGroupBtn.addEventListener('click', hideAddGroupModal);
+
+      // Also hide when clicking on the overlay
+      miniModalOverlay.addEventListener('click', function (e) {
+        if (e.target === miniModalOverlay) { // Ensure click is directly on overlay
+          hideAddGroupModal();
+        }
+      });
 
       // Handle group creation when confirm button is clicked
       confirmAddGroupBtn.addEventListener('click', function () {
@@ -2038,94 +2409,141 @@
 
         if (!groupName) {
           groupNameInput.style.borderColor = 'var(--error)';
-          return;
-        }
-        // Generate a unique group code
-        function generateUniqueGroupCode() {
-          const prefix = 'GRP';
-          let code;
-          let isUnique = false;
-
-          while (!isUnique) {
-            // Generate a random 6-digit number
-            const randomNum = Math.floor(100000 + Math.random() * 900000);
-            code = `${prefix}${randomNum}`;
-
-            // Check if this code already exists
-            isUnique = !currentClass.groups || !currentClass.groups.some(g => g.code === code);
+          // Optionally, add an error message next to the input
+          let errorMsg = groupNameInput.parentNode.querySelector('.error-message-inline');
+          if (!errorMsg) {
+            errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message-inline'; // Add a class for styling
+            errorMsg.style.color = 'var(--error)';
+            errorMsg.style.fontSize = '12px';
+            errorMsg.style.marginTop = '5px';
+            groupNameInput.parentNode.appendChild(errorMsg);
           }
-
-          return code;
+          errorMsg.textContent = 'Group name cannot be empty.';
+          return;
+        } else {
+          let errorMsg = groupNameInput.parentNode.querySelector('.error-message-inline');
+          if (errorMsg) errorMsg.textContent = ''; // Clear error
+          groupNameInput.style.borderColor = 'rgba(255, 255, 255, 0.2)'; // Reset border
         }
-
-
-
 
         // Get class data
         const storedClasses = localStorage.getItem('attendify_tutored_classes');
-        if (!storedClasses) return;
-
-        const classes = JSON.parse(storedClasses);
-        const currentClass = classes.find(cls => cls.code === classCode);
-        if (!currentClass) return;
-
-        // Check if group name already exists
-        if (currentClass.groups && currentClass.groups.some(g => g.name.toLowerCase() === groupName.toLowerCase())) {
-          groupNameInput.style.borderColor = 'var(--error)';
-          // Add error message
-          const errorMsg = document.createElement('div');
-          errorMsg.style.color = 'var(--error)';
-          errorMsg.style.fontSize = '12px';
-          errorMsg.style.marginTop = '5px';
-          errorMsg.textContent = 'A group with this name already exists';
-          groupNameInput.parentNode.appendChild(errorMsg);
-          setTimeout(() => errorMsg.remove(), 3000);
+        if (!storedClasses) {
+          console.error("No 'attendify_tutored_classes' found in localStorage.");
           return;
         }
+
+        const classes = JSON.parse(storedClasses);
+        const classIndex = classes.findIndex(cls => cls.code === currentClassCode); // Use currentClassCode
+
+        if (classIndex === -1) {
+          console.error(`Class with code ${currentClassCode} not found.`);
+          // Handle class not found (e.g., show error to user)
+          return;
+        }
+
+        let targetClass = classes[classIndex];
+
+        // Ensure groups array exists
+        if (!targetClass.groups) {
+          targetClass.groups = [];
+        }
+
+        // Check if group name already exists
+        if (targetClass.groups.some(g => g.name.toLowerCase() === groupName.toLowerCase())) {
+          groupNameInput.style.borderColor = 'var(--error)';
+          let errorMsg = groupNameInput.parentNode.querySelector('.error-message-inline');
+          if (!errorMsg) { // Create if doesn't exist
+            errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message-inline';
+            errorMsg.style.color = 'var(--error)';
+            errorMsg.style.fontSize = '12px';
+            errorMsg.style.marginTop = '5px';
+            groupNameInput.parentNode.appendChild(errorMsg);
+          }
+          errorMsg.textContent = 'A group with this name already exists.';
+          return;
+        } else {
+          let errorMsg = groupNameInput.parentNode.querySelector('.error-message-inline');
+          if (errorMsg) errorMsg.textContent = ''; // Clear error
+          groupNameInput.style.borderColor = 'rgba(255, 255, 255, 0.2)'; // Reset border
+        }
+
+        // Generate a unique group code (can reuse existing or adapt)
+        function generateUniqueGroupCodeForStudentPage() {
+          const prefix = 'GRP';
+          let code;
+          let isUnique = false;
+          const allGroupCodes = classes.flatMap(c => c.groups ? c.groups.map(g => g.code) : []);
+
+          while (!isUnique) {
+            const randomNum = Math.floor(100000 + Math.random() * 900000);
+            code = `${prefix}${randomNum}`;
+            isUnique = !allGroupCodes.includes(code);
+          }
+          return code;
+        }
+
         // Create new group
         const newGroup = {
           name: groupName,
-          code: generateUniqueGroupCode(),
-          students: []
+          code: generateUniqueGroupCodeForStudentPage(), // Use a robust unique code generator
+          students: [] // New groups start with no students
         };
 
         // Add group to class
-        if (!currentClass.groups) currentClass.groups = [];
-        currentClass.groups.push(newGroup);
+        targetClass.groups.push(newGroup);
 
         // Save updated class data
-        const classIndex = classes.findIndex(cls => cls.code === classCode);
-        classes[classIndex] = currentClass;
+        classes[classIndex] = targetClass;
         localStorage.setItem('attendify_tutored_classes', JSON.stringify(classes));
-        // Show success message
-        const successMsg = document.createElement('div');
-        successMsg.style.cssText = `
+
+        // Show success message (reuse existing notification system if available, or simple alert)
+        // This is the refined success message from your original code
+        const successToast = document.createElement('div');
+        successToast.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
+            background: rgba(16, 185, 129, 0.9); /* More opaque for visibility */
+            color: white; /* Ensure text is white for contrast */
             padding: 12px 20px;
             border-radius: 8px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            /* border: 1px solid rgba(16, 185, 129, 0.2); */ /* Border might be redundant with solid background */
             font-size: 14px;
-            z-index: 9999;
+            z-index: 10000; /* Higher z-index */
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Stronger shadow */
+            opacity: 0; /* Start hidden for animation */
+            transform: translateX(100%); /* Start off-screen for animation */
+            transition: opacity 0.3s ease, transform 0.3s ease;
           `;
-        successMsg.innerHTML = `
+        successToast.innerHTML = `
             <i class="fas fa-check-circle"></i>
-            Group "${groupName}" created with code: ${newGroup.code}
+            Group "${groupName}" created (Code: ${newGroup.code})
           `;
-        document.body.appendChild(successMsg);
-        setTimeout(() => successMsg.remove(), 5000);
+        document.body.appendChild(successToast);
+        // Animate in
+        setTimeout(() => {
+          successToast.style.opacity = '1';
+          successToast.style.transform = 'translateX(0)';
+        }, 10);
+        // Animate out and remove
+        setTimeout(() => {
+          successToast.style.opacity = '0';
+          successToast.style.transform = 'translateX(100%)';
+          setTimeout(() => successToast.remove(), 300);
+        }, 5000);
 
 
-        // Refresh the groups list and selector
-        loadGroupsList(classCode);
-        loadClassDetails(classCode);
+        // Refresh the groups list and UI elements
+        loadGroupsList(currentClassCode); // Pass the correct class code
+        // Potentially loadClassDetails if it affects UI related to groups
+        // loadClassDetails(currentClassCode); // Uncomment if needed
+
         // Hide modal
         hideAddGroupModal();
       });
@@ -2133,11 +2551,14 @@
       // Reset input style on focus
       groupNameInput.addEventListener('focus', function () {
         this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        let errorMsg = this.parentNode.querySelector('.error-message-inline');
+        if (errorMsg) errorMsg.textContent = ''; // Clear error on focus
       });
 
       // Handle Enter key in input
       groupNameInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
+          e.preventDefault(); // Prevent form submission if it's in a form
           confirmAddGroupBtn.click();
         }
       });
@@ -2145,7 +2566,7 @@
 
     // Function to update the current date
     function updateCurrentDate() {
-      const dateElement = document.getElementById('currentDate');
+      const dateElement = document.getElementById('currentDateDisplay');
       if (dateElement) {
         const now = new Date();
         const options = {
@@ -2722,7 +3143,7 @@
                   <div class="attendance-row">
                     <div class="attendance-counter small">
                       <div class="attendance-count">
-                        <span class="attended">${Math.floor(Math.random() * 3 + 5)}</span>/<span class="total">8</span>
+                        <span class="attended">${Math.floor(Math.random() * 3 + 5)}</span><span class="slash">/</span><span class="total">8</span>
       </div>
                       <div class="attendance-label">Classes</div>
     </div>
@@ -2888,7 +3309,7 @@
       return [
         {
           id: 'STU' + Math.floor(100000 + Math.random() * 900000),
-          name: 'John Smith',
+          name: 'Adour Serine Khaoula',
           group: 'Group A',
           justifications: [
             { date: '2023-10-05', justified: true },
@@ -2899,7 +3320,7 @@
         },
         {
           id: 'STU' + Math.floor(100000 + Math.random() * 900000),
-          name: 'Emily Johnson',
+          name: 'Bersali Sirine Selma',
           group: 'Group A',
           justifications: [
             { date: '2023-10-05', justified: false },
@@ -2910,7 +3331,7 @@
         },
         {
           id: 'STU' + Math.floor(100000 + Math.random() * 900000),
-          name: 'Michael Brown',
+          name: 'Mellak Nour El Houda',
           group: 'Group B',
           justifications: [
             { date: '2023-10-05', justified: true },
@@ -2921,7 +3342,7 @@
         },
         {
           id: 'STU' + Math.floor(100000 + Math.random() * 900000),
-          name: 'Jessica Williams',
+          name: 'Keddar Ilhem',
           group: 'Group B',
           justifications: [
             { date: '2023-10-05', justified: true },
@@ -2932,7 +3353,7 @@
         },
         {
           id: 'STU' + Math.floor(100000 + Math.random() * 900000),
-          name: 'David Jones',
+          name: 'Khedari Mohamed',
           group: 'Group C',
           justifications: [
             { date: '2023-10-05', justified: false },
@@ -2943,7 +3364,7 @@
         },
         {
           id: 'STU' + Math.floor(100000 + Math.random() * 900000),
-          name: 'Sarah Garcia',
+          name: 'Hamani Fouad Mohamed',
           group: 'Group C',
           justifications: [
             { date: '2023-10-05', justified: true },
@@ -2954,7 +3375,7 @@
         },
         {
           id: 'STU' + Math.floor(100000 + Math.random() * 900000),
-          name: 'Robert Miller',
+          name: 'Bencherchali Iyad',
           group: 'Default Group',
           justifications: [
             { date: '2023-10-05', justified: false },
@@ -2965,7 +3386,7 @@
         },
         {
           id: 'STU' + Math.floor(100000 + Math.random() * 900000),
-          name: 'Amanda Thompson',
+          name: 'Dif Iyad',
           group: 'Default Group',
           justifications: [
             { date: '2023-10-05', justified: true },
@@ -2976,7 +3397,7 @@
         },
         {
           id: 'STU' + Math.floor(100000 + Math.random() * 900000),
-          name: 'Thomas Wilson',
+          name: 'Hamida Fouad',
           group: 'Group A',
           justifications: [
             { date: '2023-10-05', justified: false },
@@ -2987,7 +3408,7 @@
         },
         {
           id: 'STU' + Math.floor(100000 + Math.random() * 900000),
-          name: 'Lisa Taylor',
+          name: 'ElArouci Abdel',
           group: 'Group B',
           justifications: [
             { date: '2023-10-05', justified: true },
@@ -3102,9 +3523,12 @@
     function setupProfileDropdown() {
       const profileDropdownBtn = document.getElementById('profileDropdownBtn');
       const profileDropdownMenu = document.getElementById('profileDropdownMenu');
+      const settingsBtn = document.getElementById('settingsBtn');
 
+      // Handle profile dropdown button click
       if (profileDropdownBtn && profileDropdownMenu) {
-        profileDropdownBtn.addEventListener('click', function () {
+        profileDropdownBtn.addEventListener('click', function (e) {
+          e.stopPropagation(); // Prevent click from bubbling to document
           profileDropdownMenu.classList.toggle('active');
         });
 
@@ -3114,21 +3538,6 @@
             profileDropdownMenu.classList.remove('active');
           }
         });
-      }
-
-      // Set user name and ID
-      const userName = document.getElementById('userName');
-      const headerStudentId = document.getElementById('headerStudentId');
-
-      if (userName && headerStudentId) {
-        // You could get this from localStorage if you have it saved
-        userName.textContent = 'Sididris Meriem';
-
-        let studentId = localStorage.getItem('attendify_student_id');
-        if (!studentId) {
-          studentId = 'STU123456';
-        }
-        headerStudentId.textContent = studentId;
       }
     }
 
@@ -4181,7 +4590,204 @@
         delay += Math.random() * 6000 + 4000;
       });
     }
+
+    // Function to handle copying ID to clipboard
+    function copyIdToClipboard(buttonId, idElementId, successElementId) {
+      const copyBtn = document.getElementById(buttonId);
+      const idElement = document.getElementById(idElementId);
+      const successMessage = document.getElementById(successElementId);
+
+      if (copyBtn && idElement && successMessage) {
+        copyBtn.addEventListener('click', function () {
+          const idToCopy = idElement.textContent.trim();
+          navigator.clipboard.writeText(idToCopy)
+            .then(() => {
+              successMessage.style.display = 'inline';
+              setTimeout(() => {
+                successMessage.style.display = 'none';
+              }, 2000);
+            })
+            .catch(err => {
+              console.error('Failed to copy ID: ', err);
+              alert('Failed to copy ID.');
+            });
+        });
+      } else {
+        console.error('Missing elements for copy functionality:', buttonId, idElementId, successElementId);
+      }
+    }
+
+    // Setup header copy ID button
+    function setupHeaderCopyButton() {
+      const headerCopyIdBtn = document.getElementById('headerCopyIdBtn');
+      const headerStudentId = document.getElementById('headerStudentId');
+      const headerCopySuccess = document.getElementById('headerCopySuccess');
+
+      if (headerCopyIdBtn && headerStudentId) {
+        headerCopyIdBtn.addEventListener('click', function () {
+          const studentId = headerStudentId.textContent;
+          navigator.clipboard.writeText(studentId)
+            .then(() => {
+              if (headerCopySuccess) {
+                headerCopySuccess.style.display = 'inline';
+                setTimeout(() => {
+                  headerCopySuccess.style.display = 'none';
+                }, 2000);
+              }
+            })
+            .catch(err => {
+              console.error('Failed to copy:', err);
+            });
+        });
+      }
+    }
+
+    // Setup Settings Modal
+    function setupSettingsModal() {
+      const settingsBtn = document.getElementById('settingsBtn');
+      const settingsModal = document.getElementById('settingsModal');
+      const settingsModalOverlay = document.getElementById('settingsModalOverlay');
+      const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+      const settingsCopyIdBtn = document.getElementById('settingsCopyIdBtn');
+      const settingsCopySuccess = document.getElementById('settingsCopySuccess');
+      const settingsStudentId = document.getElementById('settingsStudentId');
+      const settingsUserName = document.getElementById('settingsUserName');
+      const profileDropdownMenu = document.getElementById('profileDropdownMenu');
+
+      // Show settings modal when settings button is clicked
+      if (settingsBtn) {
+        settingsBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Hide profile dropdown
+          if (profileDropdownMenu) {
+            profileDropdownMenu.classList.remove('active');
+          }
+
+          // Show settings modal and overlay
+          if (settingsModalOverlay && settingsModal) {
+            settingsModalOverlay.style.display = 'flex';
+            settingsModal.style.display = 'block';
+
+            // Add active class after a small delay for animation
+            setTimeout(() => {
+              settingsModalOverlay.classList.add('active');
+              settingsModal.classList.add('active');
+            }, 10);
+          }
+        });
+      }
+
+      // Close settings modal when close button is clicked
+      if (closeSettingsBtn) {
+        closeSettingsBtn.addEventListener('click', function () {
+          // Remove active class first
+          settingsModal.classList.remove('active');
+          settingsModalOverlay.classList.remove('active');
+
+          // Hide elements after animation
+          setTimeout(() => {
+            settingsModal.style.display = 'none';
+            settingsModalOverlay.style.display = 'none';
+          }, 300);
+        });
+      }
+
+      // Close settings modal when clicking outside
+      if (settingsModalOverlay) {
+        settingsModalOverlay.addEventListener('click', function (e) {
+          if (e.target === settingsModalOverlay) {
+            // Remove active class first
+            settingsModal.classList.remove('active');
+            settingsModalOverlay.classList.remove('active');
+
+            // Hide elements after animation
+            setTimeout(() => {
+              settingsModal.style.display = 'none';
+              settingsModalOverlay.style.display = 'none';
+            }, 300);
+          }
+        });
+      }
+
+      // Handle copy student ID functionality
+      if (settingsCopyIdBtn && settingsStudentId && settingsCopySuccess) {
+        settingsCopyIdBtn.addEventListener('click', function () {
+          const studentId = settingsStudentId.textContent;
+
+          navigator.clipboard.writeText(studentId)
+            .then(() => {
+              settingsCopySuccess.style.display = 'inline';
+              setTimeout(() => {
+                settingsCopySuccess.style.display = 'none';
+              }, 2000);
+            })
+            .catch(err => {
+              console.error('Failed to copy:', err);
+            });
+        });
+      }
+
+      // Update settings modal with user info
+      if (settingsUserName && settingsStudentId) {
+        // Get user info from header
+        const headerUserName = document.getElementById('userName');
+        const headerStudentId = document.getElementById('headerStudentId');
+
+        if (headerUserName && headerStudentId) {
+          settingsUserName.textContent = headerUserName.textContent;
+          settingsStudentId.textContent = headerStudentId.textContent;
+        }
+      }
+    }
   </script>
+
+  <!-- Settings Modal -->
+  <div id="settingsModalOverlay" class="modal-overlay">
+    <div id="settingsModal" class="modal">
+      <div class="modal-content">
+        <h2 class="modal-title">Settings</h2>
+        <div class="settings-section">
+          <h3 class="section-title">Profile</h3>
+          <div class="profile-settings">
+            <div class="user-profile">
+              <div class="user-avatar">
+                <div class="avatar-circle">
+                  <img src="assets/default-avatar.png" alt="Profile" class="profile-image" id="settingsProfileImage"
+                    style="display: none;">
+                  <i class="fas fa-user avatar-icon" id="settingsAvatarIcon"></i>
+                </div>
+              </div>
+              <div class="user-info">
+                <span id="settingsUserName" class="user-name">Sididris Meriem</span>
+                <div class="user-id-container">
+                  <span id="settingsStudentId" class="user-id">STU123456</span>
+                  <button id="settingsCopyIdBtn" class="copy-id-btn" title="Copy Student ID">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                  <span id="settingsCopySuccess" class="header-copy-success" style="display: none;">Copied!</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section" id="faceRecognitionSection">
+          <h3 class="section-title">Face Recognition</h3>
+          <p class="settings-description">Set up face recognition for quick attendance marking</p>
+          <div id="faceRecognitionStatus">
+            <p class="settings-status" id="faceStatus">You haven't set up face recognition yet.</p>
+            <button class="btn btn-primary" id="startScanBtn">
+              <i class="fas fa-camera"></i> Start Scan
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="closeSettingsBtn" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

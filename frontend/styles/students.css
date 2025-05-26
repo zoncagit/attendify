@@ -430,24 +430,24 @@
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .students-list-header {
     grid-template-columns: 2fr 1fr 1fr;
   }
-  
+
   .student-item {
     grid-template-columns: 2fr 1fr 1fr;
   }
-  
+
   .student-header-actions,
   .student-actions {
     display: none;
   }
-  
+
   .student-item {
     position: relative;
   }
-  
+
   .student-actions {
     position: absolute;
     right: 1rem;
@@ -459,13 +459,13 @@
   .students-list-header {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .student-item {
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
     padding: 1rem 0.5rem;
   }
-  
+
   .student-header-attendance,
   .student-attendance {
     display: none;
@@ -495,4 +495,4 @@
 .group-badge:hover {
   background: rgba(79, 70, 229, 0.25);
   transform: translateY(-1px);
-} 
+}
