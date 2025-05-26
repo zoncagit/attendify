@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
   const resetPasswordForm = document.getElementById('resetPasswordForm');
-  const passwordInput = document.getElementById('password');
-  const confirmPasswordInput = document.getElementById('confirmPassword');
+  const newPasswordInput = document.getElementById('newPassword');
+  const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+  const toggleNewPasswordBtn = document.getElementById('toggleNewPassword');
+  const toggleConfirmNewPasswordBtn = document.getElementById('toggleConfirmNewPassword');
   const successMessage = document.getElementById('successMessage');
   const passwordStrengthBar = document.getElementById('passwordStrengthBar');
   const passwordStrengthText = document.getElementById('passwordStrengthText');
@@ -11,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const email = urlParams.get('email');
   
   // Check password strength
-  passwordInput.addEventListener('input', function() {
+  newPasswordInput.addEventListener('input', function() {
     const password = this.value;
     let strength = 0;
     let strengthText = "Weak";
@@ -48,13 +50,40 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   
   // Check if passwords match
-  confirmPasswordInput.addEventListener('input', function() {
-    if (this.value !== passwordInput.value && this.value !== '') {
+  confirmNewPasswordInput.addEventListener('input', function() {
+    if (this.value !== newPasswordInput.value && this.value !== '') {
       this.classList.add('error');
     } else {
       this.classList.remove('error');
     }
   });
+  
+  function setupPasswordToggle(inputId, toggleId) {
+    const input = document.getElementById(inputId);
+    const toggle = document.getElementById(toggleId);
+    if (!input || !toggle) return;
+    function toggleVisibility() {
+      const icon = toggle.querySelector('i');
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+      } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+      }
+    }
+    toggle.addEventListener("click", toggleVisibility);
+    toggle.addEventListener("keydown", function(e) {
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+        e.preventDefault();
+        toggleVisibility();
+      }
+    });
+  }
+  setupPasswordToggle("newPassword", "toggleNewPassword");
+  setupPasswordToggle("confirmNewPassword", "toggleConfirmNewPassword");
   
   resetPasswordForm.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -62,19 +91,19 @@ document.addEventListener('DOMContentLoaded', function() {
     let isValid = true;
     
     // Validate password length
-    if (passwordInput.value.length < 8) {
-      passwordInput.classList.add('error');
+    if (newPasswordInput.value.length < 8) {
+      newPasswordInput.classList.add('error');
       isValid = false;
     } else {
-      passwordInput.classList.remove('error');
+      newPasswordInput.classList.remove('error');
     }
     
     // Validate password match
-    if (confirmPasswordInput.value !== passwordInput.value) {
-      confirmPasswordInput.classList.add('error');
+    if (confirmNewPasswordInput.value !== newPasswordInput.value) {
+      confirmNewPasswordInput.classList.add('error');
       isValid = false;
     } else {
-      confirmPasswordInput.classList.remove('error');
+      confirmNewPasswordInput.classList.remove('error');
     }
     
     if (!isValid) return;

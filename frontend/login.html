@@ -6,10 +6,6 @@
     <title>Attendify - Login</title>
      <link rel="icon" type="image/png" href="logo_attendify1.png" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
@@ -23,8 +19,8 @@
       </div>
 
       <div class="success-message" id="successMessage">
-        <!--JS-->
-        <i class="fas fa-check-circle"></i> Login successful! Redirecting...
+        <i class="fas fa-check-circle"></i>
+        <span class="message-text">Login successful! Redirecting...</span>
       </div>
 
       <form id="loginForm">
@@ -50,7 +46,9 @@
             placeholder="Enter your password"
             required
           />
-          <i class="fas fa-lock input-icon"></i>
+          <span class="toggle-password" id="togglePassword" tabindex="0" role="button" aria-label="Show or hide password">
+            <i class="fas fa-eye-slash"></i>
+          </span>
           <div class="error-message">Password is required</div>
         </div>
 
@@ -68,16 +66,6 @@
         <button type="submit" class="btn-login">
           <span>Login</span>
           <div class="spinner"></div>
-          <!--display loading spinner-->
-        </button>
-
-        <div class="login-divider">
-          <span>OR</span>
-        </div>
-
-        <button type="button" class="btn-google-login">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" />
-          <span>Continue with Google</span>
         </button>
 
         <div class="signup-link">
@@ -86,7 +74,8 @@
       </form>
     </div>
    
-    <script src="scripts/login.js" defer>// get the js without blocking the page that's loading</script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script type="module" src="scripts/config.js"></script>
+    <script type="module" src="scripts/utils.js"></script>
+    <script type="module" src="scripts/login.js"></script>
   </body>
 </html>

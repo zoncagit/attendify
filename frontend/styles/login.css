@@ -71,7 +71,7 @@ body{
 
 .form-input{
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 3rem 0.75rem 1rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.5rem;
@@ -101,12 +101,48 @@ body{
   display: block;
 }
 
-
-.input-icon{
+/* Input icons (envelope) */
+.input-icon {
   position: absolute;
   right: 1rem;
-  top: 2.5rem;
+  top: 65%;
+  transform: translateY(-50%);
   color: var(--text-secondary);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+/* Password toggle icon */
+.toggle-password {
+  position: absolute;
+  right: 0.75rem;
+  top: 69%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  z-index: 1;
+}
+
+.toggle-password:hover {
+  color: var(--text);
+}
+
+.toggle-password:focus {
+  outline: none;
+  color: var(--primary);
+}
+
+.toggle-password i {
+  font-size: 1rem;
 }
 
 .form-options{
@@ -209,23 +245,45 @@ body{
   text-decoration: underline;
 }
 
-.success-message{
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid var(--success);
+.success-message {
+  display: none;
   padding: 1rem;
   border-radius: 0.5rem;
   margin-bottom: 1.5rem;
-  display: none;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.success-message.show{
-  display: block;
-  animation: fadeIn 0.5s ease;
+.success-message.show {
+  display: flex;
 }
 
-@keyframes fadeIn{
-  from{ opacity:0; transform: translateY(-10px);}
-  to { opacity:1; transform: translateY(0);}
+.success-message.success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--success);
+  color: var(--success);
+}
+
+.success-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error);
+  color: var(--error);
+}
+
+.success-message.info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
+}
+
+.success-message i {
+  font-size: 1.25rem;
+}
+
+.success-message .message-text {
+  flex: 1;
 }
 
 @media (max-width: 640px){
@@ -235,53 +293,4 @@ body{
     align-items: flex-start;
   }
 }
-
-.login-divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 20px 0;
-}
-
-.login-divider::before,
-.login-divider::after {
-  content: "";
-  flex: 1;
-  border-bottom: 1px solid #ddd;
-}
-
-.login-divider span {
-  padding: 0 10px;
-  color: #777;
-  font-size: 14px;
-}
-
-.btn-google-login {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 12px;
-  background-color: #ffffff;
-  color: #444;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-weight: 500;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s, box-shadow 0.3s;
-  margin-bottom: 20px;
-}
-
-.btn-google-login:hover {
-  background-color: #f8f8f8;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.btn-google-login img {
-  width: 18px;
-  height: 18px;
-  margin-right: 10px;
-}
-
 

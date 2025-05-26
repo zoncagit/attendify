@@ -1,3 +1,6 @@
+import CONFIG from './config.js';
+import utils from './utils.js';
+
 document.addEventListener('DOMContentLoaded', function() {//waiting until the entire html document is loaded
 
   const loginForm = document.getElementById('loginForm');
@@ -6,6 +9,25 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
   const rememberMeCheckbox = document.getElementById('rememberMe');
   const successMessage = document.getElementById('successMessage');
   const googleLoginButton = document.querySelector('.btn-google-login');
+  const togglePassword = document.getElementById('togglePassword');
+
+  // Setup password toggle functionality
+  togglePassword.addEventListener('click', function() {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    
+    // Toggle the eye icon
+    const icon = this.querySelector('i');
+    icon.className = type === 'password' ? 'fas fa-eye-slash' : 'fas fa-eye';
+  });
+
+  // Also toggle password when user presses Enter or Space on the toggle button
+  togglePassword.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      this.click();
+    }
+  });
 
   if (localStorage.getItem('rememberedEmail')){//3nd l user 
       emailInput.value = localStorage.getItem('rememberedEmail');
@@ -14,21 +36,19 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
 
 
   emailInput.addEventListener('input', function() {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;//regular expression
-      if (!emailRegex.test(this.value) && this.value !== '') {
+      if (!utils.validateEmail(this.value) && this.value !== '') {
           this.classList.add('error');
       } else {
           this.classList.remove('error');
       }
   });
 
-  loginForm.addEventListener('submit', function(e) {//e: object automatically passed by the browser
+  loginForm.addEventListener('submit', async function(e) {//e: object automatically passed by the browser
       e.preventDefault();//lemme handle
 
       let isValid = true;
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(emailInput.value)) {
+      if (!utils.validateEmail(emailInput.value)) {
           emailInput.classList.add('error');
           isValid = false;
       } else {
@@ -55,56 +75,37 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
       button.classList.add('loading');
       button.disabled = true;
 
-      //simulate login process
-      setTimeout(() => {
-          //show success message
-          successMessage.classList.add('show');
-
-          //redirect after a delay
-          setTimeout(() => {
-              window.location.href = 'dashboard.html';
-          }, 1500);
-      }, 1500);//1500: 1.5s (changes with fetch)
-  });
-
-  // Google Sign-In functionality
-  googleLoginButton.addEventListener('click', function() {
-    // Initialize Google Sign-In
-    google.accounts.id.initialize({
-      client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
-      callback: handleGoogleSignIn
-    });
-
-    google.accounts.id.prompt();
-  });
-
-  function handleGoogleSignIn(response) {
-    // Handle the sign-in response from Google
-    if (response.credential) {
       try {
-        // Parse the JWT token to get user info
-        const payload = JSON.parse(atob(response.credential.split(".")[1]));
-        
-        // Store user info in localStorage
-        localStorage.setItem('userName', payload.name || 'Google User');
-        localStorage.setItem('userEmail', payload.email);
-        localStorage.setItem('googleAuth', 'true');
-        
-        // Show success message
-        successMessage.classList.add('show');
+          // Attempt login
+          const { ok, data } = await utils.fetchWithAuth(CONFIG.API_ENDPOINTS.LOGIN, {
+              method: 'POST',
+              body: JSON.stringify({
+                  email: emailInput.value,
+                  password: passwordInput.value
+              })
+          });
 
-        // Redirect to dashboard after a delay
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1500);
+          if (ok && data.token) {
+              // Store authentication data
+              utils.setAuthToken(data.token);
+              utils.setUser(data.user);
+
+              // Show success message
+              utils.showNotification('Login successful! Redirecting...', 'success');
+
+              // Redirect to dashboard
+              setTimeout(() => {
+                  window.location.href = 'dashboard.html';
+              }, 1500);
+          } else {
+              throw new Error(data.message || 'Login failed');
+          }
       } catch (error) {
-        console.error('Error processing Google sign-in:', error);
-        // Fallback to simple redirect
-        successMessage.classList.add('show');
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1500);
+          utils.showNotification(error.message || 'Login failed. Please try again.', 'error');
+          button.classList.remove('loading');
+          button.disabled = false;
       }
-    }
-  }
+  });
+
+
 });
