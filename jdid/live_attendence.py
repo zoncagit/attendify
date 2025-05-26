@@ -3,7 +3,7 @@ from generate_emb import embedding_model
 import cv2
 import numpy as np
 from numpy.linalg import norm
-stored_embeddings = np.load("student_embeddings.npy", allow_pickle=True).item()
+stored_embeddings = np.load("students_embeddings.npy", allow_pickle=True).item()
 xml_path = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml')
 video =cv2.VideoCapture(0)
 face_detected = cv2.CascadeClassifier(xml_path)

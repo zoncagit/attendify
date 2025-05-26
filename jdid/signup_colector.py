@@ -48,4 +48,3 @@ else:
 
 np.save(path, existing_embeddings)
 print(f"Embedding for {name} saved successfully.")
-
