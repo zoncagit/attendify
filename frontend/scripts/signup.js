@@ -187,11 +187,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       // Send signup request to backend
-      const { ok, data } = await utils.fetchWithAuth(CONFIG.API_ENDPOINTS.SIGNUP, {
+      const { ok, data } = await utils.fetchWithAuth('http://127.0.0.1:8000/api/v1/auth/signup', {
         method: 'POST',
         body: JSON.stringify({
-          firstName: firstNameInput.value.trim(),
-          lastName: lastNameInput.value.trim(),
+          name: firstNameInput.value.trim(),      
+          prenom: lastNameInput.value.trim(), 
           email: emailInput.value.trim(),
           password: passwordInput.value
         })
@@ -231,11 +231,11 @@ document.addEventListener("DOMContentLoaded", function () {
     verifyCodeBtn.disabled = true;
 
     try {
-      const { ok, data } = await utils.fetchWithAuth(CONFIG.API_ENDPOINTS.VERIFY_EMAIL, {
+      const { ok, data } = await utils.fetchWithAuth('http://127.0.0.1:8000/api/v1/auth/verify', {
         method: 'POST',
         body: JSON.stringify({
           email: emailInput.value,
-          code: enteredCode
+          verification_code: enteredCode
         })
       });
 
@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   resendCodeBtn.addEventListener("click", async function () {
     try {
-      const { ok, data } = await utils.fetchWithAuth(CONFIG.API_ENDPOINTS.RESEND_CODE, {
+      const { ok, data } = await utils.fetchWithAuth('http://127.0.0.1:8000/api/v1/auth/resend-verification', {
         method: 'POST',
         body: JSON.stringify({
           email: emailInput.value

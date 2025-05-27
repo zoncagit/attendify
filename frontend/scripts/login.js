@@ -75,36 +75,43 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
       button.classList.add('loading');
       button.disabled = true;
 
-      try {
-          // Attempt login
-          const { ok, data } = await utils.fetchWithAuth(CONFIG.API_ENDPOINTS.LOGIN, {
-              method: 'POST',
-              body: JSON.stringify({
-                  email: emailInput.value,
-                  password: passwordInput.value
-              })
-          });
-
-          if (ok && data.token) {
-              // Store authentication data
-              utils.setAuthToken(data.token);
-              utils.setUser(data.user);
-
-              // Show success message
-              utils.showNotification('Login successful! Redirecting...', 'success');
-
-              // Redirect to dashboard
-              setTimeout(() => {
-                  window.location.href = 'dashboard.html';
-              }, 1500);
-          } else {
-              throw new Error(data.message || 'Login failed');
-          }
-      } catch (error) {
-          utils.showNotification(error.message || 'Login failed. Please try again.', 'error');
-          button.classList.remove('loading');
-          button.disabled = false;
-      }
+      try  {
+        // Préparation des données encodées en URL, comme attendu par FastAPI OAuth2PasswordRequestForm
+        const formData = new URLSearchParams();
+        formData.append('username', emailInput.value);
+        formData.append('password', passwordInput.value);
+    
+        // Envoi de la requête POST vers l'API FastAPI
+        const response = await fetch('http://127.0.0.1:8000/api/v1/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData
+        });
+    
+        const data = await response.json();
+    
+        if (response.ok && data.access_token) {
+            // Sauvegarder le token et l'utilisateur
+            utils.setAuthToken(data.access_token);
+            utils.setUser(data.user);
+    
+            utils.showNotification('Login successful! Redirecting...', 'success');
+    
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1500);
+        } else {
+            throw new Error(data.detail || 'Login failed');
+        }
+    
+    } catch (error) {
+        utils.showNotification(error.message || 'Login failed. Please try again.', 'error');
+        button.classList.remove('loading');
+        button.disabled = false;
+    }
+    
   });
 
 

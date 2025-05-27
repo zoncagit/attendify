@@ -1,11 +1,11 @@
 const CONFIG = {
-  API_URL: 'http://localhost:3000/api', //Change this to your actual backend URL
+  API_URL: 'http://127.0.0.1:8000/docs', //Change this to your actual backend URL
   API_ENDPOINTS: {
-    LOGIN: '/api/auth/login',
-    SIGNUP: '/api/auth/signup',
-    FORGOT_PASSWORD: '/auth/forgot-password',
-    RESET_PASSWORD: '/auth/reset-password',
-    VERIFY_EMAIL: '/api/auth/verify-email',
+    LOGIN: '/api/v1/auth/login',
+    SIGNUP: '/api/v1/auth/signup',
+    FORGOT_PASSWORD: '/api/v1/auth/request-password-reset',
+    RESET_PASSWORD: '/api/v1/auth/reset-password',
+    VERIFY_EMAIL: '/api/v1/auth/verify',
     CLASSES: '/classes',
     ATTENDANCE: '/attendance',
     MARK_ATTENDANCE: '/attendance/mark',
