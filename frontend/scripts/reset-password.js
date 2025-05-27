@@ -16,8 +16,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const email = urlParams.get('email');
   const token = urlParams.get('token');
 
-  // Handle missing parameters
-  if (!email || !token) {
+  // Only show error if coming from forgot password page (check referrer)
+  const isFromForgotPassword = document.referrer.includes('forgot-password.html');
+  
+  if ((!email || !token) && isFromForgotPassword) {
     utils.showNotification('Invalid reset password link. Please request a new password reset.', 'error');
     // Hide the reset password form
     if (resetPasswordForm) {
@@ -163,10 +165,18 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       if (ok) {
-        //success message
+        // Hide any error messages
+        const errorMessages = document.querySelectorAll('.error-message');
+        errorMessages.forEach(msg => msg.style.display = 'none');
+        
+        // Remove error classes
+        newPasswordInput.classList.remove('error');
+        confirmNewPasswordInput.classList.remove('error');
+        
+        // Show success message
         successMessage.classList.add('show');
         
-        //redirect to login page after delay
+        // Redirect to login page after delay
         setTimeout(() => {
           window.location.href = 'login.html';
         }, 2000);
@@ -174,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
         throw new Error(data.message || 'Password reset failed');
       }
     } catch (error) {
-      //error message
       utils.showNotification(error.message || 'An error occurred. Please try again.', 'error');
     } finally {
       button.classList.remove('loading');
