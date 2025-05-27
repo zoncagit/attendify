@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // Add loading state to button
+    //add loading state to button
     sendResetLinkBtn.classList.add('loading');
     sendResetLinkBtn.disabled = true;
     
@@ -44,14 +44,19 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       if (ok) {
-        //Show success message
+        //show success message
         successMessage.classList.add('show');
         resetForm.style.opacity = '0.5';
         sendResetLinkBtn.style.display = 'none';
 
-        setTimeout(() => {
-          window.location.href = `reset-password.html?email=${encodeURIComponent(emailInput.value)}`;
-        }, 2000);
+        //redirect to reset password page with both email and token
+        if (data && data.resetToken) {
+          setTimeout(() => {
+            window.location.href = `reset-password.html?email=${encodeURIComponent(emailInput.value)}&token=${encodeURIComponent(data.resetToken)}`;
+          }, 2000);
+        } else {
+          throw new Error('Reset token not received from server');
+        }
       } else {
         throw new Error(data.message || 'Failed to send reset link');
       }
@@ -60,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
       errorMessage.textContent = error.message || 'An error occurred. Please try again.';
       errorMessage.style.display = 'block';
     } finally {
-      // remove loading state
+        //remove loading state
       sendResetLinkBtn.classList.remove('loading');
       sendResetLinkBtn.disabled = false;
     }
