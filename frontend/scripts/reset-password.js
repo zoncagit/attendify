@@ -1,3 +1,6 @@
+import CONFIG from './config.js';
+import utils from './utils.js';
+
 document.addEventListener('DOMContentLoaded', function() {
   const resetPasswordForm = document.getElementById('resetPasswordForm');
   const newPasswordInput = document.getElementById('newPassword');
@@ -8,18 +11,25 @@ document.addEventListener('DOMContentLoaded', function() {
   const passwordStrengthBar = document.getElementById('passwordStrengthBar');
   const passwordStrengthText = document.getElementById('passwordStrengthText');
   
-  // Get email from URL parameter
+  // get email and token
   const urlParams = new URLSearchParams(window.location.search);
   const email = urlParams.get('email');
+  const token = urlParams.get('token');
+
+  //redirect to forgot password if no email or token
+  if (!email || !token) {
+    window.location.href = 'forgot-password.html';
+    return;
+  }
   
-  // Check password strength
+  // check password strength
   newPasswordInput.addEventListener('input', function() {
     const password = this.value;
     let strength = 0;
     let strengthText = "Weak";
     let strengthColor = "#ef4444"; // Red
     
-    // Calculate strength
+    // calculate strength
     if (password.length >= 8) strength += 25;
     if (password.match(/[a-z]+/)) strength += 25;
     if (password.match(/[A-Z]+/)) strength += 25;
@@ -41,20 +51,28 @@ document.addEventListener('DOMContentLoaded', function() {
     passwordStrengthText.textContent = `Password strength: ${strengthText}`;
     passwordStrengthText.style.color = strengthColor;
     
-    // Show error if password is too short
+    // show error if password is too short
+    const errorMessage = this.parentElement.querySelector('.error-message');
     if (this.value.length > 0 && this.value.length < 8) {
       this.classList.add('error');
+      errorMessage.style.display = 'block';
+      errorMessage.textContent = 'Password must be at least 8 characters';
     } else {
       this.classList.remove('error');
+      errorMessage.style.display = 'none';
     }
   });
   
-  // Check if passwords match
+  // check if passwords match
   confirmNewPasswordInput.addEventListener('input', function() {
+    const errorMessage = this.parentElement.querySelector('.error-message');
     if (this.value !== newPasswordInput.value && this.value !== '') {
       this.classList.add('error');
+      errorMessage.style.display = 'block';
+      errorMessage.textContent = 'Passwords do not match';
     } else {
       this.classList.remove('error');
+      errorMessage.style.display = 'none';
     }
   });
   
@@ -85,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
   setupPasswordToggle("newPassword", "toggleNewPassword");
   setupPasswordToggle("confirmNewPassword", "toggleConfirmNewPassword");
   
-  resetPasswordForm.addEventListener('submit', function(e) {
+  resetPasswordForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     
     let isValid = true;
@@ -93,40 +111,57 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validate password length
     if (newPasswordInput.value.length < 8) {
       newPasswordInput.classList.add('error');
+      newPasswordInput.parentElement.querySelector('.error-message').style.display = 'block';
       isValid = false;
     } else {
       newPasswordInput.classList.remove('error');
+      newPasswordInput.parentElement.querySelector('.error-message').style.display = 'none';
     }
     
     // Validate password match
     if (confirmNewPasswordInput.value !== newPasswordInput.value) {
       confirmNewPasswordInput.classList.add('error');
+      confirmNewPasswordInput.parentElement.querySelector('.error-message').style.display = 'block';
       isValid = false;
     } else {
       confirmNewPasswordInput.classList.remove('error');
+      confirmNewPasswordInput.parentElement.querySelector('.error-message').style.display = 'none';
     }
     
     if (!isValid) return;
     
-    // Add loading state
+    // add loading state
     const button = document.getElementById('resetPasswordBtn');
     button.classList.add('loading');
     button.disabled = true;
     
-    // Simulate password reset process
-    setTimeout(() => {
-      // In a real app, you would send the new password to the server here
-      // along with the email or a token
-      console.log('Reset password for:', email);
-      console.log('New password set successfully');
-      
-      // Show success message
-      successMessage.classList.add('show');
-      
-      // Redirect to login page after delay
-      setTimeout(() => {
-        window.location.href = 'login.html';
-      }, 2000);
-    }, 1500);
+    try {
+      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.RESET_PASSWORD}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          email: email,
+          token: token,
+          password: newPasswordInput.value
+        })
+      });
+
+      if (ok) {
+        //success message
+        successMessage.classList.add('show');
+        
+        //redirect to login page after delay
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+      } else {
+        throw new Error(data.message || 'Password reset failed');
+      }
+    } catch (error) {
+      //error message
+      utils.showNotification(error.message || 'An error occurred. Please try again.', 'error');
+    } finally {
+      button.classList.remove('loading');
+      button.disabled = false;
+    }
   });
 }); 
