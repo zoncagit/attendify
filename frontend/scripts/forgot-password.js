@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
     sendResetLinkBtn.disabled = true;
     
     try {
-      const { ok, data } = await utils.fetchWithAuth(`http://127.0.0.1:8000/api/v1/auth/request-password-reset`, {
+      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.FORGOT_PASSWORD}`, {
         method: 'POST',
         body: JSON.stringify({
           email: emailInput.value.trim()
@@ -44,19 +44,14 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       if (ok) {
-        // Show success message
+        //Show success message
         successMessage.classList.add('show');
         resetForm.style.opacity = '0.5';
         sendResetLinkBtn.style.display = 'none';
 
-        // Redirect to reset password page with both email and token
-        if (data && data.resetToken) {
-          setTimeout(() => {
-            window.location.href = `reset-password.html?email=${encodeURIComponent(emailInput.value)}&token=${encodeURIComponent(data.resetToken)}`;
-          }, 2000);
-        } else {
-          throw new Error('Reset token not received from server');
-        }
+        setTimeout(() => {
+          window.location.href = `reset-password.html?email=${encodeURIComponent(emailInput.value)}`;
+        }, 2000);
       } else {
         throw new Error(data.message || 'Failed to send reset link');
       }
@@ -65,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
       errorMessage.textContent = error.message || 'An error occurred. Please try again.';
       errorMessage.style.display = 'block';
     } finally {
-      // Remove loading state
+      // remove loading state
       sendResetLinkBtn.classList.remove('loading');
       sendResetLinkBtn.disabled = false;
     }
