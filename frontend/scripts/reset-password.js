@@ -16,9 +16,26 @@ document.addEventListener('DOMContentLoaded', function() {
   const email = urlParams.get('email');
   const token = urlParams.get('token');
 
-  //redirect to forgot password if no email or token
+  // Handle missing parameters
   if (!email || !token) {
-    window.location.href = 'forgot-password.html';
+    utils.showNotification('Invalid reset password link. Please request a new password reset.', 'error');
+    // Hide the reset password form
+    if (resetPasswordForm) {
+      resetPasswordForm.style.display = 'none';
+    }
+    // Show a message in the container
+    const container = document.querySelector('.reset-password-container');
+    if (container) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'invalid-link-message';
+      errorDiv.innerHTML = `
+        <i class="fas fa-exclamation-circle"></i>
+        <h2>Invalid Reset Link</h2>
+        <p>The password reset link is invalid or has expired.</p>
+        <a href="forgot-password.html" class="btn-reset">Request New Reset Link</a>
+      `;
+      container.appendChild(errorDiv);
+    }
     return;
   }
   
