@@ -157,28 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const button = document.getElementById('resetPasswordBtn');
     button.classList.add('loading');
     button.disabled = true;
-    // Insère les valeurs dans les champs cachés
-    document.getElementById('resetToken').value = token;
-document.getElementById('resetEmail').value = email;
-
-
-    console.log("Sending request with:", {
-      token: token,
-      email: email,
-      password: newPasswordInput.value
-    });
-    // Insère les valeurs dans les champs cachés
-    
     
     try {
-<<<<<<< HEAD
-      const response = await fetch("http://127.0.0.1:8000/api/v1/auth/reset-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-=======
       const response = await fetch(`${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.RESET_PASSWORD}`, {
         method: 'POST',
         headers: {
@@ -186,29 +166,13 @@ document.getElementById('resetEmail').value = email;
         },
         body: JSON.stringify({
           email: email.toLowerCase(), // Ensure email is lowercase to match backend validation
->>>>>>> 6648ab4d80bb5cb6184ee69ccb38b5ef1d8b1cbe
           token: token,
-          email: email,
           password: newPasswordInput.value
         })
       });
-      
-      const data = await response.json();
-      console.log("Error detail:", data.detail);
-         if (Array.isArray(data.detail)) {
-         data.detail.forEach(err => {
-        console.error(`At ${err.loc?.join('.')} - ${err.msg}`);
-      });
-    }
-    console.log("Current URL:", window.location.href);
 
-<<<<<<< HEAD
-
-      
-=======
       const data = await response.json();
 
->>>>>>> 6648ab4d80bb5cb6184ee69ccb38b5ef1d8b1cbe
       if (response.ok) {
         // Hide any error messages
         const errorMessages = document.querySelectorAll('.error-message');
@@ -226,24 +190,6 @@ document.getElementById('resetEmail').value = email;
           window.location.href = 'login.html';
         }, 2000);
       } else {
-<<<<<<< HEAD
-        // Log the full error response for debugging
-        console.error('Server response:', data);
-        
-        // Handle different error status codes from FastAPI
-        if (response.status === 400) {
-          throw new Error(data.detail || 'Invalid request');
-        } else if (response.status === 422) {
-          // Handle validation errors if any
-          let errorMessage = data.detail || 'Validation error';
-          if (Array.isArray(data.detail)) {
-            errorMessage = data.detail.map(err => `${err.loc[1]}: ${err.msg}`).join('\n');
-          }
-          throw new Error(errorMessage);
-        } else {
-          throw new Error(data.detail || `Error: ${response.status}`);
-        }
-=======
         // Handle specific error cases from backend
         let errorMessage = data.detail || 'Password reset failed. Please try again.';
         
@@ -266,7 +212,6 @@ document.getElementById('resetEmail').value = email;
         }
         
         utils.showNotification(errorMessage, 'error');
->>>>>>> 6648ab4d80bb5cb6184ee69ccb38b5ef1d8b1cbe
       }
     } catch (error) {
       utils.showNotification('Network error. Please check your connection and try again.', 'error');
