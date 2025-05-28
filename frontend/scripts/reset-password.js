@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
       formData.append('new_password', newPasswordInput.value);
       formData.append('confirm_password', confirmNewPasswordInput.value);
 
-      const response = await fetch(`${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.RESET_PASSWORD}`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/v1/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Cache-Control': 'no-cache'
