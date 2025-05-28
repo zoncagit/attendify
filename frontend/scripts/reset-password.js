@@ -11,14 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const passwordStrengthBar = document.getElementById('passwordStrengthBar');
   const passwordStrengthText = document.getElementById('passwordStrengthText');
   
-  // get email and token
+  // Get token from URL
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get('token');
 
-  // Only show error if coming from forgot password page (check referrer)
-  const isFromForgotPassword = document.referrer.includes('forgot-password.html');
-  
-  if (!token && isFromForgotPassword) {
+  // Show error if no token is present
+  if (!token) {
     utils.showNotification('Invalid reset password link. Please request a new password reset.', 'error');
     // Hide the reset password form
     if (resetPasswordForm) {
@@ -164,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
       formData.append('new_password', newPasswordInput.value);
       formData.append('confirm_password', confirmNewPasswordInput.value);
 
-      const response = await fetch(`http://127.0.0.1:8000/api/v1/auth/reset-password`, {
+      const response = await fetch(`${CONFIG.API_URL.split('/docs')[0]}/api/v1/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Cache-Control': 'no-cache'
