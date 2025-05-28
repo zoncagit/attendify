@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
+from sqlalchemy import delete
 from typing import List, Optional, Dict, Any
 import random
 import string
 
 from app.database import get_db
-from app.models import Class, Group, ClassUser, GroupUser, User
+from app.models import Class, Group, ClassUser, GroupUser, User, Attendance
 from app.auth import get_current_user
 from pydantic import BaseModel, Field
 
@@ -584,3 +585,134 @@ def get_group_users(
         }
         for user, role in group_users
     ]
+
+@router.delete("/{class_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_class(
+    class_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Check if class exists
+    db_class = db.query(Class).filter(Class.class_id == class_id).first()
+    if not db_class:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Class not found"
+        )
+
+    # Check if user is admin of the class
+    class_user = db.query(ClassUser).filter(
+        (ClassUser.class_id == class_id) &
+        (ClassUser.user_id == current_user.user_id) &
+        (ClassUser.role == "admin")
+    ).first()
+
+    if not class_user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to delete this class"
+        )
+
+    # Delete all related data
+    try:
+        # First delete attendance records for sessions in this class
+        db.execute(
+            delete(Attendance).where(
+                Attendance.session_id.in_(
+                    db.query(models.Session.session_id)
+                    .filter(models.Session.class_id == class_id)
+                )
+            )
+        )
+        
+        # Then delete the sessions
+        db.execute(
+            delete(models.Session)
+            .where(models.Session.class_id == class_id)
+        )
+
+        # Delete group memberships
+        db.execute(
+            delete(GroupUser)
+            .where(GroupUser.group_id.in_(
+                db.query(Group.group_id)
+                .filter(Group.class_id == class_id)
+                .subquery()
+            ))
+        )
+
+        # Delete groups
+        db.execute(
+            delete(Group)
+            .where(Group.class_id == class_id)
+        )
+
+        # Delete class users
+        db.execute(
+            delete(ClassUser)
+            .where(ClassUser.class_id == class_id)
+        )
+
+        # Finally, delete the class
+        db.execute(
+            delete(Class)
+            .where(Class.class_id == class_id)
+        )
+        
+        db.commit()
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting class: {str(e)}"
+        )
+
+@router.delete("/groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_group(
+    group_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Delete a group
+    
+    - **group_id**: ID of the group to delete
+    
+    Only the admin of the class can delete a group.
+    This will also delete all group memberships for this group.
+    """
+    # Get the group with its class
+    group = db.query(Group).filter(Group.group_id == group_id).first()
+    if not group:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Group not found"
+        )
+    
+    # Check if current user is the admin of the class
+    class_ = db.query(Class).filter(Class.class_id == group.class_id).first()
+    if not class_ or class_.created_by != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the class admin can delete groups"
+        )
+    
+    try:
+        # Delete all group memberships
+        db.execute(delete(GroupUser).where(GroupUser.group_id == group_id))
+        
+        # Delete any attendance records associated with this group
+        db.execute(delete(Attendance).where(Attendance.group_id == group_id))
+        
+        # Delete the group
+        db.delete(group)
+        db.commit()
+        
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete group: {str(e)}"
+        )
