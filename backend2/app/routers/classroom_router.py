@@ -6,7 +6,7 @@ import random
 import string
 
 from app.database import get_db
-from app.models import Class, Group, ClassUser, GroupUser, User, Attendance
+from app.models import Class, Group, ClassUser, GroupUser, User, Attendance, Session
 from app.auth import get_current_user
 from pydantic import BaseModel, Field
 
@@ -619,16 +619,16 @@ async def delete_class(
         db.execute(
             delete(Attendance).where(
                 Attendance.session_id.in_(
-                    db.query(models.Session.session_id)
-                    .filter(models.Session.class_id == class_id)
+                    db.query(Session.session_id)
+                    .filter(Session.class_id == class_id)
                 )
             )
         )
         
         # Then delete the sessions
         db.execute(
-            delete(models.Session)
-            .where(models.Session.class_id == class_id)
+            delete(Session)
+            .where(Session.class_id == class_id)
         )
 
         # Delete group memberships
@@ -699,11 +699,8 @@ async def delete_group(
         )
     
     try:
-        # Delete all group memberships
+        # First, delete all group memberships
         db.execute(delete(GroupUser).where(GroupUser.group_id == group_id))
-        
-        # Delete any attendance records associated with this group
-        db.execute(delete(Attendance).where(Attendance.group_id == group_id))
         
         # Delete the group
         db.delete(group)
