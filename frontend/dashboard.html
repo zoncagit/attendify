@@ -1005,29 +1005,44 @@
     }
 
     .view-students-btn {
-      background-color: var(--primary);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: white;
+      width: 100%;
+      margin-top: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border: none;
+      text-decoration: none;
+      font-weight: 500;
     }
 
     .view-students-btn:hover {
-      background-color: rgba(79, 70, 229, 0.85);
+      opacity: 0.9;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
     }
 
-    /* Delete Class Button */
-    .delete-class-btn {
-      background-color: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: rgba(239, 68, 68, 0.9);
-      margin-left: 5px;
+    .view-students-btn i {
+      font-size: 14px;
     }
 
-    .delete-class-btn:hover {
-      background-color: rgba(239, 68, 68, 0.2);
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    /* Delete Class Button */
+    .delete-class-icon {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .delete-class-icon:hover {
+      color: var(--error);
+      background: rgba(239, 68, 68, 0.1);
     }
 
     /* Notification styles */
