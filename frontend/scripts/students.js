@@ -32,6 +32,7 @@ function initializeUI() {
     document.getElementById('addStudentBtn')?.addEventListener('click', showAddStudentModal);
     document.getElementById('importStudentsBtn')?.addEventListener('click', showImportModal);
     document.getElementById('exportStudentsBtn')?.addEventListener('click', handleExport);
+    document.getElementById('addGroupBtn')?.addEventListener('click', showAddGroupModal);
     
     // Initialize modals
     initializeModals();
@@ -148,15 +149,28 @@ async function handleGroupSelect(groupId) {
     if (!classId) return;
 
     try {
+        // Show loading state
+        document.querySelectorAll('.group-card').forEach(card => {
+            card.style.opacity = '0.7';
+            card.style.pointerEvents = 'none';
+        });
+        
         const students = await studentManagement.getStudents(classId, groupId);
         displayStudents(students);
 
         // Update active state
         document.querySelectorAll('.group-card').forEach(card => {
+            card.style.opacity = '';
+            card.style.pointerEvents = '';
             card.classList.toggle('active', card.dataset.groupId === groupId);
         });
     } catch (error) {
         console.error('Error loading group students:', error);
+        // Reset loading state
+        document.querySelectorAll('.group-card').forEach(card => {
+            card.style.opacity = '';
+            card.style.pointerEvents = '';
+        });
     }
 }
 
@@ -185,10 +199,34 @@ async function handleStudentDelete(studentId) {
     }
 
     try {
+        // Show loading state
+        const studentCard = document.querySelector(`[data-student-id="${studentId}"]`);
+        if (studentCard) {
+            studentCard.style.opacity = '0.7';
+            studentCard.style.pointerEvents = 'none';
+            const deleteBtn = studentCard.querySelector('.delete-student-btn');
+            if (deleteBtn) {
+                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
+            }
+        }
+
         await studentManagement.deleteStudent(classId, studentId);
         await loadData(classId); // Reload all data
+        utils.showToast('Student removed successfully', 'success');
     } catch (error) {
         console.error('Error deleting student:', error);
+        utils.showToast('Failed to remove student', 'error');
+        
+        // Reset loading state if error occurs
+        const studentCard = document.querySelector(`[data-student-id="${studentId}"]`);
+        if (studentCard) {
+            studentCard.style.opacity = '';
+            studentCard.style.pointerEvents = '';
+            const deleteBtn = studentCard.querySelector('.delete-student-btn');
+            if (deleteBtn) {
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Remove';
+            }
+        }
     }
 }
 
@@ -272,6 +310,53 @@ function initializeModals() {
         });
     });
 }
+
+function showAddGroupModal() {
+    const modal = document.getElementById('addGroupModal');
+    const overlay = document.querySelector('.mini-modal-overlay');
+    if (modal && overlay) {
+        overlay.style.display = 'block';
+        modal.classList.add('active');
+        document.getElementById('groupName')?.focus();
+    }
+}
+
+// Add Group Modal Event Handlers
+document.getElementById('confirmAddGroupBtn')?.addEventListener('click', async () => {
+    const groupName = document.getElementById('groupName')?.value.trim();
+    const classId = new URLSearchParams(window.location.search).get('class');
+    const button = document.getElementById('confirmAddGroupBtn');
+    
+    if (!groupName || !classId) {
+        utils.showToast('Please enter a group name', 'error');
+        return;
+    }
+
+    try {
+        // Show loading state
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        
+        await groupManagement.addGroup(classId, groupName);
+        document.getElementById('groupName').value = '';
+        document.getElementById('addGroupModal').classList.remove('active');
+        document.querySelector('.mini-modal-overlay').style.display = 'none';
+        await loadData(classId);
+        utils.showToast('Group added successfully', 'success');
+    } catch (error) {
+        utils.showToast(error.message || 'Failed to add group', 'error');
+    } finally {
+        // Reset loading state
+        button.disabled = false;
+        button.innerHTML = 'Add Group';
+    }
+});
+
+document.getElementById('cancelAddGroupBtn')?.addEventListener('click', () => {
+    document.getElementById('addGroupModal').classList.remove('active');
+    document.querySelector('.mini-modal-overlay').style.display = 'none';
+    document.getElementById('groupName').value = '';
+});
 
 // Export functions for use in HTML
 window.deleteStudent = handleStudentDelete;

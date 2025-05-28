@@ -895,8 +895,8 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
-        flex-wrap: wrap;
-        gap: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .search-container {
@@ -2085,6 +2085,95 @@
           justify-content: flex-end;
         }
       }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+      }
+
+      .primary-button {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .primary-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      }
+
+      .secondary-button {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .secondary-button:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
     </style>
   </head>
 
@@ -2154,6 +2243,19 @@
 
       <!-- Content Area -->
       <div class="dashboard-content">
+        <!-- Groups Info Section -->
+        <div class="groups-info-section">
+          <div class="section-header">
+            <h2 class="section-title">Groups</h2>
+            <button id="addGroupBtn" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Add Group
+            </button>
+          </div>
+          <div class="groups-list">
+            <!-- Groups will be dynamically inserted here -->
+          </div>
+        </div>
+        
         <div class="header-actions">
           <button id="addStudentBtn" class="primary-button">
             <i class="fas fa-plus"></i> Add Student
