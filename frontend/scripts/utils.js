@@ -96,3 +96,122 @@ const utils = {
 };
 
 export default utils; 
+
+// Common utility functions used across the application
+
+export function updateCurrentDate() {
+  const dateElement = document.getElementById('currentDateDisplay');
+  if (dateElement) {
+    const now = new Date();
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+    dateElement.textContent = now.toLocaleDateString('en-US', options);
+  }
+}
+
+export function closeAllModals() {
+  const modalOverlays = document.querySelectorAll('.modal-overlay');
+  const modals = document.querySelectorAll('.modal');
+
+  modalOverlays.forEach(overlay => {
+    overlay.classList.remove('active');
+  });
+
+  modals.forEach(modal => {
+    modal.classList.remove('active');
+  });
+}
+
+export function generateUniqueCode(prefix = 'GRP') {
+  const timestamp = Date.now().toString(36);
+  const randomStr = Math.random().toString(36).substring(2, 5);
+  return `${prefix}${timestamp}${randomStr}`.toUpperCase();
+}
+
+export function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `notification ${type} show`;
+  toast.innerHTML = `
+    <span class="notification-text">${message}</span>
+    <button class="notification-close" onclick="this.parentElement.remove()">
+      <i class="fas fa-times"></i>
+    </button>
+  `;
+  
+  const container = document.querySelector('.notification-container') || createNotificationContainer();
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.remove();
+    if (container.children.length === 0) {
+      container.remove();
+    }
+  }, 3000);
+}
+
+function createNotificationContainer() {
+  const container = document.createElement('div');
+  container.className = 'notification-container';
+  document.body.appendChild(container);
+  return container;
+}
+
+export function copyToClipboard(text, successCallback) {
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      if (successCallback) {
+        successCallback();
+      }
+    })
+    .catch(err => {
+      console.error('Copy failed:', err);
+      showToast('Failed to copy text', 'error');
+    });
+}
+
+export function openModal(modalId, overlayId) {
+  const modal = document.getElementById(modalId);
+  const overlay = document.getElementById(overlayId);
+  
+  if (modal && overlay) {
+    modal.classList.add('active');
+    overlay.classList.add('active');
+  }
+}
+
+export function closeModal(modalId, overlayId) {
+  const modal = document.getElementById(modalId);
+  const overlay = document.getElementById(overlayId);
+  
+  if (modal && overlay) {
+    modal.classList.remove('active');
+    overlay.classList.remove('active');
+  }
+}
+
+export function showError(errorElement, message) {
+  if (errorElement) {
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+  }
+}
+
+export function hideError(errorElement) {
+  if (errorElement) {
+    errorElement.textContent = '';
+    errorElement.style.display = 'none';
+  }
+}
+
+export function validateInput(input, errorElement, message) {
+  if (!input || !input.trim()) {
+    showError(errorElement, message);
+    return false;
+  }
+  hideError(errorElement);
+  return true;
+} 
