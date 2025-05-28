@@ -127,10 +127,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let isValid = true;
     
-    // Validate password length
+    // Validate password length (matching backend validation)
     if (newPasswordInput.value.length < 8) {
       newPasswordInput.classList.add('error');
-      newPasswordInput.parentElement.querySelector('.error-message').style.display = 'block';
+      const errorMessage = newPasswordInput.parentElement.querySelector('.error-message');
+      errorMessage.textContent = 'Password must be at least 8 characters long';
+      errorMessage.style.display = 'block';
       isValid = false;
     } else {
       newPasswordInput.classList.remove('error');
@@ -140,7 +142,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validate password match
     if (confirmNewPasswordInput.value !== newPasswordInput.value) {
       confirmNewPasswordInput.classList.add('error');
-      confirmNewPasswordInput.parentElement.querySelector('.error-message').style.display = 'block';
+      const errorMessage = confirmNewPasswordInput.parentElement.querySelector('.error-message');
+      errorMessage.textContent = 'Passwords do not match';
+      errorMessage.style.display = 'block';
       isValid = false;
     } else {
       confirmNewPasswordInput.classList.remove('error');
@@ -155,16 +159,21 @@ document.addEventListener('DOMContentLoaded', function() {
     button.disabled = true;
     
     try {
-      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.RESET_PASSWORD}`, {
+      const response = await fetch(`${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.RESET_PASSWORD}`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
-          email: email,
+          email: email.toLowerCase(), // Ensure email is lowercase to match backend validation
           token: token,
           password: newPasswordInput.value
         })
       });
 
-      if (ok) {
+      const data = await response.json();
+
+      if (response.ok) {
         // Hide any error messages
         const errorMessages = document.querySelectorAll('.error-message');
         errorMessages.forEach(msg => msg.style.display = 'none');
@@ -181,10 +190,31 @@ document.addEventListener('DOMContentLoaded', function() {
           window.location.href = 'login.html';
         }, 2000);
       } else {
-        throw new Error(data.message || 'Password reset failed');
+        // Handle specific error cases from backend
+        let errorMessage = data.detail || 'Password reset failed. Please try again.';
+        
+        switch (response.status) {
+          case 400:
+            // Handle validation errors (invalid token, email mismatch, password requirements)
+            if (errorMessage.includes('token')) {
+              window.location.href = 'forgot-password.html';
+              return;
+            }
+            break;
+          case 404:
+            // User not found
+            errorMessage = 'User not found. Please check your email address.';
+            break;
+          case 500:
+            // Server error
+            errorMessage = 'An error occurred on the server. Please try again later.';
+            break;
+        }
+        
+        utils.showNotification(errorMessage, 'error');
       }
     } catch (error) {
-      utils.showNotification(error.message || 'An error occurred. Please try again.', 'error');
+      utils.showNotification('Network error. Please check your connection and try again.', 'error');
     } finally {
       button.classList.remove('loading');
       button.disabled = false;
