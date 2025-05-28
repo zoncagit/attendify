@@ -1,122 +1,101 @@
 import CONFIG from './config.js';
 
-const TOKEN_KEY = 'attendify_token';
-const USER_KEY = 'attendify_user';
+const utils = {
+  // Store authentication token
+  setAuthToken(token) {
+    localStorage.setItem(CONFIG.TOKEN_KEY, token);
+  },
 
-export default {
-    // Authentication helpers
-    getAuthToken() {
-        return localStorage.getItem(TOKEN_KEY);
-    },
+  // Get authentication token
+  getAuthToken() {
+    return localStorage.getItem(CONFIG.TOKEN_KEY);
+  },
 
-    setAuthToken(token) {
-        localStorage.setItem(TOKEN_KEY, token);
-    },
+  // Remove authentication token
+  removeAuthToken() {
+    localStorage.removeItem(CONFIG.TOKEN_KEY);
+  },
 
-    clearAuthToken() {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
-    },
+  // Store user data
+  setUser(user) {
+    localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(user));
+  },
 
-    // API request helper with authentication
-    async fetchWithAuth(endpoint, options = {}) {
-        try {
-            const token = this.getAuthToken();
-            if (!token) {
-                throw new Error('No authentication token found');
-            }
+  // Get user data
+  getUser() {
+    const user = localStorage.getItem(CONFIG.USER_KEY);
+    return user ? JSON.parse(user) : null;
+  },
 
-            const defaultHeaders = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
+  // Remove user data
+  removeUser() {
+    localStorage.removeItem(CONFIG.USER_KEY);
+  },
 
-            const response = await fetch(`${CONFIG.API_URL}${endpoint}`, {
-                ...options,
-                headers: {
-                    ...defaultHeaders,
-                    ...options.headers
-                }
-            });
+  // Show notification message
+  showNotification(message, type = 'success') {
+    const notificationElement = document.createElement('div');
+    notificationElement.className = `notification ${type}`;
+    notificationElement.innerHTML = `
+      <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+      <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notificationElement);
+    
+    setTimeout(() => {
+      notificationElement.remove();
+    }, 3000);
+  },
 
-            const data = await response.json();
+  // Make authenticated API calls
+  async fetchWithAuth(endpoint, options = {}) {
+    const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+    
+    const defaultHeaders = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
 
-            // Check for token expiration
-            if (response.status === 401) {
-                this.clearAuthToken();
-                window.location.href = 'login.html';
-                throw new Error('Session expired. Please login again.');
-            }
-
-            return {
-                ok: response.ok,
-                status: response.status,
-                data
-            };
-        } catch (error) {
-            console.error('API request failed:', error);
-            return {
-                ok: false,
-                status: error.status || 500,
-                data: { message: error.message || 'An unexpected error occurred' }
-            };
+    try {
+      const response = await fetch(endpoint, {
+        ...options,
+        headers: {
+          ...defaultHeaders,
+          ...options.headers
         }
-    },
+      });
 
-    // Toast notification helper
-    showToast(message, type = 'info') {
-        const container = document.getElementById('toastContainer') || this.createToastContainer();
-        
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        
-        const icon = document.createElement('i');
-        icon.className = this.getToastIcon(type);
-        
-        const text = document.createElement('span');
-        text.textContent = message;
-        
-        toast.appendChild(icon);
-        toast.appendChild(text);
-        container.appendChild(toast);
-        
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    },
-
-    createToastContainer() {
-        const container = document.createElement('div');
-        container.id = 'toastContainer';
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-        return container;
-    },
-
-    getToastIcon(type) {
-        switch (type) {
-            case 'success':
-                return 'fas fa-check-circle';
-            case 'error':
-                return 'fas fa-exclamation-circle';
-            case 'warning':
-                return 'fas fa-exclamation-triangle';
-            default:
-                return 'fas fa-info-circle';
-        }
-    },
-
-    // Date formatting helper
-    formatDate(date) {
-        return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+      const data = await response.json();
+      return { ok: response.ok, data };
+    } catch (error) {
+      console.error('API Error:', error);
+      return { ok: false, data: { message: 'Network error occurred' } };
     }
+  },
+
+  // Validate email format
+  validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  },
+
+  // Validate password strength
+  validatePassword(password) {
+    return {
+      isValid: password.length >= 8,
+      message: password.length < 8 ? 'Password must be at least 8 characters' : ''
+    };
+  },
+
+  logout() {
+    localStorage.removeItem(CONFIG.TOKEN_KEY);
+    localStorage.removeItem(CONFIG.USER_KEY);
+    window.location.href = '/login.html';
+  }
 };
+
+export default utils; 
 
 // Common utility functions used across the application
 
