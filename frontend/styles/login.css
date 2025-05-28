@@ -253,36 +253,72 @@ body{
   font-size: 0.875rem;
   align-items: center;
   gap: 0.5rem;
+  animation: fadeIn 0.3s ease;
 }
 
 .success-message.show {
   display: flex;
-}
-
-.success-message.success {
   background: rgba(16, 185, 129, 0.1);
-  border: 1px solid var(--success);
-  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .success-message.error {
+  display: flex;
   background: rgba(239, 68, 68, 0.1);
-  border: 1px solid var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   color: var(--error);
 }
 
 .success-message.info {
+  display: flex;
   background: rgba(59, 130, 246, 0.1);
-  border: 1px solid #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.2);
   color: #3b82f6;
 }
 
 .success-message i {
   font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
 .success-message .message-text {
   flex: 1;
+  line-height: 1.4;
+}
+
+/* Input error styles */
+.form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.form-input.error {
+  border-color: var(--error);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.error-message {
+  display: none;
+  color: var(--error);
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  padding-left: 0.25rem;
+}
+
+.form-input.error + .error-message {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 640px){

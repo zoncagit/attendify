@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ENROLLED_CLASSES: `${API_URL}/api/v1/classes/enrolled`,
     TUTORED_CLASSES: `${API_URL}/api/v1/classes/tutored`,
     ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
-    CREATE_CLASS: `${API_URL}/api/v1/classes/create`,
+    CREATE_CLASS: `${API_URL}/api/v1/classes/create_class`,
     ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
     DELETE_CLASS: `${API_URL}/api/v1/classes/delete`,
     QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
