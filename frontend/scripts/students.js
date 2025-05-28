@@ -32,6 +32,7 @@ function initializeUI() {
     document.getElementById('addStudentBtn')?.addEventListener('click', showAddStudentModal);
     document.getElementById('importStudentsBtn')?.addEventListener('click', showImportModal);
     document.getElementById('exportStudentsBtn')?.addEventListener('click', handleExport);
+    document.getElementById('addGroupBtn')?.addEventListener('click', showAddGroupModal);
     
     // Initialize modals
     initializeModals();
@@ -39,17 +40,55 @@ function initializeUI() {
 
 async function loadData(classId) {
     try {
+        // Show loading state
+        const container = document.querySelector('.students-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading data...</p>
+                </div>
+            `;
+        }
+
         // Load groups and students
         const [groups, students] = await Promise.all([
             groupManagement.getGroups(classId),
             studentManagement.getStudents(classId)
         ]);
 
+        // Validate response data
+        if (!Array.isArray(groups)) {
+            console.error('Invalid groups data:', groups);
+            throw new Error('Invalid groups data received from server');
+        }
+
+        if (!Array.isArray(students)) {
+            console.error('Invalid students data:', students);
+            throw new Error('Invalid students data received from server');
+        }
+
+        // Display data
         displayGroups(groups);
         displayStudents(students);
+
     } catch (error) {
         console.error('Error loading data:', error);
-        utils.showToast('Error loading data', 'error');
+        utils.showToast(error.message || 'Error loading data', 'error');
+        
+        // Show error state
+        const container = document.querySelector('.students-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Failed to load data. Please try again.</p>
+                    <button onclick="window.location.reload()" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
     }
 }
 
@@ -90,13 +129,19 @@ function displayStudents(students) {
     const container = document.querySelector('.students-container');
     if (!container) return;
 
-    if (students.length === 0) {
+    if (!Array.isArray(students) || students.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-user-graduate"></i>
                 <p>No students found</p>
+                <button id="addFirstStudentBtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add First Student
+                </button>
             </div>
         `;
+        
+        // Add event listener for the new button
+        document.getElementById('addFirstStudentBtn')?.addEventListener('click', showAddStudentModal);
         return;
     }
 
@@ -119,15 +164,15 @@ function displayStudents(students) {
                 <div class="attendance-row">
                     <div class="attendance-counter small">
                         <div class="attendance-count">
-                            <span>${student.attendanceCount || 0}</span>
+                            <span>${student.attendance_count || 0}</span>
                             <span class="slash">/</span>
-                            <span>${student.totalSessions || 0}</span>
+                            <span>${student.total_sessions || 0}</span>
                         </div>
                         <div class="attendance-label">Attendance</div>
                     </div>
                 </div>
             </div>
-            <button class="delete-student-btn small-btn" onclick="deleteStudent('${student.id}')">
+            <button class="delete-student-btn small-btn" onclick="handleStudentDelete('${student.id}')">
                 <i class="fas fa-trash"></i> Remove
             </button>
         </div>
@@ -207,6 +252,16 @@ function showImportModal() {
     }
 }
 
+function showAddGroupModal() {
+    const modal = document.getElementById('addGroupModal');
+    const overlay = document.getElementById('addGroupModalOverlay');
+    if (modal && overlay) {
+        modal.classList.add('active');
+        overlay.classList.add('active');
+        document.getElementById('groupName')?.focus();
+    }
+}
+
 async function handleExport() {
     const classId = new URLSearchParams(window.location.search).get('class');
     if (!classId) return;
@@ -243,6 +298,70 @@ function initializeModals() {
         });
     }
 
+    // Add Group Modal
+    const addGroupForm = document.getElementById('addGroupForm');
+    if (addGroupForm) {
+        addGroupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const classId = new URLSearchParams(window.location.search).get('class');
+            if (!classId) return;
+
+            const groupName = document.getElementById('groupName').value.trim();
+            const errorElement = document.getElementById('groupNameError');
+
+            if (!groupName) {
+                if (errorElement) {
+                    errorElement.textContent = 'Please enter a group name';
+                    errorElement.style.display = 'block';
+                }
+                return;
+            }
+
+            try {
+                await groupManagement.addGroup(classId, groupName);
+                addGroupForm.reset();
+                const modal = document.getElementById('addGroupModal');
+                const overlay = document.getElementById('addGroupModalOverlay');
+                if (modal && overlay) {
+                    modal.classList.remove('active');
+                    overlay.classList.remove('active');
+                }
+                await loadData(classId);
+            } catch (error) {
+                console.error('Error adding group:', error);
+                if (errorElement) {
+                    errorElement.textContent = error.message || 'Failed to add group';
+                    errorElement.style.display = 'block';
+                }
+            }
+        });
+    }
+
+    // Cancel Add Group
+    document.getElementById('cancelAddGroupBtn')?.addEventListener('click', () => {
+        const modal = document.getElementById('addGroupModal');
+        const overlay = document.getElementById('addGroupModalOverlay');
+        if (modal && overlay) {
+            modal.classList.remove('active');
+            overlay.classList.remove('active');
+            document.getElementById('addGroupForm')?.reset();
+            document.getElementById('groupNameError').style.display = 'none';
+        }
+    });
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                const modal = overlay.querySelector('.modal');
+                if (modal) {
+                    modal.classList.remove('active');
+                    overlay.classList.remove('active');
+                }
+            }
+        });
+    });
+
     // Import Modal
     const importForm = document.getElementById('importForm');
     if (importForm) {
@@ -264,13 +383,6 @@ function initializeModals() {
             }
         });
     }
-
-    // Close buttons
-    document.querySelectorAll('.close-modal').forEach(btn => {
-        btn.addEventListener('click', () => {
-            btn.closest('.modal').style.display = 'none';
-        });
-    });
 }
 
 // Export functions for use in HTML
