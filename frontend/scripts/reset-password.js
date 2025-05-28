@@ -13,13 +13,12 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // get email and token
   const urlParams = new URLSearchParams(window.location.search);
-  const email = urlParams.get('email');
   const token = urlParams.get('token');
 
   // Only show error if coming from forgot password page (check referrer)
   const isFromForgotPassword = document.referrer.includes('forgot-password.html');
   
-  if ((!email || !token) && isFromForgotPassword) {
+  if (!token && isFromForgotPassword) {
     utils.showNotification('Invalid reset password link. Please request a new password reset.', 'error');
     // Hide the reset password form
     if (resetPasswordForm) {
@@ -159,19 +158,19 @@ document.addEventListener('DOMContentLoaded', function() {
     button.disabled = true;
     
     try {
+      // Create FormData object
+      const formData = new FormData();
+      formData.append('token', token);
+      formData.append('new_password', newPasswordInput.value);
+      formData.append('confirm_password', confirmNewPasswordInput.value);
+
       const response = await fetch(`${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.RESET_PASSWORD}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Cache-Control': 'no-cache'
         },
-        body: JSON.stringify({
-          email: email.toLowerCase(), // Ensure email is lowercase to match backend validation
-          token: token,
-          password: newPasswordInput.value
-        })
+        body: formData
       });
-
-      const data = await response.json();
 
       if (response.ok) {
         // Hide any error messages
@@ -190,23 +189,26 @@ document.addEventListener('DOMContentLoaded', function() {
           window.location.href = 'login.html';
         }, 2000);
       } else {
-        // Handle specific error cases from backend
-        let errorMessage = data.detail || 'Password reset failed. Please try again.';
+        const contentType = response.headers.get('content-type');
+        let errorMessage;
         
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          errorMessage = data.detail || 'Password reset failed. Please try again.';
+        } else {
+          errorMessage = 'Password reset failed. Please try again.';
+        }
+
+        // Handle specific error cases
         switch (response.status) {
           case 400:
-            // Handle validation errors (invalid token, email mismatch, password requirements)
+            // Handle validation errors
             if (errorMessage.includes('token')) {
               window.location.href = 'forgot-password.html';
               return;
             }
             break;
-          case 404:
-            // User not found
-            errorMessage = 'User not found. Please check your email address.';
-            break;
           case 500:
-            // Server error
             errorMessage = 'An error occurred on the server. Please try again later.';
             break;
         }
