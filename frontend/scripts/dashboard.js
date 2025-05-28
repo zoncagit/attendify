@@ -331,6 +331,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Helper function to create enrolled class card
   function createEnrolledClassCard(classData) {
+    const attendancePercentage = ((classData.attendance_count || 0) / (classData.total_sessions || 1) * 100).toFixed(1);
+    
     return `
       <div class="class-card" data-class-id="${classData.class_id}">
         <div class="class-header">
@@ -341,16 +343,24 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="class-details">
           <div class="detail-row">
-            <span class="detail-label">Class Code:</span>
-            <span class="detail-value">${classData.class_code}</span>
+            <span class="detail-label">Group:</span>
+            <span class="detail-value">${classData.group_name || 'Default Group'}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Students:</span>
-            <span class="detail-value">${classData.student_count || 0}</span>
+            <span class="detail-label">Group Code:</span>
+            <span class="detail-value">${classData.group_code}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Created:</span>
-            <span class="detail-value">${new Date(classData.created_at).toLocaleDateString()}</span>
+            <span class="detail-label">Attendance:</span>
+            <span class="detail-value">${attendancePercentage}%</span>
+          </div>
+          <div class="attendance-counter">
+            <div class="attendance-count">
+              <span>${classData.attendance_count || 0}</span>
+              <span class="slash">/</span>
+              <span>${classData.total_sessions || 0}</span>
+            </div>
+            <div class="attendance-label">Sessions</div>
           </div>
         </div>
       </div>
