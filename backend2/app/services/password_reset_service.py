@@ -1,5 +1,6 @@
 import secrets
 import string
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 from sqlalchemy import Column, String, Integer
@@ -10,6 +11,9 @@ from app.auth.hashing import hash_password
 from app.models.user import User
 from app.models.password_reset_token import PasswordResetToken
 from app.database import get_db
+
+# Get frontend URL from environment variable or use default
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://127.0.0.1:5500/frontend')
 
 # Initialize email service
 email_service = EmailService.get_instance()
@@ -49,7 +53,7 @@ class PasswordResetService:
             db.commit()
 
             # Send email with reset link
-            reset_url = f"http://localhost:5500/reset-password?token={verification_code}"
+            reset_url = f"{FRONTEND_URL}/reset-password.html?token={verification_code}"
             email_service.send_email(
                 to_email=email,
                 subject="Password Reset Request",
