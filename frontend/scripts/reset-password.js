@@ -153,18 +153,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const button = document.getElementById('resetPasswordBtn');
     button.classList.add('loading');
     button.disabled = true;
+    // Insère les valeurs dans les champs cachés
+    document.getElementById('resetToken').value = token;
+document.getElementById('resetEmail').value = email;
+
+
+    console.log("Sending request with:", {
+      token: token,
+      email: email,
+      password: newPasswordInput.value
+    });
+    // Insère les valeurs dans les champs cachés
+    
     
     try {
-      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.RESET_PASSWORD}`, {
-        method: 'POST',
+      const response = await fetch("http://127.0.0.1:8000/api/v1/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-          email: email,
           token: token,
+          email: email,
           password: newPasswordInput.value
         })
       });
+      
+      const data = await response.json();
+      console.log("Error detail:", data.detail);
+         if (Array.isArray(data.detail)) {
+         data.detail.forEach(err => {
+        console.error(`At ${err.loc?.join('.')} - ${err.msg}`);
+      });
+    }
+    console.log("Current URL:", window.location.href);
 
-      if (ok) {
+
+      
+      if (response.ok) {
         // Hide any error messages
         const errorMessages = document.querySelectorAll('.error-message');
         errorMessages.forEach(msg => msg.style.display = 'none');
@@ -181,7 +207,22 @@ document.addEventListener('DOMContentLoaded', function() {
           window.location.href = 'login.html';
         }, 2000);
       } else {
-        throw new Error(data.message || 'Password reset failed');
+        // Log the full error response for debugging
+        console.error('Server response:', data);
+        
+        // Handle different error status codes from FastAPI
+        if (response.status === 400) {
+          throw new Error(data.detail || 'Invalid request');
+        } else if (response.status === 422) {
+          // Handle validation errors if any
+          let errorMessage = data.detail || 'Validation error';
+          if (Array.isArray(data.detail)) {
+            errorMessage = data.detail.map(err => `${err.loc[1]}: ${err.msg}`).join('\n');
+          }
+          throw new Error(errorMessage);
+        } else {
+          throw new Error(data.detail || `Error: ${response.status}`);
+        }
       }
     } catch (error) {
       utils.showNotification(error.message || 'An error occurred. Please try again.', 'error');

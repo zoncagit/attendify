@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
     sendResetLinkBtn.disabled = true;
     
     try {
-      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.FORGOT_PASSWORD}`, {
+      const { ok, data } = await utils.fetchWithAuth(`http://127.0.0.1:8000/api/v1/auth/request-password-reset`, {
         method: 'POST',
         body: JSON.stringify({
           email: emailInput.value.trim()
