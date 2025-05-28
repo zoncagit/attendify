@@ -10,12 +10,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // API endpoints
-  const API_URL = 'http://127.0.0.1:8000';
+  const API_URL = 'http://127.0.0.1:8000/api/v1/classes';
   const ENDPOINTS = {
-    ENROLLED_CLASSES: `${API_URL}/api/v1/classes/enrolled`,
-    TUTORED_CLASSES: `${API_URL}/api/v1/classes/tutored`,
+    ENROLLED_CLASSES: `${API_URL}/api/v1/classes`,
+    TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
     ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
-    CREATE_CLASS: `${API_URL}/api/v1/classes/create`,
+    CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
     ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
     DELETE_CLASS: `${API_URL}/api/v1/classes/delete`,
     QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
@@ -171,10 +171,21 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load tutored classes
   async function loadTutoredClasses() {
     try {
+      console.log('Fetching tutored classes from:', ENDPOINTS.TUTORED_CLASSES);
       const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.TUTORED_CLASSES);
+      console.log('API Response - ok:', ok, 'data:', data);
+      
       if (ok) {
         const tutoredClassesList = document.getElementById('tutoredClassesList');
-        if (data.length === 0) {
+        if (!tutoredClassesList) {
+          console.error('tutoredClassesList element not found');
+          return;
+        }
+        
+        console.log('Received classes data:', data);
+        
+        if (!Array.isArray(data) || data.length === 0) {
+          console.log('No classes found or data is not an array');
           tutoredClassesList.innerHTML = `
             <div class="empty-state">
               <div class="empty-icon">
@@ -186,12 +197,20 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
         
+        // Log the first class to see its structure
+        if (data.length > 0) {
+          console.log('First class data:', data[0]);
+        }
+        
         tutoredClassesList.innerHTML = data.map(cls => createTutoredClassCard(cls)).join('');
         setupTutoredClassEventListeners();
+      } else {
+        console.error('API request failed:', data);
+        throw new Error(data.message || 'Failed to load classes');
       }
     } catch (error) {
-      console.error('Failed to load tutored classes:', error);
-      utils.showNotification('Failed to load tutored classes', 'error');
+      console.error('Error in loadTutoredClasses:', error);
+      utils.showNotification(error.message || 'Failed to load tutored classes', 'error');
     }
   }
 
@@ -217,23 +236,18 @@ document.addEventListener('DOMContentLoaded', function() {
   // Create new class
   async function createClass(className) {
     try {
-      const response = await utils.fetchWithAuth(ENDPOINTS.CREATE_CLASS, {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_CLASS, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           class_name: className 
         })
       });
 
-      if (response.status === 201) {  
-        const data = await response.json();
+      if (ok) {  
         utils.showNotification(`Class "${data.class_name}" created successfully with code: ${data.class_code}`, 'success');
         loadTutoredClasses();
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create class');
+        throw new Error(data.detail || 'Failed to create class');
       }
     } catch (error) {
       utils.showNotification(error.message, 'error');
