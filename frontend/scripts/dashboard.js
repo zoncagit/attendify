@@ -22,6 +22,112 @@ document.addEventListener('DOMContentLoaded', function() {
     USER_PROFILE: `${API_URL}/api/v1/users/profile`
   };
 
+  // Tab switching functionality
+  function initializeTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetTab = button.getAttribute('data-tab');
+        
+        // Update button states
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Update tab pane visibility
+        tabPanes.forEach(pane => {
+          if (pane.id === `${targetTab}ClassesTab`) {
+            pane.classList.add('active');
+          } else {
+            pane.classList.remove('active');
+          }
+        });
+      });
+    });
+  }
+
+  // Modal functionality
+  function initializeModals() {
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modals = document.querySelectorAll('.modal');
+    
+    // Close modal when clicking outside
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        closeAllModals();
+      }
+    });
+
+    // Close buttons
+    document.querySelectorAll('.btn-secondary').forEach(btn => {
+      if (btn.id.startsWith('cancel') || btn.id.startsWith('close')) {
+        btn.addEventListener('click', closeAllModals);
+      }
+    });
+  }
+
+  function closeAllModals() {
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modals = document.querySelectorAll('.modal');
+    
+    modalOverlay.classList.remove('active');
+    modals.forEach(modal => {
+      modal.classList.remove('active');
+    });
+
+    // Clear any input fields
+    document.querySelectorAll('.modal input').forEach(input => {
+      input.value = '';
+    });
+  }
+
+  // Profile dropdown functionality
+  function initializeProfileDropdown() {
+    const dropdownBtn = document.getElementById('profileDropdownBtn');
+    const dropdownMenu = document.getElementById('profileDropdownMenu');
+    
+    dropdownBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('show');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => {
+      dropdownMenu.classList.remove('show');
+    });
+
+    // Settings button
+    document.getElementById('settingsBtn')?.addEventListener('click', () => {
+      dropdownMenu.classList.remove('show');
+      const settingsModal = document.getElementById('settingsModal');
+      const modalOverlay = document.getElementById('modalOverlay');
+      modalOverlay.classList.add('active');
+      settingsModal.classList.add('active');
+    });
+
+    // Logout button
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      utils.clearAuthToken();
+      window.location.href = 'login.html';
+    });
+  }
+
+  // Date display functionality
+  function updateCurrentDate() {
+    const dateDisplay = document.getElementById('currentDateDisplay');
+    if (dateDisplay) {
+      const now = new Date();
+      const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      dateDisplay.textContent = now.toLocaleDateString('en-US', options);
+    }
+  }
+
   // Load user profile
   async function loadUserProfile() {
     try {
@@ -220,7 +326,11 @@ document.addEventListener('DOMContentLoaded', function() {
     closeAllModals();
   });
 
-  // Initialize dashboard
+  // Initialize all functionality
+  initializeTabs();
+  initializeModals();
+  initializeProfileDropdown();
+  updateCurrentDate();
   loadUserProfile();
   loadEnrolledClasses();
   loadTutoredClasses();
