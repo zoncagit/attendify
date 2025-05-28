@@ -15,12 +15,10 @@ document.addEventListener('DOMContentLoaded', function() {
     ENROLLED_CLASSES: `${API_URL}/api/v1/classes`,
     TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
     ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
-
     CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
-
     ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
     DELETE_CLASS: `${API_URL}/api/v1/classes/delete`,
-    QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
+    QUIT_CLASS: `${API_URL}/api/v1/classes/leave`,  // Updated to proper leave endpoint
     USER_PROFILE: `${API_URL}/api/v1/users/profile`
   };
 
@@ -392,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Helper function to create tutored class card
   function createTutoredClassCard(classData) {
     return `
-      <div class="class-card tutored-class-card" data-class-id="${classData.class_id}">
+      <div class="class-card" data-class-id="${classData.class_id}">
         <div class="class-header">
           <h3 class="class-name">${classData.class_name}</h3>
           <button class="delete-class-icon" onclick="deleteClass('${classData.class_id}')" title="Delete Class">
@@ -409,10 +407,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="detail-value">${classData.student_count || 0}</span>
           </div>
         </div>
-        <button class="view-students-link" onclick="window.location.href='students.html?class=${classData.class_id}'">
-          <span>View Students</span>
-          <i class="fas fa-arrow-right"></i>
-        </button>
+        <a href="students.html?class=${classData.class_id}" class="btn btn-primary view-students-btn">
+          <i class="fas fa-users"></i> View Students
+        </a>
       </div>
     `;
   }
@@ -433,22 +430,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Setup event listeners for tutored classes
   function setupTutoredClassEventListeners() {
-    // Add any specific event listeners for tutored class cards
+    // Add event listeners for delete buttons
     document.querySelectorAll('.delete-class-icon').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const classId = e.target.closest('.class-card').dataset.classId;
         if (confirm('Are you sure you want to delete this class? This action cannot be undone.')) {
           deleteClass(classId);
-        }
-      });
-    });
-
-    document.querySelectorAll('.tutored-class-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        if (!e.target.closest('.delete-class-icon')) {
-          const classId = card.dataset.classId;
-          window.location.href = `students.html?class=${classId}`;
         }
       });
     });
