@@ -329,6 +329,103 @@ document.addEventListener('DOMContentLoaded', function() {
     closeAllModals();
   });
 
+  // Helper function to create enrolled class card
+  function createEnrolledClassCard(classData) {
+    return `
+      <div class="class-card" data-class-id="${classData.class_id}">
+        <div class="class-header">
+          <h3 class="class-name">${classData.class_name}</h3>
+          <button class="leave-class-icon" onclick="quitClass('${classData.class_id}')" title="Leave Class">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+        <div class="class-details">
+          <div class="detail-row">
+            <span class="detail-label">Class Code:</span>
+            <span class="detail-value">${classData.class_code}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Students:</span>
+            <span class="detail-value">${classData.student_count || 0}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Created:</span>
+            <span class="detail-value">${new Date(classData.created_at).toLocaleDateString()}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Helper function to create tutored class card
+  function createTutoredClassCard(classData) {
+    return `
+      <div class="class-card tutored-class-card" data-class-id="${classData.class_id}">
+        <div class="class-header">
+          <h3 class="class-name">${classData.class_name}</h3>
+          <button class="delete-class-icon" onclick="deleteClass('${classData.class_id}')" title="Delete Class">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+        <div class="class-details">
+          <div class="detail-row">
+            <span class="detail-label">Groups:</span>
+            <span class="detail-value">${classData.group_count || 0}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Students:</span>
+            <span class="detail-value">${classData.student_count || 0}</span>
+          </div>
+        </div>
+        <button class="view-students-link" onclick="window.location.href='students.html?class=${classData.class_id}'">
+          <span>View Students</span>
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    `;
+  }
+
+  // Setup event listeners for enrolled classes
+  function setupEnrolledClassEventListeners() {
+    // Add any specific event listeners for enrolled class cards
+    document.querySelectorAll('.leave-class-icon').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const classId = e.target.closest('.class-card').dataset.classId;
+        if (confirm('Are you sure you want to leave this class?')) {
+          quitClass(classId);
+        }
+      });
+    });
+  }
+
+  // Setup event listeners for tutored classes
+  function setupTutoredClassEventListeners() {
+    // Add any specific event listeners for tutored class cards
+    document.querySelectorAll('.delete-class-icon').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const classId = e.target.closest('.class-card').dataset.classId;
+        if (confirm('Are you sure you want to delete this class? This action cannot be undone.')) {
+          deleteClass(classId);
+        }
+      });
+    });
+
+    document.querySelectorAll('.tutored-class-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (!e.target.closest('.delete-class-icon')) {
+          const classId = card.dataset.classId;
+          window.location.href = `students.html?class=${classId}`;
+        }
+      });
+    });
+  }
+
+  // Make functions available globally for onclick handlers
+  window.deleteClass = deleteClass;
+  window.quitClass = quitClass;
+
   // Initialize all functionality
   initializeTabs();
   initializeModals();
