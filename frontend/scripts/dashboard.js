@@ -217,23 +217,18 @@ document.addEventListener('DOMContentLoaded', function() {
   // Create new class
   async function createClass(className) {
     try {
-      const response = await utils.fetchWithAuth(ENDPOINTS.CREATE_CLASS, {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_CLASS, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           class_name: className 
         })
       });
 
-      if (response.status === 201) {  
-        const data = await response.json();
+      if (ok) {
         utils.showNotification(`Class "${data.class_name}" created successfully with code: ${data.class_code}`, 'success');
         loadTutoredClasses();
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create class');
+        throw new Error(data.detail || 'Failed to create class');
       }
     } catch (error) {
       utils.showNotification(error.message, 'error');
