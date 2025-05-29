@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // API endpoints
   const API_URL = 'http://127.0.0.1:8000/api/v1';
   const ENDPOINTS = {
-    ENROLLED_CLASSES: `${API_URL}/classes/api/v1/classes`,
-    TUTORED_CLASSES: `${API_URL}/classes/api/v1/classes`,
+    ENROLLED_CLASSES: `${API_URL}/classes/api/v1/classes/enrolled`,
+    TUTORED_CLASSES: `${API_URL}/classes/api/v1/classes/tutored`,
     CREATE_CLASS: `${API_URL}/classes/api/v1/classes`,
     GET_CLASS: (classId) => `${API_URL}/classes/api/v1/classes/${classId}`,
     CREATE_GROUP: (classId) => `${API_URL}/classes/api/v1/classes/${classId}/groups`,
@@ -218,12 +218,10 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
         
-        // Log the first class to see its structure
-        if (data.length > 0) {
-          console.log('First class data:', data[0]);
-        }
-        
-        tutoredClassesList.innerHTML = data.map(cls => createTutoredClassCard(cls)).join('');
+        // Create all class cards asynchronously
+        const cardPromises = data.map(cls => createTutoredClassCard(cls));
+        const cards = await Promise.all(cardPromises);
+        tutoredClassesList.innerHTML = cards.join('');
         setupTutoredClassEventListeners();
       } else {
         console.error('API request failed:', data);
