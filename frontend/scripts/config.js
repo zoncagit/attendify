@@ -1,4 +1,4 @@
-const CONFIG = {
+export const CONFIG = {
   API_URL: 'http://127.0.0.1:8000',
   API_ENDPOINTS: {
     // Auth endpoints
@@ -40,7 +40,5 @@ const CONFIG = {
   USER_KEY: 'attendify_user'
 };
 
-//Prevent modification of the config object
-Object.freeze(CONFIG);
-
-export default CONFIG; 
+// Prevent modification of the config object
+Object.freeze(CONFIG); 

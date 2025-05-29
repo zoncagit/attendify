@@ -24,6 +24,7 @@ from app.auth.hashing import hash_password, verify_password
 from app.auth.jwt import create_access_token, create_user_access_token
 
 from fastapi import Form
+from jose import JWTError
 
 
 
@@ -260,10 +261,12 @@ async def verify(verification: VerificationRequest = Body(
             "access_token": access_token,
             "token_type": "bearer",
             "user": {
+                "user_id": user.user_id,
                 "email": user.email,
                 "name": user.first_name,
                 "prenom": user.last_name,
-                "role": user.role.value if user.role else None
+                "role": user.role.value if user.role else None,
+                "face_embedding": user.face_embedding is  None
             }
         }
         
@@ -341,7 +344,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
                 "email": user.email,
                 "name": user.first_name,
                 "prenom": user.last_name,
-                "role": user.role.value if user.role else None
+                "role": user.role.value if user.role else None,
+                "face_embedding": user.face_embedding is not None
             }
         }
     except HTTPException as he:
@@ -636,3 +640,26 @@ async def reset_password_submit(request: Request, db: Session = Depends(get_db))
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while resetting password"
         )
+
+async def get_current_user_ws(token: str) -> Optional[User]:
+    """
+    Get current user from WebSocket token.
+    This is similar to get_current_user but doesn't use FastAPI's Depends.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+            
+        db = next(get_db())
+        user = db.query(User).filter(User.user_id == user_id).first()
+        if user is None:
+            return None
+            
+        return user
+    except JWTError:
+        return None
+    finally:
+        if 'db' in locals():
+            db.close()

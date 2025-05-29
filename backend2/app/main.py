@@ -7,6 +7,7 @@ from app.database import engine, Base
 from app.auth.auth import router as auth_router
 from app.routers.classroom_router import router as classroom_router
 from app.routers.group_router import router as group_router
+from app.websockets.websocket_router import router as websocket_router
 import logging
 
 # Configure logging
@@ -31,7 +32,7 @@ def create_tables():
 create_tables()
 
 # OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 app = FastAPI(
     title="Attendify API",
@@ -56,6 +57,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(classroom_router, prefix="/api/v1/classes", tags=["Classrooms"])
 app.include_router(group_router, prefix="/api/v1/groups", tags=["Groups"])
+app.include_router(websocket_router)  # WebSocket router doesn't need API prefix
 
 # Configure OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")

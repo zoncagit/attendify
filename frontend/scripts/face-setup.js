@@ -1,195 +1,262 @@
 import CONFIG from './config.js';
-import utils from './utils.js';
+import { getToken, redirectToLogin } from './auth.js';
 
 class FaceSetup {
     constructor() {
-        this.webcam = document.getElementById('webcam');
-        this.canvas = document.getElementById('canvas');
-        this.startBtn = document.getElementById('startBtn');
-        this.skipBtn = document.getElementById('skipBtn');
-        this.statusDiv = document.getElementById('status');
-        this.progressDiv = document.getElementById('progress');
-        
-        this.stream = null;
-        this.ws = null;
-        this.isRunning = false;
-        this.maxSamples = 10;
-        
-        this.initializeEventListeners();
-    }
-    
-    initializeEventListeners() {
-        this.startBtn.addEventListener('click', () => this.startRegistration());
-        this.skipBtn.addEventListener('click', () => this.skipRegistration());
-    }
-    
-    async startRegistration() {
         try {
-            // Get authentication token
-            const token = localStorage.getItem('token');
+            this.video = document.getElementById('video');
+            this.canvas = document.getElementById('canvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.statusMessage = document.getElementById('statusMessage');
+            this.progressFill = document.getElementById('progressFill');
+            this.progressText = document.getElementById('progressText');
+            this.startButton = document.getElementById('startButton');
+            this.skipButton = document.getElementById('skipButton');
+            
+            if (!this.video || !this.canvas || !this.ctx || !this.statusMessage || 
+                !this.progressFill || !this.progressText || !this.startButton || !this.skipButton) {
+                throw new Error('Required DOM elements not found');
+            }
+            
+            this.stream = null;
+            this.ws = null;
+            this.isProcessing = false;
+            this.progress = 0;
+            this.reconnectAttempts = 0;
+            this.maxReconnectAttempts = 3;
+            
+            // Set canvas dimensions to match video
+            this.canvas.width = 640;
+            this.canvas.height = 480;
+            
+            this.initializeWebSocket();
+            this.setupEventListeners();
+            
+            console.log('FaceSetup initialized successfully');
+        } catch (error) {
+            console.error('Error initializing FaceSetup:', error);
+            this.updateStatus('Error initializing face setup. Please refresh the page.', 'error');
+        }
+    }
+    
+    initializeWebSocket() {
+        try {
+            const token = getToken();
             if (!token) {
-                utils.showNotification('Please log in first', 'error');
+                redirectToLogin();
                 return;
             }
             
-            // Start webcam
-            await this.startWebcam();
+            // Use CONFIG.API_URL for WebSocket connection
+            const wsUrl = CONFIG.API_URL.replace(/^http/, 'ws');
+            console.log('Connecting to WebSocket at:', wsUrl);
+            this.ws = new WebSocket(`${wsUrl}/ws/face-registration`);
             
-            // Connect to WebSocket
-            this.connectWebSocket(token);
+            this.ws.onopen = () => {
+                console.log('WebSocket connected');
+                this.reconnectAttempts = 0;
+                this.ws.send(JSON.stringify({
+                    type: 'auth',
+                    token: token
+                }));
+            };
             
-            this.isRunning = true;
-            this.updateUI(true);
-            this.progressDiv.innerHTML = '<div class="progress"><div class="progress-bar" role="progressbar" style="width: 0%"></div></div>';
+            this.ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    this.handleWebSocketMessage(data);
+                } catch (error) {
+                    console.error('Error handling WebSocket message:', error);
+                    this.updateStatus('Error processing server response', 'error');
+                }
+            };
             
+            this.ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                this.updateStatus('Connection error. Please try again.', 'error');
+                this.startButton.disabled = false;
+            };
+            
+            this.ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                    this.reconnectAttempts++;
+                    console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
+                    setTimeout(() => this.initializeWebSocket(), 2000);
+                } else {
+                    this.updateStatus('Connection lost. Please refresh the page.', 'error');
+                    this.startButton.disabled = false;
+                }
+            };
         } catch (error) {
-            utils.showNotification('Error starting registration', 'error');
-            console.error(error);
+            console.error('Error initializing WebSocket:', error);
+            this.updateStatus('Error connecting to server', 'error');
         }
     }
     
-    async startWebcam() {
+    setupEventListeners() {
         try {
-            this.stream = await navigator.mediaDevices.getUserMedia({
-                video: {
+            this.startButton.addEventListener('click', () => this.startFaceRegistration());
+            this.skipButton.addEventListener('click', () => this.skipFaceRegistration());
+            console.log('Event listeners set up successfully');
+        } catch (error) {
+            console.error('Error setting up event listeners:', error);
+        }
+    }
+    
+    async startFaceRegistration() {
+        try {
+            this.stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
                     width: 640,
                     height: 480,
                     facingMode: 'user'
-                }
+                } 
             });
-            this.webcam.srcObject = this.stream;
-            this.webcam.style.display = 'block';
+            this.video.srcObject = this.stream;
+            await this.video.play();
+            
+            this.startButton.disabled = true;
+            this.updateStatus('Position your face in the circle', 'info');
+            this.startProcessing();
         } catch (error) {
-            utils.showNotification('Error accessing webcam', 'error');
-            throw error;
+            console.error('Error accessing camera:', error);
+            this.updateStatus('Error accessing camera. Please check permissions.', 'error');
+            this.startButton.disabled = false;
         }
     }
     
-    connectWebSocket(token) {
-        this.ws = new WebSocket(
-            `ws://${CONFIG.API_URL.replace('http://', '')}/api/v1/face-registration/ws/register`
-        );
+    startProcessing() {
+        this.isProcessing = true;
+        this.progress = 0;
+        this.updateProgress();
         
-        this.ws.onopen = () => {
-            // Send authentication token
-            this.ws.send(JSON.stringify({ token }));
-            // Start sending frames
-            this.startFrameCapture();
-        };
-        
-        this.ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+        const processFrame = () => {
+            if (!this.isProcessing) return;
             
-            if (data.status === 'progress') {
-                const progress = (data.count / this.maxSamples) * 100;
-                this.progressDiv.innerHTML = `
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" style="width: ${progress}%">
-                            ${data.count}/${this.maxSamples}
-                        </div>
-                    </div>
-                `;
-
-                // Update status message
-                this.statusDiv.textContent = `Collecting sample ${data.count} of ${this.maxSamples}...`;
+            try {
+                // Draw video frame to canvas
+                this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
                 
-                // Check if we've reached max samples
-                if (data.count >= this.maxSamples) {
-                    this.statusDiv.textContent = 'Processing face data...';
+                // Get image data and send to server
+                const imageData = this.canvas.toDataURL('image/jpeg', 0.8);
+                
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify({
+                        type: 'face_registration',
+                        image: imageData
+                    }));
                 }
-            } else if (data.status === 'frame') {
-                // Update preview with face detection rectangle
-                const img = new Image();
-                img.onload = () => {
-                    const context = this.canvas.getContext('2d');
-                    this.canvas.width = img.width;
-                    this.canvas.height = img.height;
-                    context.drawImage(img, 0, 0);
-                };
-                img.src = data.image;
+                
+                requestAnimationFrame(processFrame);
+            } catch (error) {
+                console.error('Error processing frame:', error);
+                this.handleRegistrationError('Error processing video frame');
+            }
+        };
+        
+        processFrame();
+    }
+    
+    handleWebSocketMessage(data) {
+        try {
+            switch (data.type) {
+                case 'face_registration_status':
+                    this.handleRegistrationStatus(data);
+                    break;
+                case 'error':
+                    this.updateStatus(data.message, 'error');
+                    this.startButton.disabled = false;
+                    break;
+                default:
+                    console.warn('Unknown message type:', data.type);
+            }
+        } catch (error) {
+            console.error('Error handling WebSocket message:', error);
+            this.updateStatus('Error processing server response', 'error');
+        }
+    }
+    
+    handleRegistrationStatus(data) {
+        try {
+            if (data.status === 'processing') {
+                this.progress = data.progress;
+                this.updateProgress();
+                this.updateStatus(data.message, 'info');
             } else if (data.status === 'success') {
-                utils.showNotification('Face registered successfully', 'success');
-                this.cleanup();
-                this.redirectToDashboard();
+                this.handleRegistrationSuccess();
             } else if (data.status === 'error') {
-                utils.showNotification(data.message, 'error');
-                this.cleanup();
+                this.handleRegistrationError(data.message);
             }
-        };
-        
-        this.ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            utils.showNotification('WebSocket connection error', 'error');
-            this.cleanup();
-        };
-        
-        this.ws.onclose = () => {
-            if (this.isRunning) {
-                utils.showNotification('WebSocket connection closed', 'error');
-                this.cleanup();
-            }
-        };
-    }
-    
-    startFrameCapture() {
-        const captureFrame = () => {
-            if (!this.isRunning) return;
-            
-            const context = this.canvas.getContext('2d');
-            this.canvas.width = this.webcam.videoWidth;
-            this.canvas.height = this.webcam.videoHeight;
-            context.drawImage(this.webcam, 0, 0, this.canvas.width, this.canvas.height);
-            
-            const imageData = this.canvas.toDataURL('image/jpeg', 0.8);
-            
-            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                this.ws.send(JSON.stringify({
-                    image: imageData
-                }));
-            }
-            
-            requestAnimationFrame(captureFrame);
-        };
-        
-        captureFrame();
-    }
-    
-    updateUI(isRunning) {
-        this.startBtn.disabled = isRunning;
-        this.skipBtn.disabled = isRunning;
-    }
-    
-    cleanup() {
-        this.isRunning = false;
-        
-        if (this.ws) {
-            this.ws.close();
-            this.ws = null;
+        } catch (error) {
+            console.error('Error handling registration status:', error);
+            this.handleRegistrationError('Error processing registration status');
         }
-        
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
-            this.webcam.srcObject = null;
+    }
+    
+    updateProgress() {
+        try {
+            this.progressFill.style.width = `${this.progress}%`;
+            this.progressText.textContent = `${Math.round(this.progress)}%`;
+        } catch (error) {
+            console.error('Error updating progress:', error);
         }
-        
-        this.updateUI(false);
-        this.progressDiv.innerHTML = '';
-        this.statusDiv.textContent = '';
     }
-
-    skipRegistration() {
-        utils.showNotification('Face registration skipped. You can set it up later from your profile settings.', 'info');
-        this.redirectToDashboard();
+    
+    handleRegistrationSuccess() {
+        this.isProcessing = false;
+        this.updateStatus('Face registration successful!', 'success');
+        this.stopCamera();
+        setTimeout(() => this.redirectToDashboard(), 2000);
     }
-
+    
+    handleRegistrationError(message) {
+        this.isProcessing = false;
+        this.updateStatus(message, 'error');
+        this.startButton.disabled = false;
+    }
+    
+    skipFaceRegistration() {
+        if (confirm('Are you sure you want to skip face registration? You can set it up later in your profile settings.')) {
+            this.redirectToDashboard();
+        }
+    }
+    
+    stopCamera() {
+        try {
+            if (this.stream) {
+                this.stream.getTracks().forEach(track => track.stop());
+                this.video.srcObject = null;
+            }
+        } catch (error) {
+            console.error('Error stopping camera:', error);
+        }
+    }
+    
+    updateStatus(message, type = 'info') {
+        try {
+            this.statusMessage.textContent = message;
+            this.statusMessage.className = `status-message ${type}`;
+        } catch (error) {
+            console.error('Error updating status:', error);
+        }
+    }
+    
     redirectToDashboard() {
-        setTimeout(() => {
-            window.location.href = `${window.location.origin}/dashboard.html`;
-        }, 1500);
+        window.location.href = '/dashboard.html';
     }
 }
 
-// Initialize face setup when DOM is loaded
+// Initialize face setup when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new FaceSetup();
+    try {
+        new FaceSetup();
+    } catch (error) {
+        console.error('Error initializing FaceSetup:', error);
+        const statusMessage = document.getElementById('statusMessage');
+        if (statusMessage) {
+            statusMessage.textContent = 'Error initializing face setup. Please refresh the page.';
+            statusMessage.className = 'status-message error';
+        }
+    }
 });

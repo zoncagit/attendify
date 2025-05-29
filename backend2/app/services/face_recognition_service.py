@@ -1,163 +1,97 @@
-import face_recognition
 import numpy as np
 import cv2
 import base64
-from typing import List, Tuple, Optional
-import logging
+from io import BytesIO
+from PIL import Image
 import tensorflow as tf
-from tensorflow.keras.models import load_model
-import os
+import logging
 
 logger = logging.getLogger(__name__)
 
 class FaceRecognitionService:
     def __init__(self):
-        self.known_face_encodings = []
-        self.known_face_names = []
-        self.face_locations = []
-        self.face_encodings = []
-        self.face_names = []
-        self.process_this_frame = True
-        
-        # Load custom Keras model
-        model_path = os.getenv('KERAS_MODEL_PATH', 'models/face_embedding_model.keras')
-        try:
-            self.keras_model = load_model(model_path)
-            logger.info("Keras model loaded successfully")
-        except Exception as e:
-            logger.error(f"Error loading Keras model: {str(e)}")
-            self.keras_model = None
+        # Load the face detection model (OpenCV Haar Cascade)
+        self.face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        # Load the face recognition model (Keras)
+        self.face_model = tf.keras.models.load_model('models/face_recognition_model.h5')
 
-    def preprocess_image(self, image: np.ndarray) -> np.ndarray:
+    async def process_face_image(self, image_data: str) -> np.ndarray:
         """
-        Preprocess image for Keras model
-        """
-        # Resize to model input size (adjust size according to your model)
-        resized = cv2.resize(image, (160, 160))
-        # Convert to RGB if needed
-        if len(resized.shape) == 2:
-            resized = cv2.cvtColor(resized, cv2.COLOR_GRAY2RGB)
-        elif resized.shape[2] == 4:
-            resized = cv2.cvtColor(resized, cv2.COLOR_RGBA2RGB)
-        # Normalize pixel values
-        normalized = resized.astype(np.float32) / 255.0
-        # Add batch dimension
-        return np.expand_dims(normalized, axis=0)
-
-    def encode_face_with_keras(self, image_data: str) -> Optional[np.ndarray]:
-        """
-        Encode a face using the custom Keras model
+        Process an image and extract face embedding using OpenCV for face detection.
+        Args:
+            image_data: Base64 encoded image data
+        Returns:
+            Face embedding as numpy array or None if no face detected
         """
         try:
-            # Remove data URL prefix if present
-            if ',' in image_data:
-                image_data = image_data.split(',')[1]
-            
-            # Decode base64 to bytes
-            image_bytes = base64.b64decode(image_data)
-            
-            # Convert to numpy array
-            nparr = np.frombuffer(image_bytes, np.uint8)
-            image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-            
-            # Convert BGR to RGB
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            
-            # Detect face using face_recognition
-            face_locations = face_recognition.face_locations(rgb_image)
-            
-            if not face_locations:
-                logger.warning("No face detected in image")
+            # Decode base64 image
+            image_bytes = base64.b64decode(image_data.split(',')[1])
+            image = Image.open(BytesIO(image_bytes)).convert('RGB')
+            image = np.array(image)
+
+            # Convert to grayscale for face detection
+            gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+            # Detect faces using OpenCV Haar Cascade
+            faces = self.face_detector.detectMultiScale(
+                gray,
+                scaleFactor=1.1,
+                minNeighbors=5,
+                minSize=(30, 30)
+            )
+
+            if len(faces) == 0:
+                logger.warning("No face detected in image (OpenCV)")
                 return None
-            
-            # Get the first face
-            top, right, bottom, left = face_locations[0]
-            face_image = rgb_image[top:bottom, left:right]
-            
-            # Preprocess for Keras model
-            preprocessed = self.preprocess_image(face_image)
-            
-            # Get embedding from Keras model
-            if self.keras_model is None:
-                raise Exception("Keras model not loaded")
-            
-            embedding = self.keras_model.predict(preprocessed, verbose=0)
-            return embedding[0]  # Return first embedding
-            
+
+            # Get the largest face
+            face = max(faces, key=lambda x: x[2] * x[3])
+            x, y, w, h = face
+
+            # Extract face region
+            face_region = image[y:y+h, x:x+w]
+
+            # Resize to model input size
+            face_region = cv2.resize(face_region, (160, 160))
+
+            # Normalize pixel values
+            face_region = face_region.astype('float32') / 255.0
+
+            # Get face embedding
+            embedding = self.face_model.predict(np.expand_dims(face_region, axis=0))[0]
+
+            return embedding
+
         except Exception as e:
-            logger.error(f"Error encoding face with Keras: {str(e)}")
+            logger.error(f"Error processing face image: {str(e)}")
             return None
 
-    def compare_faces(self, known_encodings: List[np.ndarray], face_encoding: np.ndarray, tolerance: float = 0.6) -> List[bool]:
+    async def verify_face(self, image_data: str, stored_embedding: np.ndarray) -> bool:
         """
-        Compare a face encoding with a list of known face encodings
+        Verify if a face matches the stored embedding
+        Args:
+            image_data: Base64 encoded image data
+            stored_embedding: Stored face embedding to compare against
+        Returns:
+            True if face matches, False otherwise
         """
-        if not known_encodings:
-            return []
-        
-        # Calculate Euclidean distances
-        distances = np.linalg.norm(np.array(known_encodings) - face_encoding, axis=1)
-        return [distance <= tolerance for distance in distances]
+        try:
+            # Get face embedding from input image
+            current_embedding = await self.process_face_image(image_data)
 
-    def find_matches(self, face_encoding: np.ndarray, known_encodings: List[np.ndarray], tolerance: float = 0.6) -> List[int]:
-        """
-        Find matches for a face encoding in a list of known encodings
-        Returns list of indices of matches
-        """
-        matches = self.compare_faces(known_encodings, face_encoding, tolerance)
-        return [i for i, match in enumerate(matches) if match]
+            if current_embedding is None:
+                return False
 
-    def calculate_face_distance(self, face_encoding: np.ndarray, known_encodings: List[np.ndarray]) -> List[float]:
-        """
-        Calculate face distance between a face encoding and a list of known encodings
-        """
-        if not known_encodings:
-            return []
-        return np.linalg.norm(np.array(known_encodings) - face_encoding, axis=1).tolist()
+            # Calculate cosine similarity
+            similarity = np.dot(current_embedding, stored_embedding) / (
+                np.linalg.norm(current_embedding) * np.linalg.norm(stored_embedding)
+            )
 
-    def process_frame(self, frame: np.ndarray) -> Tuple[List, List, List]:
-        """
-        Process a video frame to detect and recognize faces
-        """
-        # Resize frame for faster processing
-        small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-        
-        # Convert BGR to RGB
-        rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
-        
-        # Only process every other frame to save time
-        if self.process_this_frame:
-            # Find face locations
-            self.face_locations = face_recognition.face_locations(rgb_small_frame)
-            
-            # Get face encodings using Keras model
-            self.face_encodings = []
-            for face_location in self.face_locations:
-                top, right, bottom, left = face_location
-                face_image = rgb_small_frame[top:bottom, left:right]
-                preprocessed = self.preprocess_image(face_image)
-                if self.keras_model is not None:
-                    embedding = self.keras_model.predict(preprocessed, verbose=0)
-                    self.face_encodings.append(embedding[0])
-            
-            self.face_names = []
-            for face_encoding in self.face_encodings:
-                matches = self.compare_faces(self.known_face_encodings, face_encoding)
-                name = "Unknown"
-                
-                if True in matches:
-                    first_match_index = matches.index(True)
-                    name = self.known_face_names[first_match_index]
-                
-                self.face_names.append(name)
-        
-        self.process_this_frame = not self.process_this_frame
-        
-        return self.face_locations, self.face_encodings, self.face_names
+            # Threshold for face verification
+            threshold = 0.7
 
-    def load_known_faces(self, encodings: List[np.ndarray], names: List[str]):
-        """
-        Load known face encodings and names
-        """
-        self.known_face_encodings = encodings
-        self.known_face_names = names 
+            return similarity > threshold
+
+        except Exception as e:
+            logger.error(f"Error verifying face: {str(e)}")
+            return False 

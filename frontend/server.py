@@ -2,7 +2,7 @@ import http.server
 import socketserver
 import os
 
-PORT = 5000
+PORT = 5500  # Change this to your desired port number
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 class Handler(http.server.SimpleHTTPRequestHandler):

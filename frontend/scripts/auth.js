@@ -1,37 +1,36 @@
 // Token management and authentication utilities
-const TOKEN_KEY = 'auth_token';
-const USER_KEY = 'user_data';
+import { CONFIG } from './config.js';
 
 // Save token and user data to localStorage
-function saveAuthData(token, userData) {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(userData));
+export function saveAuthData(token, userData) {
+    localStorage.setItem(CONFIG.TOKEN_KEY, token);
+    localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(userData));
 }
 
 // Get token from localStorage
-function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
+export function getToken() {
+    return localStorage.getItem(CONFIG.TOKEN_KEY);
 }
 
 // Get user data from localStorage
-function getUserData() {
-    const userData = localStorage.getItem(USER_KEY);
+export function getUserData() {
+    const userData = localStorage.getItem(CONFIG.USER_KEY);
     return userData ? JSON.parse(userData) : null;
 }
 
 // Check if user is authenticated
-function isAuthenticated() {
+export function isAuthenticated() {
     return !!getToken();
 }
 
 // Clear authentication data
-function clearAuthData() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+export function clearAuthData() {
+    localStorage.removeItem(CONFIG.TOKEN_KEY);
+    localStorage.removeItem(CONFIG.USER_KEY);
 }
 
 // Add authorization header to fetch requests
-function getAuthHeaders() {
+export function getAuthHeaders() {
     const token = getToken();
     return {
         'Authorization': token ? `Bearer ${token}` : '',
@@ -40,11 +39,11 @@ function getAuthHeaders() {
 }
 
 // Handle API responses
-async function handleApiResponse(response) {
+export async function handleApiResponse(response) {
     if (response.status === 401) {
         // Token expired or invalid
         clearAuthData();
-        window.location.href = `${window.location.origin}/login.html`;
+        redirectToLogin();
         return null;
     }
     
@@ -56,7 +55,7 @@ async function handleApiResponse(response) {
 }
 
 // Make authenticated API request
-async function authenticatedFetch(url, options = {}) {
+export async function authenticatedFetch(url, options = {}) {
     const headers = {
         ...getAuthHeaders(),
         ...options.headers
@@ -70,13 +69,7 @@ async function authenticatedFetch(url, options = {}) {
     return handleApiResponse(response);
 }
 
-// Export functions
-window.auth = {
-    saveAuthData,
-    getToken,
-    getUserData,
-    isAuthenticated,
-    clearAuthData,
-    getAuthHeaders,
-    authenticatedFetch
-}; 
+// Redirect to login page
+export function redirectToLogin() {
+    window.location.href = '/login.html';
+} 

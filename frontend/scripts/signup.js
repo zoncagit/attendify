@@ -1,5 +1,6 @@
 import CONFIG from './config.js';
 import utils from './utils.js';
+import { saveAuthData } from './auth.js';
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM Content Loaded");
@@ -210,8 +211,8 @@ document.addEventListener("DOMContentLoaded", function () {
         verificationEmail.textContent = emailInput.value;
         console.log('Setting verification email:', emailInput.value);
         
-        const verificationModal = document.getElementById('verificationModal');
-        verificationModal.classList.add('show');
+        const verificationModal = document.getElementById('emailVerificationModal');
+        verificationModal.classList.add('active');
         
         // Store email for verification
         localStorage.setItem('pendingVerificationEmail', emailInput.value);
@@ -258,7 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (response.ok) {
         // Save auth data
-        window.auth.saveAuthData(data.access_token, data.user);
+        saveAuthData(data.access_token, data.user);
         
         // Clear pending verification email
         localStorage.removeItem('pendingVerificationEmail');
@@ -267,8 +268,8 @@ document.addEventListener("DOMContentLoaded", function () {
         utils.showNotification('Account verified successfully! Redirecting...', 'success');
         
         // Close modal
-        const verificationModal = document.getElementById('verificationModal');
-        verificationModal.classList.remove('show');
+        const verificationModal = document.getElementById('emailVerificationModal');
+        verificationModal.classList.remove('active');
         
         // Redirect to face setup
         setTimeout(() => {
@@ -311,14 +312,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   resendCodeBtn.addEventListener("click", async function () {
     try {
-      const { ok, data } = await utils.fetchWithAuth('http://127.0.0.1:8000/api/v1/auth/resend-verification', {
+      const response = await fetch(`${CONFIG.API_URL}/api/v1/auth/resend-verification`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           email: emailInput.value
         })
       });
 
-      if (ok) {
+      const data = await response.json();
+
+      if (response.ok) {
         utils.showNotification('Verification code resent successfully');
         startResendTimer();
       } else {
@@ -330,13 +336,4 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   verifyCodeBtn.addEventListener("click", verifyCode);
-
-  function completeSignup() {
-    emailVerificationModal.classList.remove("active");
-    utils.showNotification('Account created successfully! Redirecting...');
-    
-    setTimeout(() => {
-      window.location.href = "face-setup.html?from=signup";
-    }, 1500);
-  }
 });

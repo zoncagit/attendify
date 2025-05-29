@@ -3,60 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Face Registration - Attendify</title>
-  <link rel="stylesheet" href="styles/main.css">
+  <title>Attendify - Face Setup</title>
   <link rel="stylesheet" href="styles/face-setup.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <div class="container">
-    <div class="face-setup-container">
-      <div class="setup-header">
-        <h1>Face Registration</h1>
-        <p class="description">
-          Please position your face in the center of the frame. The system will collect 10 samples
-          to create an accurate face embedding for attendance verification.
-        </p>
-      </div>
+  <div class="setup-container">
+    <div class="setup-header">
+      <h1>Face Setup</h1>
+      <p>Set up face recognition for quick and secure attendance</p>
+    </div>
 
-      <div class="webcam-container">
-        <video id="webcam" autoplay playsinline style="display: none;"></video>
-        <canvas id="canvas" style="display: none;"></canvas>
-        <div class="webcam-placeholder">
-          <i class="fas fa-camera"></i>
-          <p>Webcam access required</p>
+    <div class="video-container">
+      <video id="video" autoplay playsinline></video>
+      <canvas id="canvas" style="display: none;"></canvas>
+      <div class="face-overlay">
+        <div class="face-guide"></div>
+        <div class="scan-line"></div>
+      </div>
+    </div>
+
+    <div class="status-container">
+      <div id="statusMessage" class="status-message">Initializing camera...</div>
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
         </div>
+        <div id="progressText" class="progress-text">0%</div>
       </div>
+    </div>
 
-      <div id="progress" class="progress-container"></div>
-
-      <div class="controls">
-        <button id="startBtn" class="btn btn-primary">
-          <i class="fas fa-play"></i> Start Registration
-        </button>
-        <button id="skipBtn" class="btn btn-skip">
-          <i class="fas fa-forward"></i> Skip for now
-        </button>
-      </div>
-
-      <div id="status" class="status-container"></div>
-
-      <div class="instructions">
-        <h3>Instructions:</h3>
-        <ul>
-          <li>Ensure good lighting conditions</li>
-          <li>Face the camera directly</li>
-          <li>Keep a neutral expression</li>
-          <li>Remove glasses if possible</li>
-          <li>Stay still during the registration process</li>
-        </ul>
-      </div>
-      </div>
+    <div class="controls">
+      <button id="startButton" class="btn-primary">
+        <i class="fas fa-camera"></i>
+        Start Registration
+      </button>
+      <button id="skipButton" class="btn-secondary">
+        <i class="fas fa-forward"></i>
+        Skip for Now
+      </button>
     </div>
   </div>
 
-  <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+  <!-- Scripts -->
   <script type="module" src="scripts/config.js"></script>
-  <script type="module" src="scripts/utils.js"></script>
+  <script type="module" src="scripts/auth.js"></script>
   <script type="module" src="scripts/face-setup.js"></script>
 </body>
 </html> 
