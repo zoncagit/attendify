@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
     ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
     DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`,
-    DELETE_CLASS: `${API_URL}/api//v1/classes/{class_id}`,
+    DELETE_CLASS: `${API_URL}/api/v1/classes/{class_id}`,
     QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
 
     USER_PROFILE: `${API_URL}/api/v1/users/profile`
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Delete class
   async function deleteClass(classId) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(`${ENDPOINTS.DELETE_CLASS}/${classId}`, {
+      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_ENDPOINTS.DELETE_CLASS}/${classId}/`, {
         method: 'DELETE'
       });
 

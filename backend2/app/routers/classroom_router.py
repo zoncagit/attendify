@@ -615,6 +615,7 @@ async def delete_class(
 
     # Delete all related data
     try:
+        logger.info(f"Deleting class with ID: {class_id}")
         # First delete attendance records for sessions in this class
         db.execute(
             delete(Attendance).where(

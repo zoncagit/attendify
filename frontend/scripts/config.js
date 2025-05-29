@@ -18,8 +18,8 @@ const CONFIG = {
     // Class endpoints
     ENROLLED_CLASSES: '/api/v1/classes/enrolled',
     TUTORED_CLASSES: '/api/v1/classes/tutored',
-    CREATE_CLASS: '/api/v1/classes/create',
-    DELETE_CLASS: '/api/v1/classes/delete',
+    CREATE_CLASS: '/api/v1/classes',
+    DELETE_CLASS: '/api/v1/classes',
     UPDATE_CLASS: '/api/v1/classes/update',
     
     // Group endpoints
