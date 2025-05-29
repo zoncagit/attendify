@@ -65,6 +65,20 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', closeAllModals);
       }
     });
+
+    // Quit class confirmation
+    document.getElementById('confirmQuitBtn')?.addEventListener('click', async () => {
+      const classId = document.getElementById('confirmQuitBtn').dataset.classId;
+      await quitClass(classId);
+      closeAllModals();
+    });
+
+    // Delete class confirmation
+    document.getElementById('confirmDeleteBtn')?.addEventListener('click', async () => {
+      const classId = document.getElementById('confirmDeleteBtn').dataset.classId;
+      await deleteClass(classId);
+      closeAllModals();
+    });
   }
 
   function closeAllModals() {
@@ -357,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="class-card" data-class-id="${classData.class_id}">
         <div class="class-header">
           <h3 class="class-name">${classData.class_name}</h3>
-          <button class="leave-class-icon" onclick="quitClass('${classData.class_id}')" title="Leave Class">
+          <button class="leave-class-icon" data-class-id="${classData.class_id}" title="Leave Class">
             <i class="fas fa-sign-out-alt"></i>
           </button>
         </div>
@@ -393,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="class-card" data-class-id="${classData.class_id}">
         <div class="class-header">
           <h3 class="class-name">${classData.class_name}</h3>
-          <button class="delete-class-icon" onclick="deleteClass('${classData.class_id}')" title="Delete Class">
+          <button class="delete-class-icon" data-class-id="${classData.class_id}" title="Delete Class">
             <i class="fas fa-trash"></i>
           </button>
         </div>
@@ -416,35 +430,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Setup event listeners for enrolled classes
   function setupEnrolledClassEventListeners() {
-    // Add any specific event listeners for enrolled class cards
     document.querySelectorAll('.leave-class-icon').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const classId = e.target.closest('.class-card').dataset.classId;
-        if (confirm('Are you sure you want to leave this class?')) {
-          quitClass(classId);
-        }
+        const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
+        const groupCode = e.target.closest('.class-card').querySelector('.detail-value').textContent;
+        
+        // Update quit modal content
+        document.getElementById('quitClassName').textContent = className;
+        document.getElementById('quitClassCode').textContent = groupCode;
+        
+        // Store class ID for the confirm button
+        document.getElementById('confirmQuitBtn').dataset.classId = classId;
+        
+        // Show modal
+        const modalOverlay = document.getElementById('modalOverlay');
+        const quitModal = document.getElementById('quitClassModal');
+        modalOverlay.classList.add('active');
+        quitModal.classList.add('active');
       });
     });
   }
 
   // Setup event listeners for tutored classes
   function setupTutoredClassEventListeners() {
-    // Add event listeners for delete buttons
     document.querySelectorAll('.delete-class-icon').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const classId = e.target.closest('.class-card').dataset.classId;
-        if (confirm('Are you sure you want to delete this class? This action cannot be undone.')) {
-          deleteClass(classId);
-        }
+        const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
+        
+        // Update delete modal content
+        document.getElementById('deleteClassName').textContent = className;
+        
+        // Store class ID for the confirm button
+        document.getElementById('confirmDeleteBtn').dataset.classId = classId;
+        
+        // Show modal
+        const modalOverlay = document.getElementById('modalOverlay');
+        const deleteModal = document.getElementById('deleteClassModal');
+        modalOverlay.classList.add('active');
+        deleteModal.classList.add('active');
       });
     });
   }
-
-  // Make functions available globally for onclick handlers
-  window.deleteClass = deleteClass;
-  window.quitClass = quitClass;
 
   // Initialize all functionality
   initializeTabs();
