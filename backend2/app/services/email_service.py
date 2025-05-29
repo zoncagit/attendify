@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import logging
 from typing import Optional
-from app.config import settings
+from app.config.email_settings import email_settings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -26,12 +26,12 @@ class EmailService:
 
         try:
             # Load settings from Pydantic
-            self.smtp_server = settings.smtp_server
-            self.smtp_port = settings.smtp_port
-            self.smtp_user = settings.smtp_user
-            self.smtp_password = settings.smtp_password
-            self.email_from = settings.email_from
-            self.email_from_name = settings.email_from_name
+            self.smtp_server = email_settings.smtp_server
+            self.smtp_port = email_settings.smtp_port
+            self.smtp_user = email_settings.smtp_user
+            self.smtp_password = email_settings.smtp_password
+            self.email_from = email_settings.email_from
+            self.email_from_name = email_settings.email_from_name
             
             # Log configuration
             logger.info(f"SMTP Server: {self.smtp_server}")
@@ -67,19 +67,23 @@ class EmailService:
                 msg.attach(MIMEText(body, 'plain'))
 
             # Send email
+            logger.info(f"Attempting to connect to SMTP server {self.smtp_server}:{self.smtp_port}")
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                logger.info("Starting TLS connection")
                 server.starttls()
+                logger.info("Attempting to login")
                 server.login(self.smtp_user, self.smtp_password)
+                logger.info("Sending email")
                 server.sendmail(self.email_from, to_email, msg.as_string())
                 logger.info(f"Email sent successfully to {to_email}")
                 return True
 
-        except smtplib.SMTPAuthenticationError:
-            logger.error("Failed to authenticate with SMTP server")
+        except smtplib.SMTPAuthenticationError as e:
+            logger.error(f"Failed to authenticate with SMTP server: {str(e)}")
             return False
         except smtplib.SMTPException as e:
             logger.error(f"SMTP error occurred: {str(e)}")
             return False
         except Exception as e:
-            logger.error(f"Failed to send email: {str(e)}")
+            logger.error(f"Failed to send email: {str(e)}", exc_info=True)
             return False

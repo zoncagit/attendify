@@ -15,7 +15,11 @@ logger.info(f"Loading .env from: {env_path}")
 load_dotenv(env_path)
 
 class DatabaseSettings(BaseSettings):
-    database_url: str = Field(default=..., env="DATABASE_URL")
+    # Default to SQLite database in the project root
+    database_url: str = Field(
+        default=f"sqlite:///{project_root}/attendify.db",
+        env="DATABASE_URL"
+    )
     secret_key: str = Field(default=..., env="SECRET_KEY")
     algorithm: str = Field(default="HS256", env="ALGORITHM")
     access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")

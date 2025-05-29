@@ -3,8 +3,7 @@ import utils from './utils.js';
 
 document.addEventListener('DOMContentLoaded', function() {
   // Check authentication
-  const token = utils.getAuthToken();
-  if (!token) {
+  if (!window.auth.isAuthenticated()) {
     window.location.href = 'login.html';
     return;
   }
@@ -19,9 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
     DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`,
     DELETE_CLASS: `${API_URL}/api/v1/classes/{class_id}`,
-
     QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
-
     USER_PROFILE: `${API_URL}/api/v1/users/profile`
   };
 
@@ -125,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Logout button
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
-      utils.clearAuthToken();
+      window.auth.clearAuthData();
       window.location.href = 'login.html';
     });
   }
@@ -148,9 +145,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load user profile
   async function loadUserProfile() {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.USER_PROFILE);
-      if (ok) {
-        document.getElementById('userName').textContent = `${data.name} ${data.prenom}`;
+      const data = await window.auth.authenticatedFetch(ENDPOINTS.USER_PROFILE);
+      if (data) {
+        document.getElementById('userName').textContent = `${data.first_name} ${data.last_name}`;
         document.getElementById('headerStudentId').textContent = data.student_id;
       }
     } catch (error) {
@@ -161,8 +158,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load enrolled classes
   async function loadEnrolledClasses() {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.ENROLLED_CLASSES);
-      if (ok) {
+      const data = await window.auth.authenticatedFetch(ENDPOINTS.ENROLLED_CLASSES);
+      if (data) {
         const enrolledClassesList = document.getElementById('enrolledClassesList');
         if (data.length === 0) {
           enrolledClassesList.innerHTML = `
@@ -189,24 +186,21 @@ document.addEventListener('DOMContentLoaded', function() {
   async function loadTutoredClasses() {
     try {
       console.log('Fetching tutored classes from:', ENDPOINTS.TUTORED_CLASSES);
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.TUTORED_CLASSES);
-      console.log('API Response - ok:', ok, 'data:', data);
+      const data = await window.auth.authenticatedFetch(ENDPOINTS.TUTORED_CLASSES);
+      console.log('API Response - data:', data);
       
-      if (ok) {
+      if (data) {
         const tutoredClassesList = document.getElementById('tutoredClassesList');
         if (!tutoredClassesList) {
           console.error('tutoredClassesList element not found');
           return;
         }
         
-        console.log('Received classes data:', data);
-        
-        if (!Array.isArray(data) || data.length === 0) {
-          console.log('No classes found or data is not an array');
+        if (data.length === 0) {
           tutoredClassesList.innerHTML = `
             <div class="empty-state">
               <div class="empty-icon">
-                <i class="fas fa-chalkboard"></i>
+                <i class="fas fa-chalkboard-teacher"></i>
               </div>
               <h4>No Tutored Classes</h4>
               <p>You haven't created any classes yet.</p>
@@ -214,20 +208,12 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
         
-        // Log the first class to see its structure
-        if (data.length > 0) {
-          console.log('First class data:', data[0]);
-        }
-        
         tutoredClassesList.innerHTML = data.map(cls => createTutoredClassCard(cls)).join('');
         setupTutoredClassEventListeners();
-      } else {
-        console.error('API request failed:', data);
-        throw new Error(data.message || 'Failed to load classes');
       }
     } catch (error) {
-      console.error('Error in loadTutoredClasses:', error);
-      utils.showNotification(error.message || 'Failed to load tutored classes', 'error');
+      console.error('Failed to load tutored classes:', error);
+      utils.showNotification('Failed to load tutored classes', 'error');
     }
   }
 
@@ -261,7 +247,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       if (ok) {  
-
         utils.showNotification(`Class "${data.class_name}" created successfully with code: ${data.class_code}`, 'success');
         loadTutoredClasses();
       } else {
@@ -299,7 +284,6 @@ document.addEventListener('DOMContentLoaded', function() {
   async function deleteClass(classId) {
     try {
       const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_ENDPOINTS.DELETE_CLASS}/${classId}/`, {
-
         method: 'DELETE'
       });
 

@@ -69,9 +69,17 @@ const utils = {
         }
       });
 
-      // Handle empty responses
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : {};
+      let data = {};
+      try {
+        const text = await response.text();
+        if (text) {
+          data = JSON.parse(text);
+        }
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
+        data = { message: 'Error parsing server response' };
+      }
+      
       return { ok: response.ok, data };
     } catch (error) {
       console.error('API Error:', error);

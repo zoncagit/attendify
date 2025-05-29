@@ -76,12 +76,12 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
       button.disabled = true;
 
       try  {
-        // Préparation des données encodées en URL, comme attendu par FastAPI OAuth2PasswordRequestForm
+        // Prepare form data for FastAPI OAuth2PasswordRequestForm
         const formData = new URLSearchParams();
         formData.append('username', emailInput.value);
         formData.append('password', passwordInput.value);
     
-        // Envoi de la requête POST vers l'API FastAPI
+        // Send POST request to FastAPI
         const response = await fetch('http://127.0.0.1:8000/api/v1/auth/login', {
             method: 'POST',
             headers: {
@@ -93,9 +93,8 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
         const data = await response.json();
     
         if (response.ok && data.access_token) {
-            // Sauvegarder le token et l'utilisateur
-            utils.setAuthToken(data.access_token);
-            utils.setUser(data.user);
+            // Save token and user data using our new auth system
+            window.auth.saveAuthData(data.access_token, data.user);
     
             utils.showNotification('Login successful! Redirecting...', 'success');
     

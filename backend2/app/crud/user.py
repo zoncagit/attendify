@@ -5,8 +5,8 @@ from app.auth.hashing import hash_password
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = hash_password(user.password)
     db_user = models.User(
-        name=user.name,
-        prenom=user.prenom,
+        first_name=user.first_name,
+        last_name=user.last_name,
         email=user.email,
         password_hash=hashed_password,
     )

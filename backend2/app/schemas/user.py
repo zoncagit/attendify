@@ -3,8 +3,8 @@ from typing import Optional
 from datetime import datetime
 
 class UserBase(BaseModel):
-    name: str
-    prenom: str
+    first_name: str
+    last_name: str
     email: EmailStr
 
 class UserCreate(UserBase):

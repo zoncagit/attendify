@@ -47,7 +47,7 @@ async def signup(user_data: UserCreate):
     """Crée un nouvel utilisateur avec vérification automatique"""
     db = next(get_db())
     try:
-        print(f"=== Nouvelle inscription: {user_data.email} ===")
+        logger.info(f"=== Nouvelle inscription: {user_data.email} ===")
         
         # Vérifier si l'email existe déjà
         if db.query(User).filter(User.email == user_data.email).first():
@@ -55,9 +55,9 @@ async def signup(user_data: UserCreate):
             raise HTTPException(status_code=400, detail="Cette adresse email est déjà utilisée")
 
         # Hasher le mot de passe
-        print("Hachage du mot de passe...")
+        logger.info("Hachage du mot de passe...")
         hashed_password = hash_password(user_data.password)
-        print(f"Mot de passe haché: {hashed_password}")
+        logger.info(f"Mot de passe haché: {hashed_password}")
 
         # Créer un code de vérification
         verification_code = str(random.randint(100000, 999999))
@@ -66,8 +66,8 @@ async def signup(user_data: UserCreate):
         # Stocker les données de pré-vérification
         pre_verification = PreVerification(
             email=user_data.email,
-            name=user_data.name,
-            prenom=user_data.prenom,
+            first_name=user_data.first_name,
+            last_name=user_data.last_name,
             verification_code=verification_code,
             password=user_data.password,  # Store plain password
             password_hash=hashed_password,
@@ -78,17 +78,19 @@ async def signup(user_data: UserCreate):
         db.commit()
         db.refresh(pre_verification)
         
-        print(f"Code de vérification généré pour {user_data.email}: {verification_code}")
+        logger.info(f"Code de vérification généré pour {user_data.email}: {verification_code}")
         
         # Envoyer l'email de vérification
         email_service = EmailService.get_instance()
-        if email_service.is_configured:
-            try:
-                email_service.send_email(
-                    to_email=user_data.email,
-                    subject="Vérifiez votre email",
-                    body=f"""
-Bonjour {user_data.name},
+        if not email_service.is_configured:
+            logger.error("Email service is not configured")
+            raise HTTPException(
+                status_code=500,
+                detail="Le service d'email n'est pas configuré"
+            )
+
+        email_body = f"""
+Bonjour {user_data.first_name},
 
 Merci de vous être inscrit sur notre plateforme.
 
@@ -99,16 +101,24 @@ Ce code expirera dans 10 minutes.
 Cordialement,
 L'équipe de support
 """
-                )
-                print("Email de vérification envoyé")
-            except Exception as email_error:
-                print(f"Erreur lors de l'envoi de l'email de vérification: {str(email_error)}")
+        email_sent = email_service.send_email(
+            to_email=user_data.email,
+            subject="Vérifiez votre email",
+            body=email_body
+        )
 
+        if not email_sent:
+            logger.error(f"Failed to send verification email to {user_data.email}")
+            raise HTTPException(
+                status_code=500,
+                detail="Impossible d'envoyer l'email de vérification"
+            )
+
+        logger.info("Email de vérification envoyé avec succès")
         return {
             "detail": "Email de vérification envoyé",
             "next_step": "/verify",
-            "email": user_data.email,
-            "verification_code": verification_code  # Only for testing, remove in production
+            "email": user_data.email
         }
 
     except HTTPException as he:
@@ -118,7 +128,7 @@ L'équipe de support
     except Exception as e:
         if 'db' in locals():
             db.rollback()
-        print(f"Erreur lors de l'inscription: {str(e)}")
+        logger.error(f"Erreur lors de l'inscription: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"Une erreur est survenue lors de l'inscription: {str(e)}"
@@ -210,15 +220,15 @@ async def verify(verification: VerificationRequest = Body(
         # Debug print the pre_verification data
         print("=== PreVerification Data ===")
         print(f"Email: {pre_verification.email}")
-        print(f"Name: {pre_verification.name} {pre_verification.prenom}")
+        print(f"Name: {pre_verification.first_name} {pre_verification.last_name}")
         print(f"Has password: {bool(pre_verification.password)}")
         print(f"Has password_hash: {bool(pre_verification.password_hash)}")
         
         # Créer l'utilisateur avec le mot de passe hashé
         user_data = {
             "email": pre_verification.email,
-            "name": pre_verification.name,
-            "prenom": pre_verification.prenom,
+            "first_name": pre_verification.first_name,
+            "last_name": pre_verification.last_name,
             "password": pre_verification.password,  # This should be the plain password
             "is_verified": True,  # Mark user as verified
             "is_active": True,    # Ensure user is active
@@ -228,7 +238,7 @@ async def verify(verification: VerificationRequest = Body(
         # Debug print the user data
         print("=== Creating user with data ===")
         print(f"Email: {user_data['email']}")
-        print(f"Name: {user_data['name']} {user_data['prenom']}")
+        print(f"Name: {user_data['first_name']} {user_data['last_name']}")
         print(f"Password provided: {bool(user_data['password'])}")
         
         try:
@@ -251,8 +261,8 @@ async def verify(verification: VerificationRequest = Body(
             "token_type": "bearer",
             "user": {
                 "email": user.email,
-                "name": user.name,
-                "prenom": user.prenom,
+                "name": user.first_name,
+                "prenom": user.last_name,
                 "role": user.role.value if user.role else None
             }
         }
@@ -329,8 +339,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             "user": {
                 "user_id": user.user_id,
                 "email": user.email,
-                "name": user.name,
-                "prenom": user.prenom,
+                "name": user.first_name,
+                "prenom": user.last_name,
                 "role": user.role.value if user.role else None
             }
         }

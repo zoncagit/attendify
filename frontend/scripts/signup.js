@@ -186,21 +186,38 @@ document.addEventListener("DOMContentLoaded", function () {
     button.disabled = true;
 
     try {
+      console.log('Sending signup request...');
       // Send signup request to backend
-      const { ok, data } = await utils.fetchWithAuth('http://127.0.0.1:8000/api/v1/auth/signup', {
+      const response = await fetch('http://127.0.0.1:8000/api/v1/auth/signup', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
-          name: firstNameInput.value.trim(),      
-          prenom: lastNameInput.value.trim(), 
+          first_name: firstNameInput.value.trim(),
+          last_name: lastNameInput.value.trim(),
           email: emailInput.value.trim(),
           password: passwordInput.value
         })
       });
 
-      if (ok) {
+      const data = await response.json();
+      console.log('Signup response:', { ok: response.ok, data });
+
+      if (response.ok) {
+        console.log('Signup successful, showing verification modal');
         // Show verification modal
         verificationEmail.textContent = emailInput.value;
-        emailVerificationModal.classList.add("active");
+        console.log('Setting verification email:', emailInput.value);
+        
+        const modal = document.getElementById('emailVerificationModal');
+        console.log('Modal element:', modal);
+        console.log('Modal classes before:', modal.classList);
+        
+        modal.classList.add("active");
+        console.log('Modal classes after:', modal.classList);
+        
+        document.body.style.overflow = 'hidden';
         codeDigits[0].focus();
         startResendTimer();
       } else {
@@ -276,6 +293,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   closeVerificationModal.addEventListener("click", () => {
     emailVerificationModal.classList.remove("active");
+    document.body.style.overflow = ''; // Restore background scrolling
   });
 
   resendCodeBtn.addEventListener("click", async function () {

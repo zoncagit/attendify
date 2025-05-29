@@ -35,7 +35,7 @@ def create_user(user_data: dict) -> User:
     try:
         print("=== Creating User in Service ===")
         print(f"Email: {user_data['email']}")
-        print(f"Name: {user_data['name']} {user_data['prenom']}")
+        print(f"Name: {user_data['first_name']} {user_data['last_name']}")
         print(f"Password length: {len(user_data['password'])}")
         
         # Hash the password
@@ -48,8 +48,8 @@ def create_user(user_data: dict) -> User:
         print("\nCreating user instance...")
         user = User(
             email=user_data["email"],
-            name=user_data["name"],
-            prenom=user_data["prenom"],
+            first_name=user_data["first_name"],
+            last_name=user_data["last_name"],
             password_hash=hashed_password,
             is_verified=user_data.get("is_verified", False),
             is_active=user_data.get("is_active", True)
@@ -76,7 +76,7 @@ def create_user(user_data: dict) -> User:
         if 'db' in locals():
             db.close()
 
-def get_user_by_email(email: str) -> User | None:
+def get_user_by_email(email: str) -> Optional[User]:
     """Récupère un utilisateur par son email."""
     db = next(get_db_session())
     try:
