@@ -49,10 +49,16 @@ function initializeUI() {
     document.getElementById('addStudentBtn')?.addEventListener('click', showAddStudentModal);
     document.getElementById('importStudentsBtn')?.addEventListener('click', showImportModal);
     document.getElementById('exportStudentsBtn')?.addEventListener('click', handleExport);
-    document.getElementById('addGroupBtn')?.addEventListener('click', showAddGroupModal);
+    
+    // Add Group button event listener
+    const addGroupBtn = document.getElementById('addGroupBtn');
+    if (addGroupBtn) {
+        addGroupBtn.addEventListener('click', showAddGroupModal);
+    }
     
     // Initialize modals
     initializeModals();
+    initializeGroupModal();
 }
 
 async function loadData(classId) {
@@ -342,52 +348,77 @@ function initializeModals() {
     });
 }
 
+function initializeGroupModal() {
+    // Add Group Modal Event Handlers
+    const confirmAddGroupBtn = document.getElementById('confirmAddGroupBtn');
+    const cancelAddGroupBtn = document.getElementById('cancelAddGroupBtn');
+    const addGroupModal = document.getElementById('addGroupModal');
+    const overlay = document.getElementById('confirmOverlay');
+
+    if (confirmAddGroupBtn) {
+        confirmAddGroupBtn.addEventListener('click', async () => {
+            const groupName = document.getElementById('groupName')?.value.trim();
+            const classId = new URLSearchParams(window.location.search).get('class');
+            
+            if (!groupName || !classId) {
+                utils.showToast('Please enter a group name', 'error');
+                return;
+            }
+
+            try {
+                // Show loading state
+                confirmAddGroupBtn.disabled = true;
+                confirmAddGroupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                
+                await groupManagement.addGroup(classId, groupName);
+                document.getElementById('groupName').value = '';
+                hideGroupModal();
+                await loadData(classId);
+                utils.showToast('Group added successfully', 'success');
+            } catch (error) {
+                utils.showToast(error.message || 'Failed to add group', 'error');
+            } finally {
+                // Reset loading state
+                confirmAddGroupBtn.disabled = false;
+                confirmAddGroupBtn.innerHTML = 'Create Group';
+            }
+        });
+    }
+
+    if (cancelAddGroupBtn) {
+        cancelAddGroupBtn.addEventListener('click', hideGroupModal);
+    }
+}
+
 function showAddGroupModal() {
     const modal = document.getElementById('addGroupModal');
-    const overlay = document.querySelector('.mini-modal-overlay');
+    const overlay = document.getElementById('confirmOverlay');
+    
     if (modal && overlay) {
         overlay.style.display = 'block';
-        modal.classList.add('active');
+        modal.style.display = 'block';
+        setTimeout(() => {
+            modal.classList.add('active');
+            overlay.classList.add('active');
+        }, 10);
         document.getElementById('groupName')?.focus();
     }
 }
 
-// Add Group Modal Event Handlers
-document.getElementById('confirmAddGroupBtn')?.addEventListener('click', async () => {
-    const groupName = document.getElementById('groupName')?.value.trim();
-    const classId = new URLSearchParams(window.location.search).get('class');
-    const button = document.getElementById('confirmAddGroupBtn');
+function hideGroupModal() {
+    const modal = document.getElementById('addGroupModal');
+    const overlay = document.getElementById('confirmOverlay');
     
-    if (!groupName || !classId) {
-        utils.showToast('Please enter a group name', 'error');
-        return;
+    if (modal && overlay) {
+        modal.classList.remove('active');
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+            document.getElementById('groupName').value = '';
+        }, 300);
     }
-
-    try {
-        // Show loading state
-        button.disabled = true;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-        
-        await groupManagement.addGroup(classId, groupName);
-        document.getElementById('groupName').value = '';
-        document.getElementById('addGroupModal').classList.remove('active');
-        document.querySelector('.mini-modal-overlay').style.display = 'none';
-        await loadData(classId);
-        utils.showToast('Group added successfully', 'success');
-    } catch (error) {
-        utils.showToast(error.message || 'Failed to add group', 'error');
-    } finally {
-        // Reset loading state
-        button.disabled = false;
-        button.innerHTML = 'Add Group';
-    }
-});
-
-document.getElementById('cancelAddGroupBtn')?.addEventListener('click', () => {
-    document.getElementById('addGroupModal').classList.remove('active');
-    document.querySelector('.mini-modal-overlay').style.display = 'none';
-    document.getElementById('groupName').value = '';
-});
+}
 
 // Export functions for use in HTML
 window.deleteStudent = handleStudentDelete;
