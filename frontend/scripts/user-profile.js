@@ -36,7 +36,6 @@ export class UserProfile {
 
         return data;
       }
-      
     } catch (error) {
       console.error('Error loading user profile:', error);
       utils.showNotification('Failed to load user profile', 'error');

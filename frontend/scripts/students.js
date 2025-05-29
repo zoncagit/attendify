@@ -1,5 +1,7 @@
 import CONFIG from './config.js';
 import utils from './utils.js';
+import * as groupManagement from './group-management.js';
+import * as studentManagement from './student-management.js';
 import UserProfile from './user-profile.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -64,8 +66,8 @@ async function loadData(classId) {
     try {
         // Load groups and students
         const [groups, students] = await Promise.all([
-            getGroups(classId),
-            getStudents(classId)
+            groupManagement.getGroups(classId),
+            studentManagement.getStudents(classId)
         ]);
 
         displayGroups(groups);
@@ -177,7 +179,7 @@ async function handleGroupSelect(groupId) {
             card.style.pointerEvents = 'none';
         });
         
-        const students = await getGroupStudents(classId, groupId);
+        const students = await studentManagement.getStudents(classId, groupId);
         displayStudents(students);
 
         // Update active state
@@ -205,7 +207,7 @@ async function handleGroupDelete(groupId) {
     }
 
     try {
-        await deleteGroup(classId, groupId);
+        await groupManagement.deleteGroup(classId, groupId);
         await loadData(classId); // Reload all data
     } catch (error) {
         console.error('Error deleting group:', error);
@@ -223,7 +225,7 @@ async function handleStudentDelete(studentId) {
             confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
         }
 
-        await deleteStudent(classId, studentId);
+        await studentManagement.deleteStudent(classId, studentId);
         await loadData(classId);
         utils.showToast('Student removed successfully', 'success');
     } catch (error) {
@@ -271,7 +273,7 @@ async function populateGroupSelect() {
     
     if (select && classId) {
         try {
-            const groups = await getGroups(classId);
+            const groups = await groupManagement.getGroups(classId);
             select.innerHTML = '<option value="">Select a group</option>' +
                 groups.map(group => `<option value="${group.id}">${group.name}</option>`).join('');
         } catch (error) {
@@ -299,7 +301,7 @@ async function handleExport() {
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
         }
 
-        await exportStudents(classId);
+        await studentManagement.exportStudents(classId);
         utils.showToast('Attendance log exported successfully', 'success');
     } catch (error) {
         console.error('Error exporting attendance log:', error);
@@ -337,7 +339,7 @@ function initializeModals() {
                     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
                 }
 
-                await addStudent(classId, {
+                await studentManagement.addStudent(classId, {
                     name: studentName,
                     groupId: groupId
                 });
@@ -392,7 +394,7 @@ function initializeGroupModal() {
                 confirmAddGroupBtn.disabled = true;
                 confirmAddGroupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
                 
-                await addGroup(classId, groupName);
+                await groupManagement.addGroup(classId, groupName);
                 document.getElementById('groupName').value = '';
                 hideGroupModal();
                 await loadData(classId);
@@ -452,10 +454,15 @@ function initializeDeleteModal() {
     
     if (confirmBtn) {
         confirmBtn.addEventListener('click', async () => {
-            const studentId = confirmBtn.dataset.studentId;
-            if (studentId) {
-                await handleStudentDelete(studentId);
-                hideDeleteModal();
+            try {
+                const studentId = confirmBtn.dataset.studentId;
+                if (studentId) {
+                    await handleStudentDelete(studentId);
+                    hideDeleteModal();
+                }
+            } catch (error) {
+                console.error('Error deleting student:', error);
+                utils.showToast('Failed to delete student', 'error');
             }
         });
     }
@@ -509,264 +516,4 @@ window.copyStudentId = (studentId) => {
             }, 2000);
         }
     });
-};
-
-// API Functions for Group Management
-async function addGroup(classId, groupName) {
-    try {
-        const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/classes/${classId}/groups`, {
-            method: 'POST',
-            body: JSON.stringify({ name: groupName })
-        });
-
-        if (!ok) {
-            throw new Error('Failed to add group');
-        }
-
-        return data;
-    } catch (error) {
-        utils.showToast('Error adding group', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-}
-
-async function deleteGroup(classId, groupId) {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups/${groupId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to delete group');
-        }
-
-        utils.showToast('Group deleted successfully', 'success');
-    } catch (error) {
-        utils.showToast('Error deleting group', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-}
-
-async function getGroups(classId) {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups`, {
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to get groups');
-        }
-
-        return await response.json();
-    } catch (error) {
-        utils.showToast('Error loading groups', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-}
-
-async function getGroupStudents(classId, groupId) {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups/${groupId}/students`, {
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to get group students');
-        }
-
-        return await response.json();
-    } catch (error) {
-        utils.showToast('Error loading group students', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-}
-
-async function moveStudentToGroup(classId, studentId, groupId) {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/${studentId}/group`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ groupId })
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to move student to group');
-        }
-
-        utils.showToast('Student moved to group successfully', 'success');
-    } catch (error) {
-        utils.showToast('Error moving student to group', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-}
-
-// API Functions for Student Management
-async function addStudent(classId, studentData) {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/students`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(studentData)
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to add student');
-        }
-
-        const newStudent = await response.json();
-        utils.showToast('Student added successfully', 'success');
-        return newStudent;
-    } catch (error) {
-        utils.showToast('Error adding student', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-}
-
-async function deleteStudent(classId, studentId) {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/${studentId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to delete student');
-        }
-
-        utils.showToast('Student removed successfully', 'success');
-    } catch (error) {
-        utils.showToast('Error removing student', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-}
-
-async function getStudents(classId, groupId = null) {
-    try {
-        let url = `${CONFIG.API_URL}/api/v1/classes/${classId}/students`;
-        if (groupId) {
-            url += `?groupId=${groupId}`;
-        }
-
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to get students');
-        }
-
-        return await response.json();
-    } catch (error) {
-        utils.showToast('Error loading students', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-}
-
-async function updateStudent(classId, studentId, studentData) {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/${studentId}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(studentData)
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to update student');
-        }
-
-        utils.showToast('Student updated successfully', 'success');
-        return await response.json();
-    } catch (error) {
-        utils.showToast('Error updating student', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-}
-
-async function importStudents(classId, fileData) {
-    try {
-        const formData = new FormData();
-        formData.append('file', fileData);
-
-        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/students/import`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            },
-            body: formData
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to import students');
-        }
-
-        const result = await response.json();
-        utils.showToast(`Successfully imported ${result.imported} students`, 'success');
-        return result;
-    } catch (error) {
-        utils.showToast('Error importing students', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-}
-
-async function exportStudents(classId, format = 'xlsx') {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/students/export?format=${format}`, {
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to export students');
-        }
-
-        const blob = await response.blob();
-        const fileName = `students_${classId}_${new Date().toISOString().split('T')[0]}.${format}`;
-        
-        // Create a download link and trigger it
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-
-        utils.showToast('Students exported successfully', 'success');
-    } catch (error) {
-        utils.showToast('Error exporting students', 'error');
-        console.error('Error:', error);
-        throw error;
-    }
-} 
+}; 

@@ -256,26 +256,22 @@ document.addEventListener('DOMContentLoaded', function() {
   // Create new class
   async function createClass(className) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/classes`, {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_CLASS, {
         method: 'POST',
         body: JSON.stringify({
-          name: className,
-          description: '',  // Optional description
-          is_active: true   // Default to active
+          class_name: className 
         })
       });
 
-      if (!ok) {
-        throw new Error(data?.message || 'Failed to create class');
+      if (ok) {  
+        utils.showNotification(`Class "${data.class_name}" created successfully with code: ${data.class_code}`, 'success');
+        loadTutoredClasses();
+      } else {
+        throw new Error(data.detail || 'Failed to create class');
       }
-
-      utils.showNotification(`Class "${data.name}" created successfully`, 'success');
-      await loadTutoredClasses();  // Refresh the list
-      return data;
     } catch (error) {
-      utils.showNotification(error.message || 'Failed to create class', 'error');
+      utils.showNotification(error.message, 'error');
       console.error('Error creating class:', error);
-      throw error;
     }
   }
 
