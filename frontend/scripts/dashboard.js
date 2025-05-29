@@ -253,28 +253,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // Create new class
   async function createClass(className) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/classes`, {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_CLASS, {
         method: 'POST',
         body: JSON.stringify({
-          name: className,
-          description: '',  // Optional description
-          is_active: true   // Default to active
+          class_name: className 
         })
       });
 
-      if (!ok) {
-        throw new Error(data?.message || 'Failed to create class');
+      if (ok) {  
+        utils.showNotification(`Class "${data.class_name}" created successfully with code: ${data.class_code}`, 'success');
+        loadTutoredClasses();
+      } else {
+        throw new Error(data.detail || 'Failed to create class');
       }
-
-      utils.showNotification(`Class "${data.name}" created successfully`, 'success');
-      await loadTutoredClasses();  // Refresh the list
-      return data;
     } catch (error) {
-      utils.showNotification(error.message || 'Failed to create class', 'error');
+      utils.showNotification(error.message, 'error');
       console.error('Error creating class:', error);
-      throw error;
     }
   }
 
@@ -316,14 +313,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Event Listeners
-  document.getElementById('dashboardEnrollClassBtn')?.addEventListener('click', () => {
+  document.getElementById('dashboardEnrollClassBtn').addEventListener('click', () => {
     const enrollModal = document.getElementById('enrollModal');
     const modalOverlay = document.getElementById('modalOverlay');
     modalOverlay.classList.add('active');
     enrollModal.classList.add('active');
   });
 
-  document.getElementById('confirmEnrollBtn')?.addEventListener('click', async () => {
+  document.getElementById('confirmEnrollBtn').addEventListener('click', async () => {
     const groupCode = document.getElementById('groupCode').value.trim();
     if (!groupCode) {
       utils.showNotification('Please enter a group code', 'error');
@@ -333,14 +330,14 @@ document.addEventListener('DOMContentLoaded', function() {
     closeAllModals();
   });
 
-  document.getElementById('dashboardCreateClassBtn')?.addEventListener('click', () => {
+  document.getElementById('dashboardCreateClassBtn').addEventListener('click', () => {
     const createClassModal = document.getElementById('createClassModal');
     const modalOverlay = document.getElementById('modalOverlay');
     modalOverlay.classList.add('active');
     createClassModal.classList.add('active');
   });
 
-  document.getElementById('confirmCreateClassBtn')?.addEventListener('click', async () => {
+  document.getElementById('confirmCreateClassBtn').addEventListener('click', async () => {
     const className = document.getElementById('className').value.trim();
     if (!className) {
       utils.showNotification('Please enter a class name', 'error');
