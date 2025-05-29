@@ -17,8 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
     ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
     CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
     ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
-    DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`,
-    DELETE_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`,
+    DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`, 
+    DELETE_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`, // Fixed double slash and removed {class_id} template
+
     QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
 
     USER_PROFILE: `${API_URL}/api/v1/users/profile`,
@@ -307,7 +308,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // Delete class
   async function deleteClass(classId) {
     try {
-      const { ok, data, status } = await utils.fetchWithAuth(ENDPOINTS.DELETE_CLASS(classId), {
+
+      const { ok, data, status } = await utils.fetchWithAuth(ENDPOINTS.DELETE_CLASS(classId) ,{
         method: 'DELETE'
       });
 

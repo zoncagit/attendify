@@ -4,6 +4,7 @@ from sqlalchemy import delete
 from typing import List, Optional, Dict, Any
 import random
 import string
+import logging
 
 from app.database import get_db
 from app.models import Class, Group, ClassUser, GroupUser, User, Attendance, Session
@@ -615,7 +616,8 @@ async def delete_class(
 
     # Delete all related data
     try:
-        logger.info(f"Deleting class with ID: {class_id}")
+        if logging.getLogger().isEnabledFor(logging.INFO):
+            logging.info(f"Deleting class with ID: {class_id}")
         # First delete attendance records for sessions in this class
         db.execute(
             delete(Attendance).where(
