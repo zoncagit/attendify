@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ADD_GROUP: `${CONFIG.API_URL}/api/v1/classes/groups/add`,
     DELETE_GROUP: `${CONFIG.API_URL}/api/v1/classes/groups/delete`,
     DELETE_CLASS: `${CONFIG.API_URL}/api/v1/classes/{class_id}`,
-    QUIT_CLASS: `${CONFIG.API_URL}$/api/v1/classes/quit`,
+    QUIT_CLASS: `${CONFIG.API_URL}/api/v1/classes/quit`,
     GET_CLASS_GROUPS: (classId) => `${CONFIG.API_URL}/api/v1/classes/${classId}/groups`,
     JOIN_GROUP: (groupCode) => `${CONFIG.API_URL}/api/v1/classes/groups/join/${groupCode}`,
     GET_CLASS_USERS: (classId) => `${CONFIG.API_URL}/api/v1/classes/${classId}/users`,
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     GET_CLASS_GROUP_COUNT: (classId) => `${CONFIG.API_URL}/api/v1/groups/groups/class/${classId}/count`,
     GET_CLASS_USER_COUNT: (classId) => `${CONFIG.API_URL}/api/v1/groups/groups/class/${classId}/users/count`,
     USER_PROFILE: `${CONFIG.API_URL}/api/v1/users/profile`
-
+  };
 
   // Tab switching functionality
   function initializeTabs() {
