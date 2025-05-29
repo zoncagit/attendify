@@ -1,5 +1,6 @@
 import CONFIG from './config.js';
 import utils from './utils.js';
+import * as classManagement from './class-management.js';
 import * as groupManagement from './group-management.js';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -164,24 +165,26 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load enrolled classes
   async function loadEnrolledClasses() {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.ENROLLED_CLASSES);
-      if (ok) {
-        const enrolledClassesList = document.getElementById('enrolledClassesList');
-        if (data.length === 0) {
-          enrolledClassesList.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-icon">
-                <i class="fas fa-book-reader"></i>
-              </div>
-              <h4>No Enrolled Classes</h4>
-              <p>You haven't enrolled in any classes yet.</p>
-            </div>`;
-          return;
-        }
-
-        enrolledClassesList.innerHTML = data.map(cls => createEnrolledClassCard(cls)).join('');
-        setupEnrolledClassEventListeners();
+      const classes = await classManagement.getClasses();
+      const enrolledClassesList = document.getElementById('enrolledClassesList');
+      
+      if (classes.length === 0) {
+        enrolledClassesList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-book-reader"></i>
+            </div>
+            <h4>No Enrolled Classes</h4>
+            <p>You haven't enrolled in any classes yet.</p>
+          </div>`;
+        return;
       }
+
+      enrolledClassesList.innerHTML = classes
+        .filter(cls => !cls.is_admin)
+        .map(cls => createEnrolledClassCard(cls))
+        .join('');
+      setupEnrolledClassEventListeners();
     } catch (error) {
       console.error('Failed to load enrolled classes:', error);
       utils.showNotification('Failed to load enrolled classes', 'error');
@@ -191,103 +194,58 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load tutored classes
   async function loadTutoredClasses() {
     try {
-      console.log('Fetching tutored classes from:', ENDPOINTS.TUTORED_CLASSES);
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.TUTORED_CLASSES);
-      console.log('API Response - ok:', ok, 'data:', data);
-
-      if (ok) {
-        const tutoredClassesList = document.getElementById('tutoredClassesList');
-        if (!tutoredClassesList) {
-          console.error('tutoredClassesList element not found');
-          return;
-        }
-
-        console.log('Received classes data:', data);
-
-        if (!Array.isArray(data) || data.length === 0) {
-          console.log('No classes found or data is not an array');
-          tutoredClassesList.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-icon">
-                <i class="fas fa-chalkboard"></i>
-              </div>
-              <h4>No Tutored Classes</h4>
-              <p>You haven't created any classes yet.</p>
-            </div>`;
-          return;
-        }
-
-        // Log the first class to see its structure
-        if (data.length > 0) {
-          console.log('First class data:', data[0]);
-        }
-
-        tutoredClassesList.innerHTML = data.map(cls => createTutoredClassCard(cls)).join('');
-        setupTutoredClassEventListeners();
-      } else {
-        console.error('API request failed:', data);
-        throw new Error(data.message || 'Failed to load classes');
+      const classes = await classManagement.getClasses();
+      const tutoredClassesList = document.getElementById('tutoredClassesList');
+      
+      if (!tutoredClassesList) {
+        console.error('tutoredClassesList element not found');
+        return;
       }
+
+      const tutoredClasses = classes.filter(cls => cls.is_admin);
+      
+      if (tutoredClasses.length === 0) {
+        tutoredClassesList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-chalkboard"></i>
+            </div>
+            <h4>No Tutored Classes</h4>
+            <p>You haven't created any classes yet.</p>
+          </div>`;
+        return;
+      }
+
+      tutoredClassesList.innerHTML = tutoredClasses
+        .map(cls => createTutoredClassCard(cls))
+        .join('');
+      setupTutoredClassEventListeners();
     } catch (error) {
       console.error('Error in loadTutoredClasses:', error);
       utils.showNotification(error.message || 'Failed to load tutored classes', 'error');
     }
   }
 
-  // Enroll in class
-  async function enrollInClass(groupCode) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.ENROLL_CLASS, {
-        method: 'POST',
-        body: JSON.stringify({ group_code: groupCode })
-      });
-
-      if (ok) {
-        utils.showNotification('Successfully enrolled in class', 'success');
-        loadEnrolledClasses();
-      } else {
-        throw new Error(data.message || 'Failed to enroll in class');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-    }
-  }
-
   // Create new class
   async function createClass(className) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_CLASS, {
-        method: 'POST',
-        body: JSON.stringify({
-          class_name: className 
-        })
-      });
-
-      if (ok) {  
-        utils.showNotification(`Class "${data.class_name}" created successfully with code: ${data.class_code}`, 'success');
-        loadTutoredClasses();
-      } else {
-        throw new Error(data.detail || 'Failed to create class');
-      }
+      const newClass = await classManagement.createClass(className);
+      utils.showNotification(`Class "${newClass.class_name}" created successfully with code: ${newClass.class_code}`, 'success');
+      await loadTutoredClasses();
+      return newClass;
     } catch (error) {
       utils.showNotification(error.message, 'error');
       console.error('Error creating class:', error);
+      throw error;
     }
   }
 
   // Delete class
   async function deleteClass(classId) {
     try {
-      const { ok, data, status } = await utils.fetchWithAuth(ENDPOINTS.DELETE_CLASS(classId), {
-        method: 'DELETE'
-      });
-
-      if (ok || status === 204) {
-        utils.showNotification('Class deleted successfully', 'success');
-        loadTutoredClasses();
-      } else {
-        throw new Error(data?.detail || 'Failed to delete class');
-      }
+      await classManagement.deleteClass(classId);
+      utils.showNotification('Class deleted successfully', 'success');
+      loadTutoredClasses();
     } catch (error) {
       utils.showNotification(error.message, 'error');
       console.error('Error deleting class:', error);
@@ -297,30 +255,34 @@ document.addEventListener('DOMContentLoaded', function() {
   // Quit class
   async function quitClass(classId) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.QUIT_CLASS(classId), {
-        method: 'DELETE'
-      });
+      await classManagement.leaveClass(classId);
+      utils.showNotification('Successfully left the class', 'success');
+      loadEnrolledClasses();
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+    }
+  }
 
-      if (ok) {
-        utils.showNotification('Successfully left the class', 'success');
-        loadEnrolledClasses();
-      } else {
-        throw new Error(data.message || 'Failed to leave class');
-      }
+  // Enroll in class
+  async function enrollInClass(groupCode) {
+    try {
+      const result = await groupManagement.joinGroup(groupCode);
+      utils.showNotification(result.message, 'success');
+      loadEnrolledClasses();
     } catch (error) {
       utils.showNotification(error.message, 'error');
     }
   }
 
   // Event Listeners
-  document.getElementById('dashboardEnrollClassBtn').addEventListener('click', () => {
+  document.getElementById('dashboardEnrollClassBtn')?.addEventListener('click', () => {
     const enrollModal = document.getElementById('enrollModal');
     const modalOverlay = document.getElementById('modalOverlay');
     modalOverlay.classList.add('active');
     enrollModal.classList.add('active');
   });
 
-  document.getElementById('confirmEnrollBtn').addEventListener('click', async () => {
+  document.getElementById('confirmEnrollBtn')?.addEventListener('click', async () => {
     const groupCode = document.getElementById('groupCode').value.trim();
     if (!groupCode) {
       utils.showNotification('Please enter a group code', 'error');
@@ -330,14 +292,14 @@ document.addEventListener('DOMContentLoaded', function() {
     closeAllModals();
   });
 
-  document.getElementById('dashboardCreateClassBtn').addEventListener('click', () => {
+  document.getElementById('dashboardCreateClassBtn')?.addEventListener('click', () => {
     const createClassModal = document.getElementById('createClassModal');
     const modalOverlay = document.getElementById('modalOverlay');
     modalOverlay.classList.add('active');
     createClassModal.classList.add('active');
   });
 
-  document.getElementById('confirmCreateClassBtn').addEventListener('click', async () => {
+  document.getElementById('confirmCreateClassBtn')?.addEventListener('click', async () => {
     const className = document.getElementById('className').value.trim();
     if (!className) {
       utils.showNotification('Please enter a class name', 'error');

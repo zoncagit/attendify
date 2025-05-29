@@ -1,132 +1,138 @@
 import CONFIG from './config.js';
 import utils from './utils.js';
 
+export async function getGroups(classId) {
+    try {
+        const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/groups/class/${classId}`);
+        if (!ok) {
+            throw new Error(data.detail || 'Failed to fetch groups');
+        }
+        return data;
+    } catch (error) {
+        console.error('Error fetching groups:', error);
+        throw error;
+    }
+}
+
 export async function addGroup(classId, groupName) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups`, {
+        const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/classes/${classId}/groups`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name: groupName })
+            body: JSON.stringify({
+                group_name: groupName,
+                class_id: classId
+            })
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to add group');
+        if (!ok) {
+            throw new Error(data.detail || 'Failed to create group');
         }
-
-        const newGroup = await response.json();
-        utils.showToast('Group added successfully', 'success');
-        return newGroup;
+        return data;
     } catch (error) {
-        utils.showToast('Error adding group', 'error');
-        console.error('Error:', error);
+        console.error('Error creating group:', error);
         throw error;
     }
 }
 
 export async function deleteGroup(classId, groupId) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups/${groupId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            }
+        const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/classes/groups/${groupId}`, {
+            method: 'DELETE'
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to delete group');
+        if (!ok && data) {
+            throw new Error(data.detail || 'Failed to delete group');
         }
-
-        utils.showToast('Group deleted successfully', 'success');
+        return true;
     } catch (error) {
-        utils.showToast('Error deleting group', 'error');
-        console.error('Error:', error);
+        console.error('Error deleting group:', error);
         throw error;
     }
 }
 
-export async function getGroups(classId) {
+export async function joinGroup(groupCode) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups`, {
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            }
+        const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/classes/groups/join/${groupCode}`, {
+            method: 'POST'
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to get groups');
+        if (!ok) {
+            throw new Error(data.detail || 'Failed to join group');
         }
-
-        return await response.json();
+        return data;
     } catch (error) {
-        utils.showToast('Error loading groups', 'error');
-        console.error('Error:', error);
+        console.error('Error joining group:', error);
         throw error;
     }
 }
 
-export async function getGroupStudents(classId, groupId) {
+export async function leaveGroup(groupId) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups/${groupId}/students`, {
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            }
+        const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/classes/groups/leave/${groupId}`, {
+            method: 'DELETE'
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to get group students');
+        if (!ok) {
+            throw new Error(data.detail || 'Failed to leave group');
         }
-
-        return await response.json();
+        return data;
     } catch (error) {
-        utils.showToast('Error loading group students', 'error');
-        console.error('Error:', error);
+        console.error('Error leaving group:', error);
         throw error;
     }
 }
 
-export async function moveStudentToGroup(classId, studentId, groupId) {
+export async function getGroupUsers(groupId) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/${studentId}/group`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ groupId })
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to move student to group');
+        const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/classes/groups/${groupId}/users`);
+        if (!ok) {
+            throw new Error(data.detail || 'Failed to fetch group users');
         }
-
-        utils.showToast('Student moved to group successfully', 'success');
+        return data;
     } catch (error) {
-        utils.showToast('Error moving student to group', 'error');
-        console.error('Error:', error);
+        console.error('Error fetching group users:', error);
         throw error;
     }
 }
 
-export async function getGroupCount(classId) {
+export async function removeUserFromGroup(groupCode, userId) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups/count`, {
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
-            }
+        const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/groups/${groupCode}/members/${userId}`, {
+            method: 'DELETE'
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to get group count');
+        if (!ok && data) {
+            throw new Error(data.detail || 'Failed to remove user from group');
         }
-
-        const data = await response.json();
-        return data.count;
+        return true;
     } catch (error) {
-        utils.showToast('Error getting group count', 'error');
-        console.error('Error:', error);
+        console.error('Error removing user from group:', error);
+        throw error;
+    }
+}
+
+export async function getGroupCountInClass(classId) {
+    try {
+        const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/groups/class/${classId}/count`);
+        if (!ok) {
+            throw new Error(data.detail || 'Failed to fetch group count');
+        }
+        return data.group_count;
+    } catch (error) {
+        console.error('Error fetching group count:', error);
+        return 0;
+    }
+}
+
+export async function getUserCountInClass(classId) {
+    try {
+        const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/groups/class/${classId}/users/count`);
+        if (!ok) {
+            throw new Error(data.detail || 'Failed to fetch user count');
+        }
+        return data.user_count;
+    } catch (error) {
+        console.error('Error fetching user count:', error);
         return 0;
     }
 } 
