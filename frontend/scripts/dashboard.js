@@ -439,10 +439,14 @@ document.addEventListener('DOMContentLoaded', function() {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const classId = e.target.closest('.class-card').dataset.classId;
+        const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
         const groupCode = e.target.closest('.class-card').querySelector('.detail-value').textContent;
         
         // Update quit modal content
         document.getElementById('quitClassName').textContent = className;
+        document.getElementById('quitClassCode').textContent = groupCode;
+        
+        // Store class ID for the confirm button
         document.getElementById('confirmQuitBtn').dataset.classId = classId;
         
         // Show modal
@@ -460,9 +464,13 @@ document.addEventListener('DOMContentLoaded', function() {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const classId = e.target.closest('.class-card').dataset.classId;
+        const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
         
         // Update delete modal content
         document.getElementById('deleteClassName').textContent = className;
+        
+        // Store class ID for the confirm button
+        document.getElementById('confirmDeleteBtn').dataset.classId = classId;
         
         // Show modal
         const modalOverlay = document.getElementById('modalOverlay');
