@@ -21,7 +21,17 @@ document.addEventListener('DOMContentLoaded', function() {
     DELETE_CLASS: `${API_URL}/api/v1/classes`,  // Fixed double slash and removed {class_id} template
     QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
 
-    USER_PROFILE: `${API_URL}/api/v1/users/profile`
+    USER_PROFILE: `${API_URL}/api/v1/users/profile`,
+    // New endpoints
+    GET_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`,
+    CREATE_GROUP: (classId) => `${API_URL}/api/v1/classes/${classId}/groups`,
+    LIST_CLASS_GROUPS: (classId) => `${API_URL}/api/v1/classes/${classId}/groups`,
+    GET_CLASS_USERS: (classId) => `${API_URL}/api/v1/classes/${classId}/users`,
+    GET_GROUP_USERS: (groupId) => `${API_URL}/api/v1/classes/groups/${groupId}/users`,
+    REMOVE_USER_FROM_GROUP: (groupCode, userId) => `${API_URL}/api/v1/groups/groups/${groupCode}/members/${userId}`,
+    GET_CLASS_GROUPS: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}`,
+    GET_GROUP_COUNT: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}/count`,
+    GET_USER_COUNT: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}/users/count`
   };
 
   // Tab switching functionality
@@ -477,6 +487,151 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteModal.classList.add('active');
       });
     });
+  }
+
+  // New API functions
+  async function getClass(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS(classId));
+      if (ok) {
+        return data;
+      } else {
+        throw new Error(data.message || 'Failed to get class details');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      console.error('Error getting class:', error);
+      return null;
+    }
+  }
+
+  async function createGroupInClass(classId, groupName) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_GROUP(classId), {
+        method: 'POST',
+        body: JSON.stringify({ name: groupName })
+      });
+
+      if (ok) {
+        utils.showNotification('Group created successfully', 'success');
+        return data;
+      } else {
+        throw new Error(data.message || 'Failed to create group');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      console.error('Error creating group:', error);
+      return null;
+    }
+  }
+
+  async function listClassGroups(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.LIST_CLASS_GROUPS(classId));
+      if (ok) {
+        return data;
+      } else {
+        throw new Error(data.message || 'Failed to list class groups');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      console.error('Error listing class groups:', error);
+      return [];
+    }
+  }
+
+  async function getClassUsers(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS_USERS(classId));
+      if (ok) {
+        return data;
+      } else {
+        throw new Error(data.message || 'Failed to get class users');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      console.error('Error getting class users:', error);
+      return [];
+    }
+  }
+
+  async function getGroupUsers(groupId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_GROUP_USERS(groupId));
+      if (ok) {
+        return data;
+      } else {
+        throw new Error(data.message || 'Failed to get group users');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      console.error('Error getting group users:', error);
+      return [];
+    }
+  }
+
+  async function removeUserFromGroup(groupCode, userId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.REMOVE_USER_FROM_GROUP(groupCode, userId), {
+        method: 'DELETE'
+      });
+
+      if (ok) {
+        utils.showNotification('User removed from group successfully', 'success');
+        return true;
+      } else {
+        throw new Error(data.message || 'Failed to remove user from group');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      console.error('Error removing user from group:', error);
+      return false;
+    }
+  }
+
+  async function getClassGroups(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS_GROUPS(classId));
+      if (ok) {
+        return data;
+      } else {
+        throw new Error(data.message || 'Failed to get class groups');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      console.error('Error getting class groups:', error);
+      return [];
+    }
+  }
+
+  async function getGroupCount(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_GROUP_COUNT(classId));
+      if (ok) {
+        return data.count;
+      } else {
+        throw new Error(data.message || 'Failed to get group count');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      console.error('Error getting group count:', error);
+      return 0;
+    }
+  }
+
+  async function getUserCount(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_USER_COUNT(classId));
+      if (ok) {
+        return data.count;
+      } else {
+        throw new Error(data.message || 'Failed to get user count');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      console.error('Error getting user count:', error);
+      return 0;
+    }
   }
 
   // Initialize all functionality
