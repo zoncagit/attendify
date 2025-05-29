@@ -22,7 +22,7 @@ export class UserProfile {
 
   async loadUserProfile() {
     try {
-      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/users/profile`);
+      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/users/me`);
       if (ok && data) {
         // Update user name (combine first and last name)
         if (this.userName) {

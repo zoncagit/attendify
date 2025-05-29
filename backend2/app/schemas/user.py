@@ -42,3 +42,13 @@ class PasswordReset(BaseModel):
     @property
     def passwords_match(self) -> bool:
         return self.new_password == self.confirm_password
+
+class UserProfile(UserBase):
+    user_id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    role: Optional[str] = None
+    profile_picture: Optional[str] = None
+
+    class Config:
+        from_attributes = True

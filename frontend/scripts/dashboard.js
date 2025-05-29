@@ -16,17 +16,17 @@ document.addEventListener('DOMContentLoaded', function() {
     TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
     ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
     CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
-    ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
-    DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`, 
+    ADD_GROUP: (groupId) => `${API_URL}/api/v1/classes/groups/${groupId}/join`,
+    DELETE_GROUP : (groupID) =>  `${API_URL}/api/v1/classes/groups/${groupId}`, 
     DELETE_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`, // Fixed double slash and removed {class_id} template
 
     QUIT_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}/leave`,
 
-    USER_PROFILE: `${API_URL}/api/v1/users/profile`,
+    USER_PROFILE:(userId) => `${API_URL}/api/v1/users/${userId}/me`,
     // New endpoints
     GET_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`,
     CREATE_GROUP: (classId) => `${API_URL}/api/v1/classes/${classId}/groups`,
-    LIST_CLASS_GROUPS: (classId) => `${API_URL}/api/v1/classes/${classId}/groups`,
+    LIST_CLASS_GROUPS: (classId) => `${API_URL}/api/v1/classes/${classId}`,
     GET_CLASS_USERS: (classId) => `${API_URL}/api/v1/classes/${classId}/users`,
     GET_GROUP_USERS: (groupId) => `${API_URL}/api/v1/classes/groups/${groupId}/users`,
     REMOVE_USER_FROM_GROUP: (groupCode, userId) => `${API_URL}/api/v1/groups/groups/${groupCode}/members/${userId}`,
