@@ -2207,9 +2207,9 @@
             </div>
           </div>
           <div class="user-info">
-            <span id="userName" class="user-name">Sididris Meriem</span>
+            <span id="userName" class="user-name"></span>
             <div class="user-id-container">
-              <span id="headerStudentId" class="user-id">STU123456</span>
+              <span id="headerStudentId" class="user-id"></span>
               <button
                 id="headerCopyIdBtn"
                 class="copy-id-btn"
@@ -2260,11 +2260,8 @@
           <button id="addStudentBtn" class="primary-button">
             <i class="fas fa-plus"></i> Add Student
           </button>
-          <button id="importStudentsBtn" class="secondary-button">
-            <i class="fas fa-file-import"></i> Import
-          </button>
           <button id="exportStudentsBtn" class="secondary-button">
-            <i class="fas fa-file-export"></i> Export
+            <i class="fas fa-file-excel"></i> Export to Excel
           </button>
         </div>
         <div class="students-container">
@@ -2295,28 +2292,6 @@
             </div>
             <div class="form-actions">
               <button type="submit" class="primary-button">Add Student</button>
-              <button type="button" class="secondary-button close-modal">Cancel</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Import Students Modal -->
-    <div id="importModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Import Students</h2>
-          <button class="close-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <form id="importForm">
-            <div class="form-group">
-              <label for="importFile">Select Excel/CSV File</label>
-              <input type="file" id="importFile" accept=".xlsx,.csv" required>
-            </div>
-            <div class="form-actions">
-              <button type="submit" class="primary-button">Import</button>
               <button type="button" class="secondary-button close-modal">Cancel</button>
             </div>
           </form>

@@ -2,6 +2,7 @@ import CONFIG from './config.js';
 import utils from './utils.js';
 import * as groupManagement from './group-management.js';
 import * as studentManagement from './student-management.js';
+import UserProfile from './user-profile.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Check authentication
@@ -10,6 +11,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.location.href = 'login.html';
         return;
     }
+
+    // Initialize user profile
+    const userProfile = new UserProfile();
+    await userProfile.loadUserProfile();
 
     // Get class ID from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -23,9 +28,21 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize UI
     initializeUI();
     
+    // Update current date
+    updateCurrentDate();
+    
     // Load initial data
     await loadData(classId);
 });
+
+function updateCurrentDate() {
+    const dateDisplay = document.getElementById('currentDateDisplay');
+    if (dateDisplay) {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateDisplay.textContent = now.toLocaleDateString('en-US', options);
+    }
+}
 
 function initializeUI() {
     // Add event listeners for various UI interactions
@@ -250,9 +267,23 @@ async function handleExport() {
     if (!classId) return;
 
     try {
+        const button = document.getElementById('exportStudentsBtn');
+        if (button) {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+        }
+
         await studentManagement.exportStudents(classId);
+        utils.showToast('Attendance log exported successfully', 'success');
     } catch (error) {
-        console.error('Error exporting students:', error);
+        console.error('Error exporting attendance log:', error);
+        utils.showToast('Failed to export attendance log', 'error');
+    } finally {
+        const button = document.getElementById('exportStudentsBtn');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-file-excel"></i> Export to Excel';
+        }
     }
 }
 
