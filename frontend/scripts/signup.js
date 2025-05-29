@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       console.log('Sending signup request...');
       // Send signup request to backend
-      const response = await fetch('http://127.0.0.1:8000/api/v1/auth/signup', {
+      const response = await fetch(`${CONFIG.API_URL}/api/v1/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -210,16 +210,11 @@ document.addEventListener("DOMContentLoaded", function () {
         verificationEmail.textContent = emailInput.value;
         console.log('Setting verification email:', emailInput.value);
         
-        const modal = document.getElementById('emailVerificationModal');
-        console.log('Modal element:', modal);
-        console.log('Modal classes before:', modal.classList);
+        const verificationModal = document.getElementById('verificationModal');
+        verificationModal.classList.add('show');
         
-        modal.classList.add("active");
-        console.log('Modal classes after:', modal.classList);
-        
-        document.body.style.overflow = 'hidden';
-        codeDigits[0].focus();
-        startResendTimer();
+        // Store email for verification
+        localStorage.setItem('pendingVerificationEmail', emailInput.value);
       } else {
         throw new Error(data.message || 'Signup failed');
       }
@@ -248,24 +243,42 @@ document.addEventListener("DOMContentLoaded", function () {
     verifyCodeBtn.disabled = true;
 
     try {
-      const { ok, data } = await utils.fetchWithAuth('http://127.0.0.1:8000/api/v1/auth/verify', {
+      const response = await fetch(`${CONFIG.API_URL}/api/v1/auth/verify`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
-          email: emailInput.value,
+          email: localStorage.getItem('pendingVerificationEmail'),
           verification_code: enteredCode
         })
       });
 
-      if (ok) {
-        utils.setAuthToken(data.token);
-        utils.setUser(data.user);
-        completeSignup();
+      const data = await response.json();
+
+      if (response.ok) {
+        // Save auth data
+        window.auth.saveAuthData(data.access_token, data.user);
+        
+        // Clear pending verification email
+        localStorage.removeItem('pendingVerificationEmail');
+        
+        // Show success message
+        utils.showNotification('Account verified successfully! Redirecting...', 'success');
+        
+        // Close modal
+        const verificationModal = document.getElementById('verificationModal');
+        verificationModal.classList.remove('show');
+        
+        // Redirect to face setup
+        setTimeout(() => {
+          window.location.href = `${window.location.origin}/face-setup.html?from=signup`;
+        }, 1500);
       } else {
-        verificationError.textContent = data.message || "Verification failed. Please try again.";
-        verificationError.style.display = "block";
+        throw new Error(data.message || 'Verification failed');
       }
     } catch (error) {
-      verificationError.textContent = "An error occurred. Please try again.";
+      verificationError.textContent = error.message || "Verification failed. Please try again.";
       verificationError.style.display = "block";
     } finally {
       verifyCodeBtn.classList.remove("loading");

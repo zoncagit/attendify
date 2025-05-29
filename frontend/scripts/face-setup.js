@@ -1,160 +1,195 @@
 import CONFIG from './config.js';
 import utils from './utils.js';
 
-document.addEventListener('DOMContentLoaded', function() {
-  // Check authentication
-  const token = utils.getAuthToken();
-  if (!token) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  // Elements
-  const webcam = document.getElementById('webcam');
-  const canvas = document.getElementById('faceCanvas');
-  const scanProgressBar = document.getElementById('scanProgressBar');
-  const startScanBtn = document.getElementById('startScanBtn');
-  const skipBtn = document.getElementById('skipBtn');
-  const setupContent = document.getElementById('setupContent');
-  const scanComplete = document.getElementById('scanComplete');
-  const continueBtn = document.getElementById('continueBtn');
-
-  let stream = null;
-  let scanning = false;
-  let scanProgress = 0;
-  let capturedImages = [];
-  const requiredImages = 5;
-
-  // API endpoints
-  const API_URL = 'http://127.0.0.1:8000';
-  const ENDPOINTS = {
-    UPLOAD_FACE: `${API_URL}/api/v1/users/face-recognition/upload`,
-    VERIFY_FACE: `${API_URL}/api/v1/users/face-recognition/verify`
-  };
-
-  // Start webcam
-  async function startWebcam() {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: 640,
-          height: 480,
-          facingMode: 'user'
+class FaceSetup {
+    constructor() {
+        this.webcam = document.getElementById('webcam');
+        this.canvas = document.getElementById('canvas');
+        this.startBtn = document.getElementById('startBtn');
+        this.skipBtn = document.getElementById('skipBtn');
+        this.statusDiv = document.getElementById('status');
+        this.progressDiv = document.getElementById('progress');
+        
+        this.stream = null;
+        this.ws = null;
+        this.isRunning = false;
+        this.maxSamples = 10;
+        
+        this.initializeEventListeners();
+    }
+    
+    initializeEventListeners() {
+        this.startBtn.addEventListener('click', () => this.startRegistration());
+        this.skipBtn.addEventListener('click', () => this.skipRegistration());
+    }
+    
+    async startRegistration() {
+        try {
+            // Get authentication token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                utils.showNotification('Please log in first', 'error');
+                return;
+            }
+            
+            // Start webcam
+            await this.startWebcam();
+            
+            // Connect to WebSocket
+            this.connectWebSocket(token);
+            
+            this.isRunning = true;
+            this.updateUI(true);
+            this.progressDiv.innerHTML = '<div class="progress"><div class="progress-bar" role="progressbar" style="width: 0%"></div></div>';
+            
+        } catch (error) {
+            utils.showNotification('Error starting registration', 'error');
+            console.error(error);
         }
-      });
-      webcam.srcObject = stream;
-      webcam.style.display = 'block';
-      document.querySelector('.webcam-placeholder').style.display = 'none';
-    } catch (error) {
-      console.error('Error accessing webcam:', error);
-      utils.showNotification('Unable to access webcam. Please check permissions.', 'error');
     }
-  }
-
-  // Stop webcam
-  function stopWebcam() {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      webcam.srcObject = null;
-      webcam.style.display = 'none';
-      document.querySelector('.webcam-placeholder').style.display = 'flex';
-    }
-  }
-
-  // Capture face image
-  function captureFace() {
-    const context = canvas.getContext('2d');
-    canvas.width = webcam.videoWidth;
-    canvas.height = webcam.videoHeight;
-    context.drawImage(webcam, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/jpeg', 0.8);
-  }
-
-  // Start face scanning
-  async function startScanning() {
-    if (!stream) {
-      await startWebcam();
-    }
-
-    scanning = true;
-    scanProgress = 0;
-    capturedImages = [];
-    updateScanProgress();
-
-    const scanInterval = setInterval(async () => {
-      if (!scanning || capturedImages.length >= requiredImages) {
-        clearInterval(scanInterval);
-        if (capturedImages.length >= requiredImages) {
-          await uploadFaceImages();
+    
+    async startWebcam() {
+        try {
+            this.stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: 640,
+                    height: 480,
+                    facingMode: 'user'
+                }
+            });
+            this.webcam.srcObject = this.stream;
+            this.webcam.style.display = 'block';
+        } catch (error) {
+            utils.showNotification('Error accessing webcam', 'error');
+            throw error;
         }
-        return;
-      }
-
-      const image = captureFace();
-      capturedImages.push(image);
-      scanProgress = (capturedImages.length / requiredImages) * 100;
-      updateScanProgress();
-    }, 1000);
-  }
-
-  // Update scan progress bar
-  function updateScanProgress() {
-    scanProgressBar.style.width = `${scanProgress}%`;
-  }
-
-  // Upload face images to backend
-  async function uploadFaceImages() {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.UPLOAD_FACE, {
-        method: 'POST',
-        body: JSON.stringify({
-          face_images: capturedImages
-        })
-      });
-
-      if (ok) {
-        showSetupComplete();
-      } else {
-        throw new Error(data.message || 'Failed to upload face images');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      resetScan();
     }
-  }
+    
+    connectWebSocket(token) {
+        this.ws = new WebSocket(
+            `ws://${CONFIG.API_URL.replace('http://', '')}/api/v1/face-registration/ws/register`
+        );
+        
+        this.ws.onopen = () => {
+            // Send authentication token
+            this.ws.send(JSON.stringify({ token }));
+            // Start sending frames
+            this.startFrameCapture();
+        };
+        
+        this.ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            if (data.status === 'progress') {
+                const progress = (data.count / this.maxSamples) * 100;
+                this.progressDiv.innerHTML = `
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: ${progress}%">
+                            ${data.count}/${this.maxSamples}
+                        </div>
+                    </div>
+                `;
 
-  // Show setup complete screen
-  function showSetupComplete() {
-    stopWebcam();
-    setupContent.style.display = 'none';
-    scanComplete.style.display = 'block';
-    localStorage.setItem('faceScanComplete', 'true');
-  }
+                // Update status message
+                this.statusDiv.textContent = `Collecting sample ${data.count} of ${this.maxSamples}...`;
+                
+                // Check if we've reached max samples
+                if (data.count >= this.maxSamples) {
+                    this.statusDiv.textContent = 'Processing face data...';
+                }
+            } else if (data.status === 'frame') {
+                // Update preview with face detection rectangle
+                const img = new Image();
+                img.onload = () => {
+                    const context = this.canvas.getContext('2d');
+                    this.canvas.width = img.width;
+                    this.canvas.height = img.height;
+                    context.drawImage(img, 0, 0);
+                };
+                img.src = data.image;
+            } else if (data.status === 'success') {
+                utils.showNotification('Face registered successfully', 'success');
+                this.cleanup();
+                this.redirectToDashboard();
+            } else if (data.status === 'error') {
+                utils.showNotification(data.message, 'error');
+                this.cleanup();
+            }
+        };
+        
+        this.ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            utils.showNotification('WebSocket connection error', 'error');
+            this.cleanup();
+        };
+        
+        this.ws.onclose = () => {
+            if (this.isRunning) {
+                utils.showNotification('WebSocket connection closed', 'error');
+                this.cleanup();
+            }
+        };
+    }
+    
+    startFrameCapture() {
+        const captureFrame = () => {
+            if (!this.isRunning) return;
+            
+            const context = this.canvas.getContext('2d');
+            this.canvas.width = this.webcam.videoWidth;
+            this.canvas.height = this.webcam.videoHeight;
+            context.drawImage(this.webcam, 0, 0, this.canvas.width, this.canvas.height);
+            
+            const imageData = this.canvas.toDataURL('image/jpeg', 0.8);
+            
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify({
+                    image: imageData
+                }));
+            }
+            
+            requestAnimationFrame(captureFrame);
+        };
+        
+        captureFrame();
+    }
+    
+    updateUI(isRunning) {
+        this.startBtn.disabled = isRunning;
+        this.skipBtn.disabled = isRunning;
+    }
+    
+    cleanup() {
+        this.isRunning = false;
+        
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
+        }
+        
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.webcam.srcObject = null;
+        }
+        
+        this.updateUI(false);
+        this.progressDiv.innerHTML = '';
+        this.statusDiv.textContent = '';
+    }
 
-  // Reset scan
-  function resetScan() {
-    scanning = false;
-    scanProgress = 0;
-    capturedImages = [];
-    updateScanProgress();
-  }
+    skipRegistration() {
+        utils.showNotification('Face registration skipped. You can set it up later from your profile settings.', 'info');
+        this.redirectToDashboard();
+    }
 
-  // Event Listeners
-  startScanBtn.addEventListener('click', () => {
-    startScanBtn.disabled = true;
-    startScanning();
-  });
+    redirectToDashboard() {
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 1500);
+    }
+}
 
-  skipBtn.addEventListener('click', () => {
-    window.location.href = 'dashboard.html';
-  });
-
-  continueBtn.addEventListener('click', () => {
-    window.location.href = 'dashboard.html';
-  });
-
-  // Clean up on page unload
-  window.addEventListener('beforeunload', () => {
-    stopWebcam();
-  });
+// Initialize face setup when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    new FaceSetup();
 });

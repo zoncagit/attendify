@@ -9,17 +9,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // API endpoints
-  const API_URL = 'http://127.0.0.1:8000/api/v1/classes';
   const ENDPOINTS = {
-    ENROLLED_CLASSES: `${API_URL}/api/v1/classes`,
-    TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
-    ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
-    CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
-    ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
-    DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`,
-    DELETE_CLASS: `${API_URL}/api/v1/classes/{class_id}`,
-    QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
-    USER_PROFILE: `${API_URL}/api/v1/users/profile`
+    ENROLLED_CLASSES: `${CONFIG.API_URL}/api/v1/classes`,
+    TUTORED_CLASSES: `${CONFIG.API_URL}/api/v1/classes`,
+    ENROLL_CLASS: `${CONFIG.API_URL}/api/v1/classes/enroll`,
+    CREATE_CLASS: `${CONFIG.API_URL}/api/v1/classes/`,  // POST to root of classes
+    ADD_GROUP: `${CONFIG.API_URL}/api/v1/classes/groups/add`,
+    DELETE_GROUP: `${CONFIG.API_URL}/api/v1/classes/groups/delete`,
+    DELETE_CLASS: `${CONFIG.API_URL}/api/v1/classes/{class_id}`,
+    QUIT_CLASS: `${CONFIG.API_URL}/api/v1/classes/quit`,
+    USER_PROFILE: `${CONFIG.API_URL}/api/v1/users/profile`
   };
 
   // Tab switching functionality

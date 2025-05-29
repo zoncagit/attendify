@@ -5,6 +5,7 @@ from app.database import Base
 from sqlalchemy.orm import relationship, backref
 from datetime import datetime, timedelta
 import secrets
+import json
 
 class UserRole(str, Enum):
     """User roles with different permission levels."""
@@ -58,6 +59,10 @@ class User(Base):
     # Roles and Permissions
     role = Column(SQLEnum(UserRole), default=UserRole.STUDENT, nullable=False)
     
+    # Face Recognition
+    face_embedding = Column(Text, nullable=True, comment='Face embedding vector for recognition')
+    face_embedding_updated_at = Column(TIMESTAMP(timezone=True), nullable=True, comment='Last time face embedding was updated')
+    
     # Additional user details (optional)
     phone_number = Column(String(20), nullable=True)
     profile_picture = Column(String(255), nullable=True)
@@ -72,3 +77,14 @@ class User(Base):
     reset_tokens = relationship("PasswordResetToken", back_populates="user", cascade="all, delete-orphan")
     verification_tokens = relationship("EmailVerificationToken", back_populates="user", cascade="all, delete-orphan")
     group_memberships = relationship("GroupUser", back_populates="user", cascade="all, delete-orphan")
+
+    def set_face_embedding(self, embedding: list) -> None:
+        """Set the face embedding vector."""
+        self.face_embedding = json.dumps(embedding)
+        self.face_embedding_updated_at = datetime.utcnow()
+
+    def get_face_embedding(self) -> list:
+        """Get the face embedding vector."""
+        if self.face_embedding:
+            return json.loads(self.face_embedding)
+        return None

@@ -44,7 +44,7 @@ async function handleApiResponse(response) {
     if (response.status === 401) {
         // Token expired or invalid
         clearAuthData();
-        window.location.href = '/login.html';
+        window.location.href = `${window.location.origin}/login.html`;
         return null;
     }
     

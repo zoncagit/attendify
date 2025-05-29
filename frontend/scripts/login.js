@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
         formData.append('password', passwordInput.value);
     
         // Send POST request to FastAPI
-        const response = await fetch('http://127.0.0.1:8000/api/v1/auth/login', {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -98,9 +98,16 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
     
             utils.showNotification('Login successful! Redirecting...', 'success');
     
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
+            // Check if user has completed face registration
+            if (!data.user.face_embedding) {
+                setTimeout(() => {
+                    window.location.replace(`${window.location.origin}/face-setup.html?from=login`);
+                }, 1500);
+            } else {
+                setTimeout(() => {
+                    window.location.replace(`${window.location.origin}/dashboard.html`);
+                }, 1500);
+            }
         } else {
             throw new Error(data.detail || 'Login failed');
         }
