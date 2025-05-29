@@ -10,23 +10,18 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // API endpoints
-  const API_URL = 'http://127.0.0.1:8000/api/v1';
+  const API_URL = 'http://127.0.0.1:8000/api/v1/classes';
   const ENDPOINTS = {
-    ENROLLED_CLASSES: `${API_URL}/classes/api/v1/classes/enrolled`,
-    TUTORED_CLASSES: `${API_URL}/classes/api/v1/classes/tutored`,
-    CREATE_CLASS: `${API_URL}/classes/api/v1/classes`,
-    GET_CLASS: (classId) => `${API_URL}/classes/api/v1/classes/${classId}`,
-    CREATE_GROUP: (classId) => `${API_URL}/classes/api/v1/classes/${classId}/groups`,
-    LIST_CLASS_GROUPS: (classId) => `${API_URL}/classes/api/v1/classes/${classId}/groups`,
-    JOIN_GROUP: (groupCode) => `${API_URL}/classes/api/v1/classes/groups/join/${groupCode}`,
-    LEAVE_CLASS: (classId) => `${API_URL}/classes/api/v1/classes/${classId}/leave`,
-    GET_CLASS_USERS: (classId) => `${API_URL}/classes/api/v1/classes/${classId}/users`,
-    GET_GROUP_USERS: (groupId) => `${API_URL}/classes/api/v1/classes/groups/${groupId}/users`,
-    REMOVE_USER_FROM_GROUP: (groupCode, userId) => `${API_URL}/groups/groups/${groupCode}/members/${userId}`,
-    GET_CLASS_GROUPS: (classId) => `${API_URL}/groups/groups/class/${classId}`,
-    GET_GROUP_COUNT: (classId) => `${API_URL}/groups/groups/class/${classId}/count`,
-    GET_USER_COUNT: (classId) => `${API_URL}/groups/groups/class/${classId}/users/count`,
-    USER_PROFILE: `${API_URL}/users/profile`
+    ENROLLED_CLASSES: `${API_URL}/api/v1/classes`,
+    TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
+    ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
+    CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
+    ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
+    DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`,
+    DELETE_CLASS: `${API_URL}/api/v1/classes`,  // Fixed double slash and removed {class_id} template
+    QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
+
+    USER_PROFILE: `${API_URL}/api/v1/users/profile`
   };
 
   // Tab switching functionality
@@ -218,10 +213,12 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
         
-        // Create all class cards asynchronously
-        const cardPromises = data.map(cls => createTutoredClassCard(cls));
-        const cards = await Promise.all(cardPromises);
-        tutoredClassesList.innerHTML = cards.join('');
+        // Log the first class to see its structure
+        if (data.length > 0) {
+          console.log('First class data:', data[0]);
+        }
+        
+        tutoredClassesList.innerHTML = data.map(cls => createTutoredClassCard(cls)).join('');
         setupTutoredClassEventListeners();
       } else {
         console.error('API request failed:', data);
@@ -236,8 +233,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Enroll in class
   async function enrollInClass(groupCode) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.JOIN_GROUP(groupCode), {
-        method: 'POST'
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.ENROLL_CLASS, {
+        method: 'POST',
+        body: JSON.stringify({ group_code: groupCode })
       });
 
       if (ok) {
@@ -262,6 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       if (ok) {  
+
         utils.showNotification(`Class "${data.class_name}" created successfully with code: ${data.class_code}`, 'success');
         loadTutoredClasses();
       } else {
@@ -276,9 +275,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add group to class
   async function addGroup(classId, groupName) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_GROUP(classId), {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.ADD_GROUP, {
         method: 'POST',
-        body: JSON.stringify({ name: groupName })
+        body: JSON.stringify({
+          class_id: classId,
+          name: groupName
+        })
       });
 
       if (ok) {
@@ -295,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Delete class
   async function deleteClass(classId) {
     try {
-      const { ok, data, status } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS(classId), {
+      const { ok, data, status } = await utils.fetchWithAuth(`${ENDPOINTS.DELETE_CLASS}/${classId}`, {
         method: 'DELETE'
       });
 
@@ -314,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Quit class
   async function quitClass(classId) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.LEAVE_CLASS(classId), {
+      const { ok, data } = await utils.fetchWithAuth(`${ENDPOINTS.QUIT_CLASS}/${classId}`, {
         method: 'POST'
       });
 
@@ -343,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
       utils.showNotification('Please enter a group code', 'error');
       return;
     }
-    await joinGroup(groupCode);
+    await enrollInClass(groupCode);
     closeAllModals();
   });
 
@@ -403,10 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Helper function to create tutored class card
-  async function createTutoredClassCard(classData) {
-    const groupCount = await getGroupCount(classData.class_id);
-    const userCount = await getUserCount(classData.class_id);
-    
+  function createTutoredClassCard(classData) {
     return `
       <div class="class-card" data-class-id="${classData.class_id}">
         <div class="class-header">
@@ -418,21 +417,16 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="class-details">
           <div class="detail-row">
             <span class="detail-label">Groups:</span>
-            <span class="detail-value">${groupCount}</span>
+            <span class="detail-value">${classData.group_count || 0}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Students:</span>
-            <span class="detail-value">${userCount}</span>
+            <span class="detail-value">${classData.student_count || 0}</span>
           </div>
         </div>
-        <div class="class-actions">
-          <a href="students.html?class=${classData.class_id}" class="btn btn-primary view-students-btn">
-            <i class="fas fa-users"></i> View Students
-          </a>
-          <button class="btn btn-secondary add-group-btn" data-class-id="${classData.class_id}">
-            <i class="fas fa-layer-group"></i> Add Group
-          </button>
-        </div>
+        <a href="students.html?class=${classData.class_id}" class="btn btn-primary view-students-btn">
+          <i class="fas fa-users"></i> View Students
+        </a>
       </div>
     `;
   }
@@ -446,10 +440,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
         const groupCode = e.target.closest('.class-card').querySelector('.detail-value').textContent;
         
+        // Update quit modal content
         document.getElementById('quitClassName').textContent = className;
         document.getElementById('quitClassCode').textContent = groupCode;
+        
+        // Store class ID for the confirm button
         document.getElementById('confirmQuitBtn').dataset.classId = classId;
         
+        // Show modal
         const modalOverlay = document.getElementById('modalOverlay');
         const quitModal = document.getElementById('quitClassModal');
         modalOverlay.classList.add('active');
@@ -460,197 +458,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Setup event listeners for tutored classes
   function setupTutoredClassEventListeners() {
-    // Delete class buttons
     document.querySelectorAll('.delete-class-icon').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const classId = e.target.closest('.class-card').dataset.classId;
         const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
         
+        // Update delete modal content
         document.getElementById('deleteClassName').textContent = className;
+        
+        // Store class ID for the confirm button
         document.getElementById('confirmDeleteBtn').dataset.classId = classId;
         
+        // Show modal
         const modalOverlay = document.getElementById('modalOverlay');
         const deleteModal = document.getElementById('deleteClassModal');
         modalOverlay.classList.add('active');
         deleteModal.classList.add('active');
       });
     });
-
-    // Add group buttons
-    document.querySelectorAll('.add-group-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const classId = e.target.closest('.class-card').dataset.classId;
-        const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
-        
-        document.getElementById('addGroupClassName').textContent = className;
-        document.getElementById('confirmAddGroupBtn').dataset.classId = classId;
-        
-        const modalOverlay = document.getElementById('modalOverlay');
-        const addGroupModal = document.getElementById('addGroupModal');
-        modalOverlay.classList.add('active');
-        addGroupModal.classList.add('active');
-      });
-    });
-  }
-
-  // Add group modal event listeners
-  document.getElementById('confirmAddGroupBtn')?.addEventListener('click', async () => {
-    const classId = document.getElementById('confirmAddGroupBtn').dataset.classId;
-    const groupName = document.getElementById('groupName').value.trim();
-    
-    if (!groupName) {
-      utils.showNotification('Please enter a group name', 'error');
-      return;
-    }
-    
-    await createGroup(classId, groupName);
-    closeAllModals();
-    loadTutoredClasses();
-  });
-
-  // Get class details
-  async function getClass(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS(classId));
-      if (!ok) {
-        throw new Error(data.message || 'Failed to get class details');
-      }
-      return data;
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      throw error;
-    }
-  }
-
-  // Create group in class
-  async function createGroup(classId, groupName) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_GROUP(classId), {
-        method: 'POST',
-        body: JSON.stringify({ name: groupName })
-      });
-
-      if (ok) {
-        utils.showNotification('Group created successfully', 'success');
-        return data;
-      } else {
-        throw new Error(data.message || 'Failed to create group');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      throw error;
-    }
-  }
-
-  // List groups in a class
-  async function listClassGroups(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.LIST_CLASS_GROUPS(classId));
-      if (!ok) {
-        throw new Error(data.message || 'Failed to list class groups');
-      }
-      return data;
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      throw error;
-    }
-  }
-
-  // Join a group
-  async function joinGroup(groupCode) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.JOIN_GROUP(groupCode), {
-        method: 'POST'
-      });
-
-      if (ok) {
-        utils.showNotification('Successfully joined group', 'success');
-        loadEnrolledClasses();
-        return data;
-      } else {
-        throw new Error(data.message || 'Failed to join group');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      throw error;
-    }
-  }
-
-  // Get class users
-  async function getClassUsers(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS_USERS(classId));
-      if (!ok) {
-        throw new Error(data.message || 'Failed to get class users');
-      }
-      return data;
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      throw error;
-    }
-  }
-
-  // Get group users
-  async function getGroupUsers(groupId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_GROUP_USERS(groupId));
-      if (!ok) {
-        throw new Error(data.message || 'Failed to get group users');
-      }
-      return data;
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      throw error;
-    }
-  }
-
-  // Remove user from group
-  async function removeUserFromGroup(groupCode, userId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.REMOVE_USER_FROM_GROUP(groupCode, userId), {
-        method: 'DELETE'
-      });
-
-      if (ok) {
-        utils.showNotification('User removed from group successfully', 'success');
-        return true;
-      } else {
-        throw new Error(data.message || 'Failed to remove user from group');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      throw error;
-    }
-  }
-
-  // Get class groups count
-  async function getGroupCount(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_GROUP_COUNT(classId));
-      if (!ok) {
-        throw new Error(data.message || 'Failed to get group count');
-      }
-      return data.count;
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      throw error;
-    }
-  }
-
-  // Get class users count
-  async function getUserCount(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_USER_COUNT(classId));
-      if (!ok) {
-        throw new Error(data.message || 'Failed to get user count');
-      }
-      return data.count;
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      throw error;
-    }
   }
 
   // Initialize all functionality
