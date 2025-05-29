@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`, 
     DELETE_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`, // Fixed double slash and removed {class_id} template
 
-    QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
+    QUIT_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}/leave`,
 
     USER_PROFILE: `${API_URL}/api/v1/users/profile`,
     // New endpoints
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
   async function quitClass(classId) {
     try {
       const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.QUIT_CLASS(classId), {
-        method: 'POST'
+        method: 'DELETE'
       });
 
       if (ok) {
