@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const classId = urlParams.get('class');
     if (!classId) {
-        utils.showToast('No class selected', 'error');
+        utils.showNotification('No class selected', 'error');
         window.location.href = 'dashboard.html';
         return;
     }
@@ -74,7 +74,7 @@ async function loadData(classId) {
         displayStudents(students);
     } catch (error) {
         console.error('Error loading data:', error);
-        utils.showToast('Error loading data', 'error');
+        utils.showNotification('Failed to load data', 'error');
     }
 }
 
@@ -208,9 +208,11 @@ async function handleGroupDelete(groupId) {
 
     try {
         await groupManagement.deleteGroup(classId, groupId);
+        utils.showNotification('Group deleted successfully', 'success');
         await loadData(classId); // Reload all data
     } catch (error) {
         console.error('Error deleting group:', error);
+        utils.showNotification('Failed to delete group', 'error');
     }
 }
 
@@ -227,10 +229,10 @@ async function handleStudentDelete(studentId) {
 
         await studentManagement.deleteStudent(classId, studentId);
         await loadData(classId);
-        utils.showToast('Student removed successfully', 'success');
+        utils.showNotification('Student removed successfully', 'success');
     } catch (error) {
         console.error('Error deleting student:', error);
-        utils.showToast('Failed to remove student', 'error');
+        utils.showNotification('Failed to remove student', 'error');
     } finally {
         hideDeleteModal();
     }
@@ -278,7 +280,7 @@ async function populateGroupSelect() {
                 groups.map(group => `<option value="${group.id}">${group.name}</option>`).join('');
         } catch (error) {
             console.error('Error loading groups:', error);
-            utils.showToast('Failed to load groups', 'error');
+            utils.showNotification('Failed to load groups', 'error');
         }
     }
 }
@@ -302,10 +304,10 @@ async function handleExport() {
         }
 
         await studentManagement.exportStudents(classId);
-        utils.showToast('Attendance log exported successfully', 'success');
+        utils.showNotification('Attendance log exported successfully', 'success');
     } catch (error) {
         console.error('Error exporting attendance log:', error);
-        utils.showToast('Failed to export attendance log', 'error');
+        utils.showNotification('Failed to export attendance log', 'error');
     } finally {
         const button = document.getElementById('exportStudentsBtn');
         if (button) {
@@ -328,7 +330,7 @@ function initializeModals() {
             const groupId = document.getElementById('studentGroup')?.value;
 
             if (!studentName || !groupId) {
-                utils.showToast('Please fill in all fields', 'error');
+                utils.showNotification('Please fill in all fields', 'error');
                 return;
             }
 
@@ -347,10 +349,10 @@ function initializeModals() {
                 hideAddStudentModal();
                 addStudentForm.reset();
                 await loadData(classId);
-                utils.showToast('Student added successfully', 'success');
+                utils.showNotification('Student added successfully', 'success');
             } catch (error) {
                 console.error('Error adding student:', error);
-                utils.showToast(error.message || 'Failed to add student', 'error');
+                utils.showNotification(error.message || 'Failed to add student', 'error');
             } finally {
                 const submitButton = addStudentForm.querySelector('button[type="submit"]');
                 if (submitButton) {
@@ -385,7 +387,7 @@ function initializeGroupModal() {
             const classId = new URLSearchParams(window.location.search).get('class');
             
             if (!groupName || !classId) {
-                utils.showToast('Please enter a group name', 'error');
+                utils.showNotification('Please enter a group name', 'error');
                 return;
             }
 
@@ -398,9 +400,9 @@ function initializeGroupModal() {
                 document.getElementById('groupName').value = '';
                 hideGroupModal();
                 await loadData(classId);
-                utils.showToast('Group added successfully', 'success');
+                utils.showNotification('Group added successfully', 'success');
             } catch (error) {
-                utils.showToast(error.message || 'Failed to add group', 'error');
+                utils.showNotification(error.message || 'Failed to add group', 'error');
             } finally {
                 // Reset loading state
                 confirmAddGroupBtn.disabled = false;
