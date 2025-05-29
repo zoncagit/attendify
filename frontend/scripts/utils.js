@@ -65,8 +65,11 @@ const utils = {
       ...(token && { 'Authorization': `Bearer ${token}` })
     };
 
+    // Prepend API_URL if the endpoint is a relative path
+    const fullUrl = endpoint.startsWith('http') ? endpoint : `${CONFIG.API_URL}${endpoint}`;
+
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch(fullUrl, {
         ...options,
         headers: {
           ...defaultHeaders,
@@ -99,6 +102,7 @@ const utils = {
       }
 
       return { ok: response.ok, status: response.status, data };
+
     } catch (error) {
       console.error('API Error:', error);
       return { 

@@ -11,15 +11,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // API endpoints
   const ENDPOINTS = {
-    ENROLLED_CLASSES: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.ENROLLED_CLASSES}`,
-    TUTORED_CLASSES: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.TUTORED_CLASSES}`,
-    ENROLL_CLASS: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.ENROLL_CLASS}`,
-    CREATE_CLASS: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.CREATE_CLASS}`,
+    ENROLLED_CLASSES: `${CONFIG.API_URL}/api/v1/classes`,
+    TUTORED_CLASSES: `${CONFIG.API_URL}/api/v1/classes`,
+    ENROLL_CLASS: `${CONFIG.API_URL}/api/v1/classes/enroll`,
+    CREATE_CLASS: `${CONFIG.API_URL}/api/v1/classes/`,
     GET_CLASS: (classId) => `${CONFIG.API_URL}/api/v1/classes/${classId}`,
-    ADD_GROUP: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.ADD_GROUP}`,
-    DELETE_GROUP: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.DELETE_GROUP}`,
-    DELETE_CLASS: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.DELETE_CLASS}`,
-    QUIT_CLASS: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.QUIT_CLASS}`,
+    ADD_GROUP: `${CONFIG.API_URL}/api/v1/classes/groups/add`,
+    DELETE_GROUP: `${CONFIG.API_URL}/api/v1/classes/groups/delete`,
+    DELETE_CLASS: `${CONFIG.API_URL}/api/v1/classes/{class_id}`,
+    QUIT_CLASS: `${CONFIG.API_URL}$/api/v1/classes/quit`,
     GET_CLASS_GROUPS: (classId) => `${CONFIG.API_URL}/api/v1/classes/${classId}/groups`,
     JOIN_GROUP: (groupCode) => `${CONFIG.API_URL}/api/v1/classes/groups/join/${groupCode}`,
     GET_CLASS_USERS: (classId) => `${CONFIG.API_URL}/api/v1/classes/${classId}/users`,
@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', function() {
     REMOVE_USER_FROM_GROUP: (groupCode, userId) => `${CONFIG.API_URL}/api/v1/groups/groups/${groupCode}/members/${userId}`,
     GET_CLASS_GROUP_COUNT: (classId) => `${CONFIG.API_URL}/api/v1/groups/groups/class/${classId}/count`,
     GET_CLASS_USER_COUNT: (classId) => `${CONFIG.API_URL}/api/v1/groups/groups/class/${classId}/users/count`,
-    USER_PROFILE: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.USER_PROFILE}`
-  };
+    USER_PROFILE: `${CONFIG.API_URL}/api/v1/users/profile`
+
 
   // Tab switching functionality
   function initializeTabs() {
@@ -295,7 +295,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // Delete class
   async function deleteClass(classId) {
     try {
-      const { ok, data, status } = await utils.fetchWithAuth(`${ENDPOINTS.DELETE_CLASS}/${classId}`, {
+      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_ENDPOINTS.DELETE_CLASS}/${classId}/`, {
+
         method: 'DELETE'
       });
 

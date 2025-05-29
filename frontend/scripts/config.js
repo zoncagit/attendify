@@ -21,6 +21,7 @@ const CONFIG = {
     CREATE_CLASS: '/api/v1/classes/create',
     GET_CLASS: '/api/v1/classes',  // Append /{class_id} for specific class
     DELETE_CLASS: '/api/v1/classes/delete',
+
     UPDATE_CLASS: '/api/v1/classes/update',
     
     // Group endpoints
