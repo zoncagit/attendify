@@ -16,20 +16,16 @@ document.addEventListener('DOMContentLoaded', function() {
     ENROLLED_CLASSES: `${API_URL}/api/v1/classes`,
     TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
     ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
+
     CREATE_CLASS: `${API_URL}/api/v1/classes/`,
     DELETE_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`,
     QUIT_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}/leave`,
     USER_PROFILE: `${API_URL}/api/v1/users/profile`,
+
     // New endpoints
     GET_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`,
-    CREATE_GROUP: (classId) => `${API_URL}/api/v1/classes/${classId}/groups`,
-    LIST_CLASS_GROUPS: (classId) => `${API_URL}/api/v1/classes/${classId}/groups`,
     GET_CLASS_USERS: (classId) => `${API_URL}/api/v1/classes/${classId}/users`,
-    GET_GROUP_USERS: (groupId) => `${API_URL}/api/v1/classes/groups/${groupId}/users`,
-    REMOVE_USER_FROM_GROUP: (groupCode, userId) => `${API_URL}/api/v1/groups/groups/${groupCode}/members/${userId}`,
-    GET_CLASS_GROUPS: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}`,
-    GET_GROUP_COUNT: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}/count`,
-    GET_USER_COUNT: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}/users/count`
+    REMOVE_USER_FROM_GROUP: (groupCode, userId) => `${API_URL}/api/v1/groups/groups/${groupCode}/members/${userId}`
   };
 
   // Tab switching functionality
@@ -464,149 +460,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // New API functions
-  async function getClass(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS(classId));
-      if (ok) {
-        return data;
-      } else {
-        throw new Error(data.message || 'Failed to get class details');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error getting class:', error);
-      return null;
-    }
-  }
-
+  // Replace duplicate functions with imported ones
   async function createGroupInClass(classId, groupName) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_GROUP(classId), {
-        method: 'POST',
-        body: JSON.stringify({ name: groupName })
-      });
-
-      if (ok) {
-        utils.showNotification('Group created successfully', 'success');
-        return data;
-      } else {
-        throw new Error(data.message || 'Failed to create group');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error creating group:', error);
-      return null;
-    }
+    return await groupManagement.addGroup(classId, groupName);
   }
 
   async function listClassGroups(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.LIST_CLASS_GROUPS(classId));
-      if (ok) {
-        return data;
-      } else {
-        throw new Error(data.message || 'Failed to list class groups');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error listing class groups:', error);
-      return [];
-    }
-  }
-
-  async function getClassUsers(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS_USERS(classId));
-      if (ok) {
-        return data;
-      } else {
-        throw new Error(data.message || 'Failed to get class users');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error getting class users:', error);
-      return [];
-    }
+    return await groupManagement.getGroups(classId);
   }
 
   async function getGroupUsers(groupId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_GROUP_USERS(groupId));
-      if (ok) {
-        return data;
-      } else {
-        throw new Error(data.message || 'Failed to get group users');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error getting group users:', error);
-      return [];
-    }
-  }
-
-  async function removeUserFromGroup(groupCode, userId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.REMOVE_USER_FROM_GROUP(groupCode, userId), {
-        method: 'DELETE'
-      });
-
-      if (ok) {
-        utils.showNotification('User removed from group successfully', 'success');
-        return true;
-      } else {
-        throw new Error(data.message || 'Failed to remove user from group');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error removing user from group:', error);
-      return false;
-    }
+    return await groupManagement.getGroupStudents(groupId);
   }
 
   async function getClassGroups(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS_GROUPS(classId));
-      if (ok) {
-        return data;
-      } else {
-        throw new Error(data.message || 'Failed to get class groups');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error getting class groups:', error);
-      return [];
-    }
+    return await groupManagement.getGroups(classId);
   }
 
   async function getGroupCount(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_GROUP_COUNT(classId));
-      if (ok) {
-        return data.count;
-      } else {
-        throw new Error(data.message || 'Failed to get group count');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error getting group count:', error);
-      return 0;
-    }
-  }
-
-  async function getUserCount(classId) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_USER_COUNT(classId));
-      if (ok) {
-        return data.count;
-      } else {
-        throw new Error(data.message || 'Failed to get user count');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error getting user count:', error);
-      return 0;
-    }
+    return await groupManagement.getGroupCount(classId);
   }
 
   // Initialize all functionality

@@ -3,7 +3,7 @@ import utils from './utils.js';
 
 export async function addStudent(classId, studentData) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students`, {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/students`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`,
@@ -49,7 +49,7 @@ export async function deleteStudent(classId, studentId) {
 
 export async function getStudents(classId, groupId = null) {
     try {
-        let url = `${CONFIG.API_URL}/classes/${classId}/students`;
+        let url = `${CONFIG.API_URL}/api/v1/classes/${classId}/students`;
         if (groupId) {
             url += `?groupId=${groupId}`;
         }
@@ -101,7 +101,7 @@ export async function importStudents(classId, fileData) {
         const formData = new FormData();
         formData.append('file', fileData);
 
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/import`, {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/students/import`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`
@@ -125,7 +125,7 @@ export async function importStudents(classId, fileData) {
 
 export async function exportStudents(classId, format = 'xlsx') {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/export?format=${format}`, {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/students/export?format=${format}`, {
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`
             }
