@@ -43,6 +43,14 @@ const utils = {
     
     document.body.appendChild(notificationElement);
     
+    // Remove previous notifications
+    const notifications = document.querySelectorAll('.notification');
+    notifications.forEach((notification, index) => {
+      if (notification !== notificationElement) {
+        notification.remove();
+      }
+    });
+    
     setTimeout(() => {
       notificationElement.remove();
     }, 3000);
@@ -50,7 +58,7 @@ const utils = {
 
   // Make authenticated API calls
   async fetchWithAuth(endpoint, options = {}) {
-    const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+    const token = this.getAuthToken();
     
     const defaultHeaders = {
       'Content-Type': 'application/json',
@@ -66,12 +74,45 @@ const utils = {
         }
       });
 
-      const data = await response.json();
-      return { ok: response.ok, data };
+      // Handle 401 Unauthorized
+      if (response.status === 401) {
+        this.handleUnauthorized();
+        return { ok: false, data: { message: 'Session expired. Please log in again.' } };
+      }
+
+      // Handle 404 Not Found
+      if (response.status === 404) {
+        return { ok: false, data: { message: 'Resource not found.' } };
+      }
+
+      // Handle 403 Forbidden
+      if (response.status === 403) {
+        return { ok: false, data: { message: 'You do not have permission to perform this action.' } };
+      }
+
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
+
+      return { ok: response.ok, status: response.status, data };
     } catch (error) {
       console.error('API Error:', error);
-      return { ok: false, data: { message: 'Network error occurred' } };
+      return { 
+        ok: false, 
+        data: { message: 'Network error occurred. Please check your connection.' }
+      };
     }
+  },
+
+  // Handle unauthorized access
+  handleUnauthorized() {
+    this.removeAuthToken();
+    this.removeUser();
+    window.location.href = 'login.html';
   },
 
   // Validate email format
@@ -82,16 +123,60 @@ const utils = {
 
   // Validate password strength
   validatePassword(password) {
-    return {
-      isValid: password.length >= 8,
-      message: password.length < 8 ? 'Password must be at least 8 characters' : ''
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    const strength = {
+      isValid: password.length >= minLength,
+      score: 0,
+      message: ''
     };
+
+    if (password.length >= minLength) strength.score++;
+    if (hasUpperCase) strength.score++;
+    if (hasLowerCase) strength.score++;
+    if (hasNumbers) strength.score++;
+    if (hasSpecialChar) strength.score++;
+
+    if (strength.score < 2) {
+      strength.message = 'Weak password';
+    } else if (strength.score < 4) {
+      strength.message = 'Moderate password';
+    } else {
+      strength.message = 'Strong password';
+    }
+
+    return strength;
   },
 
+  // Format date
+  formatDate(date) {
+    return new Date(date).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  },
+
+  // Copy to clipboard
+  async copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.showNotification('Copied to clipboard', 'success');
+    } catch (err) {
+      this.showNotification('Failed to copy to clipboard', 'error');
+    }
+  },
+
+  // Logout
   logout() {
-    localStorage.removeItem(CONFIG.TOKEN_KEY);
-    localStorage.removeItem(CONFIG.USER_KEY);
-    window.location.href = '/login.html';
+    this.removeAuthToken();
+    this.removeUser();
+    window.location.href = 'login.html';
   }
 };
 

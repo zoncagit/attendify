@@ -19,6 +19,7 @@ const CONFIG = {
     ENROLLED_CLASSES: '/api/v1/classes/enrolled',
     TUTORED_CLASSES: '/api/v1/classes/tutored',
     CREATE_CLASS: '/api/v1/classes/create',
+    GET_CLASS: '/api/v1/classes',  // Append /{class_id} for specific class
     DELETE_CLASS: '/api/v1/classes/delete',
     UPDATE_CLASS: '/api/v1/classes/update',
     
@@ -26,6 +27,10 @@ const CONFIG = {
     ADD_GROUP: '/api/v1/classes/groups/add',
     DELETE_GROUP: '/api/v1/classes/groups/delete',
     UPDATE_GROUP: '/api/v1/classes/groups/update',
+    GET_CLASS_GROUPS: '/api/v1/classes/groups',  // Append /{class_id} for specific class
+    JOIN_GROUP: '/api/v1/classes/groups/join',  // Append /{group_code}
+    GET_GROUP_USERS: '/api/v1/classes/groups/users',  // Append /{group_id}
+    REMOVE_USER_FROM_GROUP: '/api/v1/groups/groups/members',  // Append /{group_code}/{user_id}
     
     // Enrollment endpoints
     ENROLL_CLASS: '/api/v1/classes/enroll',
@@ -34,7 +39,11 @@ const CONFIG = {
     // Attendance endpoints
     MARK_ATTENDANCE: '/api/v1/attendance/mark',
     GET_ATTENDANCE: '/api/v1/attendance/get',
-    GET_CLASS_ATTENDANCE: '/api/v1/attendance/class'
+    GET_CLASS_ATTENDANCE: '/api/v1/attendance/class',
+    
+    // Statistics endpoints
+    GET_CLASS_GROUP_COUNT: '/api/v1/groups/groups/class/count',  // Append /{class_id}
+    GET_CLASS_USER_COUNT: '/api/v1/groups/groups/class/users/count'  // Append /{class_id}
   },
   TOKEN_KEY: 'attendify_token',
   USER_KEY: 'attendify_user'

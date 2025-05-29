@@ -10,18 +10,24 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // API endpoints
-  const API_URL = 'http://127.0.0.1:8000/api/v1/classes';
   const ENDPOINTS = {
-    ENROLLED_CLASSES: `${API_URL}/api/v1/classes`,
-    TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
-    ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
-    CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
-    ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
-    DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`,
-    DELETE_CLASS: `${API_URL}/api/v1/classes`,  // Fixed double slash and removed {class_id} template
-    QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
-
-    USER_PROFILE: `${API_URL}/api/v1/users/profile`
+    ENROLLED_CLASSES: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.ENROLLED_CLASSES}`,
+    TUTORED_CLASSES: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.TUTORED_CLASSES}`,
+    ENROLL_CLASS: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.ENROLL_CLASS}`,
+    CREATE_CLASS: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.CREATE_CLASS}`,
+    GET_CLASS: (classId) => `${CONFIG.API_URL}/api/v1/classes/${classId}`,
+    ADD_GROUP: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.ADD_GROUP}`,
+    DELETE_GROUP: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.DELETE_GROUP}`,
+    DELETE_CLASS: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.DELETE_CLASS}`,
+    QUIT_CLASS: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.QUIT_CLASS}`,
+    GET_CLASS_GROUPS: (classId) => `${CONFIG.API_URL}/api/v1/classes/${classId}/groups`,
+    JOIN_GROUP: (groupCode) => `${CONFIG.API_URL}/api/v1/classes/groups/join/${groupCode}`,
+    GET_CLASS_USERS: (classId) => `${CONFIG.API_URL}/api/v1/classes/${classId}/users`,
+    GET_GROUP_USERS: (groupId) => `${CONFIG.API_URL}/api/v1/classes/groups/${groupId}/users`,
+    REMOVE_USER_FROM_GROUP: (groupCode, userId) => `${CONFIG.API_URL}/api/v1/groups/groups/${groupCode}/members/${userId}`,
+    GET_CLASS_GROUP_COUNT: (classId) => `${CONFIG.API_URL}/api/v1/groups/groups/class/${classId}/count`,
+    GET_CLASS_USER_COUNT: (classId) => `${CONFIG.API_URL}/api/v1/groups/groups/class/${classId}/users/count`,
+    USER_PROFILE: `${CONFIG.API_URL}${CONFIG.API_ENDPOINTS.USER_PROFILE}`
   };
 
   // Tab switching functionality
@@ -187,9 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load tutored classes
   async function loadTutoredClasses() {
     try {
-      console.log('Fetching tutored classes from:', ENDPOINTS.TUTORED_CLASSES);
       const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.TUTORED_CLASSES);
-      console.log('API Response - ok:', ok, 'data:', data);
       
       if (ok) {
         const tutoredClassesList = document.getElementById('tutoredClassesList');
@@ -198,10 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
         
-        console.log('Received classes data:', data);
-        
         if (!Array.isArray(data) || data.length === 0) {
-          console.log('No classes found or data is not an array');
           tutoredClassesList.innerHTML = `
             <div class="empty-state">
               <div class="empty-icon">
@@ -213,15 +214,12 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
         
-        // Log the first class to see its structure
-        if (data.length > 0) {
-          console.log('First class data:', data[0]);
-        }
-        
-        tutoredClassesList.innerHTML = data.map(cls => createTutoredClassCard(cls)).join('');
+        // Create cards asynchronously
+        const cardPromises = data.map(cls => createTutoredClassCard(cls));
+        const cards = await Promise.all(cardPromises);
+        tutoredClassesList.innerHTML = cards.join('');
         setupTutoredClassEventListeners();
       } else {
-        console.error('API request failed:', data);
         throw new Error(data.message || 'Failed to load classes');
       }
     } catch (error) {
@@ -368,14 +366,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Helper function to create enrolled class card
   function createEnrolledClassCard(classData) {
-    const attendancePercentage = ((classData.attendance_count || 0) / (classData.total_sessions || 1) * 100).toFixed(1);
-    
     return `
-      <div class="class-card" data-class-id="${classData.class_id}">
+      <div class="class-card enrolled-class" data-class-id="${classData.class_id}">
         <div class="class-header">
           <h3 class="class-name">${classData.class_name}</h3>
-          <button class="leave-class-icon" data-class-id="${classData.class_id}" title="Leave Class">
-            <i class="fas fa-sign-out-alt"></i>
+          <button class="open-class-btn" title="Open Class">
+            <i class="fas fa-external-link-alt"></i>
           </button>
         </div>
         <div class="class-details">
@@ -384,99 +380,238 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="detail-value">${classData.group_name || 'Default Group'}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Group Code:</span>
-            <span class="detail-value">${classData.group_code}</span>
+            <span class="detail-label">Attendance:</span>
+            <span class="detail-value ${getAttendanceColorClass(classData.attendance_percentage)}">
+              ${classData.attendance_percentage || 0}%
+            </span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Attendance:</span>
-            <span class="detail-value">${attendancePercentage}%</span>
-          </div>
-          <div class="attendance-counter">
-            <div class="attendance-count">
-              <span>${classData.attendance_count || 0}</span>
-              <span class="slash">/</span>
-              <span>${classData.total_sessions || 0}</span>
+            <span class="detail-label">Group Code:</span>
+            <div class="code-container">
+              <span class="code-value">${classData.group_code || ''}</span>
+              <button class="copy-code-btn" title="Copy Code">
+                <i class="fas fa-copy"></i>
+              </button>
             </div>
-            <div class="attendance-label">Sessions</div>
           </div>
         </div>
       </div>
     `;
   }
 
+  function getAttendanceColorClass(percentage) {
+    if (percentage >= 90) return 'attendance-high';
+    if (percentage >= 75) return 'attendance-medium';
+    return 'attendance-low';
+  }
+
   // Helper function to create tutored class card
-  function createTutoredClassCard(classData) {
+  async function createTutoredClassCard(classData) {
+    const groupCount = await getClassGroupCount(classData.class_id);
+    const studentCount = await getClassUserCount(classData.class_id);
+    
     return `
-      <div class="class-card" data-class-id="${classData.class_id}">
+      <div class="class-card tutored-class" data-class-id="${classData.class_id}">
         <div class="class-header">
           <h3 class="class-name">${classData.class_name}</h3>
-          <button class="delete-class-icon" data-class-id="${classData.class_id}" title="Delete Class">
+          <button class="delete-class-btn" data-class-id="${classData.class_id}" title="Delete Class">
             <i class="fas fa-trash"></i>
           </button>
         </div>
         <div class="class-details">
           <div class="detail-row">
             <span class="detail-label">Groups:</span>
-            <span class="detail-value">${classData.group_count || 0}</span>
+            <span class="detail-value">${groupCount}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Students:</span>
-            <span class="detail-value">${classData.student_count || 0}</span>
+            <span class="detail-value">${studentCount}</span>
           </div>
         </div>
-        <a href="students.html?class=${classData.class_id}" class="btn btn-primary view-students-btn">
-          <i class="fas fa-users"></i> View Students
-        </a>
+        <button class="view-students-btn" data-class-id="${classData.class_id}">
+          Click to view students
+        </button>
       </div>
     `;
   }
 
   // Setup event listeners for enrolled classes
   function setupEnrolledClassEventListeners() {
-    document.querySelectorAll('.leave-class-icon').forEach(btn => {
+    // Open class button
+    document.querySelectorAll('.open-class-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const classId = e.target.closest('.class-card').dataset.classId;
-        const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
-        const groupCode = e.target.closest('.class-card').querySelector('.detail-value').textContent;
-        
-        // Update quit modal content
-        document.getElementById('quitClassName').textContent = className;
-        document.getElementById('quitClassCode').textContent = groupCode;
-        
-        // Store class ID for the confirm button
-        document.getElementById('confirmQuitBtn').dataset.classId = classId;
-        
-        // Show modal
-        const modalOverlay = document.getElementById('modalOverlay');
-        const quitModal = document.getElementById('quitClassModal');
-        modalOverlay.classList.add('active');
-        quitModal.classList.add('active');
+        window.location.href = `class.html?id=${classId}`;
+      });
+    });
+
+    // Copy code button
+    document.querySelectorAll('.copy-code-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const codeValue = e.target.closest('.code-container').querySelector('.code-value').textContent;
+        navigator.clipboard.writeText(codeValue).then(() => {
+          utils.showNotification('Group code copied to clipboard', 'success');
+        }).catch(() => {
+          utils.showNotification('Failed to copy group code', 'error');
+        });
       });
     });
   }
 
   // Setup event listeners for tutored classes
   function setupTutoredClassEventListeners() {
-    document.querySelectorAll('.delete-class-icon').forEach(btn => {
+    // Delete class button
+    document.querySelectorAll('.delete-class-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const classId = e.target.closest('.class-card').dataset.classId;
         const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
         
-        // Update delete modal content
-        document.getElementById('deleteClassName').textContent = className;
-        
-        // Store class ID for the confirm button
-        document.getElementById('confirmDeleteBtn').dataset.classId = classId;
-        
-        // Show modal
-        const modalOverlay = document.getElementById('modalOverlay');
-        const deleteModal = document.getElementById('deleteClassModal');
-        modalOverlay.classList.add('active');
-        deleteModal.classList.add('active');
+        if (confirm(`Are you sure you want to delete the class "${className}"?`)) {
+          deleteClass(classId).then(() => {
+            e.target.closest('.class-card').remove();
+            utils.showNotification('Class deleted successfully', 'success');
+          }).catch(error => {
+            utils.showNotification(error.message || 'Failed to delete class', 'error');
+          });
+        }
       });
     });
+
+    // View students button
+    document.querySelectorAll('.view-students-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const classId = e.target.dataset.classId;
+        window.location.href = `students.html?class=${classId}`;
+      });
+    });
+  }
+
+  // Get a specific class
+  async function getClass(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS(classId));
+      if (ok) {
+        return data;
+      } else {
+        throw new Error(data.message || 'Failed to get class details');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      throw error;
+    }
+  }
+
+  // Get groups in a class
+  async function getClassGroups(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS_GROUPS(classId));
+      if (ok) {
+        return data;
+      } else {
+        throw new Error(data.message || 'Failed to get class groups');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      throw error;
+    }
+  }
+
+  // Join a specific group
+  async function joinGroup(groupCode) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.JOIN_GROUP(groupCode), {
+        method: 'POST'
+      });
+      if (ok) {
+        utils.showNotification('Successfully joined group', 'success');
+        loadEnrolledClasses();
+      } else {
+        throw new Error(data.message || 'Failed to join group');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      throw error;
+    }
+  }
+
+  // Get users in a class
+  async function getClassUsers(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS_USERS(classId));
+      if (ok) {
+        return data;
+      } else {
+        throw new Error(data.message || 'Failed to get class users');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      throw error;
+    }
+  }
+
+  // Get users in a group
+  async function getGroupUsers(groupId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_GROUP_USERS(groupId));
+      if (ok) {
+        return data;
+      } else {
+        throw new Error(data.message || 'Failed to get group users');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      throw error;
+    }
+  }
+
+  // Remove a user from a group
+  async function removeUserFromGroup(groupCode, userId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.REMOVE_USER_FROM_GROUP(groupCode, userId), {
+        method: 'DELETE'
+      });
+      if (ok) {
+        utils.showNotification('Successfully removed user from group', 'success');
+      } else {
+        throw new Error(data.message || 'Failed to remove user from group');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      throw error;
+    }
+  }
+
+  // Get group count in a class
+  async function getClassGroupCount(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS_GROUP_COUNT(classId));
+      if (ok) {
+        return data.count;
+      } else {
+        throw new Error(data.message || 'Failed to get group count');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      throw error;
+    }
+  }
+
+  // Get user count in a class
+  async function getClassUserCount(classId) {
+    try {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.GET_CLASS_USER_COUNT(classId));
+      if (ok) {
+        return data.count;
+      } else {
+        throw new Error(data.message || 'Failed to get user count');
+      }
+    } catch (error) {
+      utils.showNotification(error.message, 'error');
+      throw error;
+    }
   }
 
   // Initialize all functionality
