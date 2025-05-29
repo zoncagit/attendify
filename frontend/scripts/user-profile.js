@@ -34,19 +34,9 @@ export class UserProfile {
           this.studentId.textContent = data.user_id;
         }
 
-        // Update profile picture if available
-        if (data.profile_picture && this.profileImage) {
-          this.profileImage.src = data.profile_picture;
-          this.profileImage.style.display = 'block';
-          if (this.avatarIcon) {
-            this.avatarIcon.style.display = 'none';
-          }
-        }
-
         return data;
-      } else {
-        throw new Error('Failed to load user profile');
       }
+      
     } catch (error) {
       console.error('Error loading user profile:', error);
       utils.showNotification('Failed to load user profile', 'error');
