@@ -17,8 +17,10 @@ document.addEventListener('DOMContentLoaded', function() {
     ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
     CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
     ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
-    DELETE_CLASS: `${API_URL}/api/v1/classes/delete`,
-    QUIT_CLASS: `${API_URL}/api/v1/classes/leave`,  // Updated to proper leave endpoint
+    DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`,
+    DELETE_CLASS: `${API_URL}/api//v1/classes/{class_id}`,
+    QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
+
     USER_PROFILE: `${API_URL}/api/v1/users/profile`
   };
 
