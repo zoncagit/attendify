@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
     ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
     DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`,
-    DELETE_CLASS: `${API_URL}/api//v1/classes/{class_id}`,
+    DELETE_CLASS: `${API_URL}/api/v1/classes`,  // Fixed double slash and removed {class_id} template
     QUIT_CLASS: `${API_URL}/api/v1/classes/quit`,
 
     USER_PROFILE: `${API_URL}/api/v1/users/profile`
@@ -297,18 +297,19 @@ document.addEventListener('DOMContentLoaded', function() {
   // Delete class
   async function deleteClass(classId) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(`${ENDPOINTS.DELETE_CLASS}/${classId}`, {
+      const { ok, data, status } = await utils.fetchWithAuth(`${ENDPOINTS.DELETE_CLASS}/${classId}`, {
         method: 'DELETE'
       });
 
-      if (ok) {
+      if (ok || status === 204) { // Check for 204 No Content status
         utils.showNotification('Class deleted successfully', 'success');
         loadTutoredClasses();
       } else {
-        throw new Error(data.message || 'Failed to delete class');
+        throw new Error(data?.detail || 'Failed to delete class');
       }
     } catch (error) {
       utils.showNotification(error.message, 'error');
+      console.error('Error deleting class:', error);
     }
   }
 
