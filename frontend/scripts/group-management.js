@@ -47,24 +47,21 @@ export async function deleteGroup(classId, groupId) {
     }
 }
 
-export async function moveStudentToGroup(classId, studentId, groupId) {
+export async function getGroups(classId) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/${studentId}/group`, {
-            method: 'PUT',
+        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups`, {
             headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ groupId })
+                'Authorization': `Bearer ${utils.getAuthToken()}`
+            }
         });
 
         if (!response.ok) {
-            throw new Error('Failed to move student to group');
+            throw new Error('Failed to get groups');
         }
 
-        utils.showToast('Student moved to group successfully', 'success');
+        return await response.json();
     } catch (error) {
-        utils.showToast('Error moving student to group', 'error');
+        utils.showToast('Error loading groups', 'error');
         console.error('Error:', error);
         throw error;
     }
@@ -90,22 +87,46 @@ export async function getGroupStudents(classId, groupId) {
     }
 }
 
-export async function getGroups(classId) {
+export async function moveStudentToGroup(classId, studentId, groupId) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups`, {
+        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/${studentId}/group`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${utils.getAuthToken()}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ groupId })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to move student to group');
+        }
+
+        utils.showToast('Student moved to group successfully', 'success');
+    } catch (error) {
+        utils.showToast('Error moving student to group', 'error');
+        console.error('Error:', error);
+        throw error;
+    }
+}
+
+export async function getGroupCount(classId) {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups/count`, {
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`
             }
         });
 
         if (!response.ok) {
-            throw new Error('Failed to get groups');
+            throw new Error('Failed to get group count');
         }
 
-        return await response.json();
+        const data = await response.json();
+        return data.count;
     } catch (error) {
-        utils.showToast('Error loading groups', 'error');
+        utils.showToast('Error getting group count', 'error');
         console.error('Error:', error);
-        throw error;
+        return 0;
     }
 } 

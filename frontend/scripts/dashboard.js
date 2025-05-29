@@ -1,5 +1,6 @@
 import CONFIG from './config.js';
 import utils from './utils.js';
+import * as groupManagement from './group-management.js';
 
 document.addEventListener('DOMContentLoaded', function() {
   // Check authentication
@@ -10,18 +11,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // API endpoints
-  const API_URL = 'http://127.0.0.1:8000/api/v1/classes';
+  const API_URL = CONFIG.API_URL;
   const ENDPOINTS = {
     ENROLLED_CLASSES: `${API_URL}/api/v1/classes`,
     TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
     ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
-    CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
-    ADD_GROUP: `${API_URL}/api/v1/classes/groups/add`,
-    DELETE_GROUP: `${API_URL}/api/v1/classes/groups/delete`, 
-    DELETE_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`, // Fixed double slash and removed {class_id} template
-
+    CREATE_CLASS: `${API_URL}/api/v1/classes/`,
+    DELETE_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`,
     QUIT_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}/leave`,
-
     USER_PROFILE: `${API_URL}/api/v1/users/profile`,
     // New endpoints
     GET_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`,
@@ -271,7 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       if (ok) {  
-
         utils.showNotification(`Class "${data.class_name}" created successfully with code: ${data.class_code}`, 'success');
         loadTutoredClasses();
       } else {
@@ -283,37 +279,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Add group to class
-  async function addGroup(classId, groupName) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.ADD_GROUP, {
-        method: 'POST',
-        body: JSON.stringify({
-          class_id: classId,
-          name: groupName
-        })
-      });
-
-      if (ok) {
-        utils.showNotification('Group added successfully', 'success');
-        loadTutoredClasses();
-      } else {
-        throw new Error(data.message || 'Failed to add group');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-    }
-  }
-
   // Delete class
   async function deleteClass(classId) {
     try {
-
-      const { ok, data, status } = await utils.fetchWithAuth(ENDPOINTS.DELETE_CLASS(classId) ,{
+      const { ok, data, status } = await utils.fetchWithAuth(ENDPOINTS.DELETE_CLASS(classId), {
         method: 'DELETE'
       });
 
-      if (ok || status === 204) { // Check for 204 No Content status
+      if (ok || status === 204) {
         utils.showNotification('Class deleted successfully', 'success');
         loadTutoredClasses();
       } else {

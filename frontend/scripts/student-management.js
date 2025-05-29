@@ -154,4 +154,25 @@ export async function exportStudents(classId, format = 'xlsx') {
         console.error('Error:', error);
         throw error;
     }
+}
+
+export async function getStudentCount(classId) {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/count`, {
+            headers: {
+                'Authorization': `Bearer ${utils.getAuthToken()}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to get student count');
+        }
+
+        const data = await response.json();
+        return data.count;
+    } catch (error) {
+        utils.showToast('Error getting student count', 'error');
+        console.error('Error:', error);
+        return 0;
+    }
 } 
