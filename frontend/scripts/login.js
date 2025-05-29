@@ -101,11 +101,11 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
             // Check if user has completed face registration
             if (!data.user.face_embedding) {
                 setTimeout(() => {
-                    window.location.replace(`${window.location.origin}/face-setup.html?from=login`);
+                    window.location.href = `${window.location.origin}/face-setup.html?from=login`;
                 }, 1500);
             } else {
                 setTimeout(() => {
-                    window.location.replace(`${window.location.origin}/dashboard.html`);
+                    window.location.href = `${window.location.origin}/dashboard.html`;
                 }, 1500);
             }
         } else {

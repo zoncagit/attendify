@@ -184,7 +184,7 @@ class FaceSetup {
 
     redirectToDashboard() {
         setTimeout(() => {
-            window.location.href = 'dashboard.html';
+            window.location.href = `${window.location.origin}/dashboard.html`;
         }, 1500);
     }
 }
