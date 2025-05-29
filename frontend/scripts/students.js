@@ -59,6 +59,7 @@ function initializeUI() {
     // Initialize modals
     initializeModals();
     initializeGroupModal();
+    initializeDeleteModal();
 }
 
 async function loadData(classId) {
@@ -151,7 +152,7 @@ function displayStudents(students) {
                     </div>
                 </div>
             </div>
-            <button class="delete-student-btn small-btn" onclick="deleteStudent('${student.id}')">
+            <button class="btn btn-danger small-btn" onclick="showDeleteConfirmation('${student.id}', '${student.name}')">
                 <i class="fas fa-trash"></i> Remove
             </button>
         </div>
@@ -217,47 +218,68 @@ async function handleStudentDelete(studentId) {
     const classId = new URLSearchParams(window.location.search).get('class');
     if (!classId) return;
 
-    if (!confirm('Are you sure you want to remove this student?')) {
-        return;
-    }
-
     try {
-        // Show loading state
-        const studentCard = document.querySelector(`[data-student-id="${studentId}"]`);
-        if (studentCard) {
-            studentCard.style.opacity = '0.7';
-            studentCard.style.pointerEvents = 'none';
-            const deleteBtn = studentCard.querySelector('.delete-student-btn');
-            if (deleteBtn) {
-                deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
-            }
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
         }
 
         await studentManagement.deleteStudent(classId, studentId);
-        await loadData(classId); // Reload all data
+        await loadData(classId);
         utils.showToast('Student removed successfully', 'success');
     } catch (error) {
         console.error('Error deleting student:', error);
         utils.showToast('Failed to remove student', 'error');
-        
-        // Reset loading state if error occurs
-        const studentCard = document.querySelector(`[data-student-id="${studentId}"]`);
-        if (studentCard) {
-            studentCard.style.opacity = '';
-            studentCard.style.pointerEvents = '';
-            const deleteBtn = studentCard.querySelector('.delete-student-btn');
-            if (deleteBtn) {
-                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Remove';
-            }
-        }
+    } finally {
+        hideDeleteModal();
     }
 }
 
 function showAddStudentModal() {
     const modal = document.getElementById('addStudentModal');
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    document.body.appendChild(overlay);
+    
     if (modal) {
-        modal.style.display = 'block';
+        modal.classList.add('active');
+        overlay.classList.add('active');
+        
+        // Populate groups in the select
+        populateGroupSelect();
+        
+        // Focus on the name input
         document.getElementById('studentName')?.focus();
+    }
+}
+
+function hideAddStudentModal() {
+    const modal = document.getElementById('addStudentModal');
+    const overlay = document.querySelector('.modal-overlay');
+    
+    if (modal) {
+        modal.classList.remove('active');
+        overlay?.classList.remove('active');
+        setTimeout(() => {
+            overlay?.remove();
+        }, 300);
+    }
+}
+
+async function populateGroupSelect() {
+    const select = document.getElementById('studentGroup');
+    const classId = new URLSearchParams(window.location.search).get('class');
+    
+    if (select && classId) {
+        try {
+            const groups = await groupManagement.getGroups(classId);
+            select.innerHTML = '<option value="">Select a group</option>' +
+                groups.map(group => `<option value="${group.id}">${group.name}</option>`).join('');
+        } catch (error) {
+            console.error('Error loading groups:', error);
+            utils.showToast('Failed to load groups', 'error');
+        }
     }
 }
 
@@ -302,39 +324,38 @@ function initializeModals() {
             const classId = new URLSearchParams(window.location.search).get('class');
             if (!classId) return;
 
-            const studentData = {
-                name: document.getElementById('studentName').value,
-                groupId: document.getElementById('studentGroup').value
-            };
+            const studentName = document.getElementById('studentName')?.value.trim();
+            const groupId = document.getElementById('studentGroup')?.value;
+
+            if (!studentName || !groupId) {
+                utils.showToast('Please fill in all fields', 'error');
+                return;
+            }
 
             try {
-                await studentManagement.addStudent(classId, studentData);
+                const submitButton = addStudentForm.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                }
+
+                await studentManagement.addStudent(classId, {
+                    name: studentName,
+                    groupId: groupId
+                });
+
+                hideAddStudentModal();
                 addStudentForm.reset();
-                document.getElementById('addStudentModal').style.display = 'none';
                 await loadData(classId);
+                utils.showToast('Student added successfully', 'success');
             } catch (error) {
                 console.error('Error adding student:', error);
-            }
-        });
-    }
-
-    // Import Modal
-    const importForm = document.getElementById('importForm');
-    if (importForm) {
-        importForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const classId = new URLSearchParams(window.location.search).get('class');
-            if (!classId) return;
-
-            const fileInput = document.getElementById('importFile');
-            if (fileInput?.files?.length) {
-                try {
-                    await studentManagement.importStudents(classId, fileInput.files[0]);
-                    importForm.reset();
-                    document.getElementById('importModal').style.display = 'none';
-                    await loadData(classId);
-                } catch (error) {
-                    console.error('Error importing students:', error);
+                utils.showToast(error.message || 'Failed to add student', 'error');
+            } finally {
+                const submitButton = addStudentForm.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = 'Add Student';
                 }
             }
         });
@@ -343,7 +364,10 @@ function initializeModals() {
     // Close buttons
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', () => {
-            btn.closest('.modal').style.display = 'none';
+            const modal = btn.closest('.modal');
+            if (modal) {
+                hideAddStudentModal();
+            }
         });
     });
 }
@@ -420,8 +444,63 @@ function hideGroupModal() {
     }
 }
 
+function initializeDeleteModal() {
+    const cancelBtn = document.getElementById('cancelDeleteBtn');
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', hideDeleteModal);
+    }
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+            const studentId = confirmBtn.dataset.studentId;
+            if (studentId) {
+                await handleStudentDelete(studentId);
+                hideDeleteModal();
+            }
+        });
+    }
+}
+
+function showDeleteModal(studentId, studentName) {
+    const modal = document.getElementById('deleteConfirmModal');
+    const overlay = document.getElementById('deleteConfirmOverlay');
+    const nameSpan = document.getElementById('studentNameToDelete');
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    
+    if (modal && overlay && nameSpan && confirmBtn) {
+        nameSpan.textContent = studentName;
+        confirmBtn.dataset.studentId = studentId;
+        
+        overlay.style.display = 'block';
+        modal.style.display = 'block';
+        setTimeout(() => {
+            modal.classList.add('active');
+            overlay.classList.add('active');
+        }, 10);
+    }
+}
+
+function hideDeleteModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    const overlay = document.getElementById('deleteConfirmOverlay');
+    
+    if (modal && overlay) {
+        modal.classList.remove('active');
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+        }, 300);
+    }
+}
+
 // Export functions for use in HTML
-window.deleteStudent = handleStudentDelete;
+window.showDeleteConfirmation = (studentId, studentName) => {
+    showDeleteModal(studentId, studentName);
+};
+
 window.copyStudentId = (studentId) => {
     navigator.clipboard.writeText(studentId).then(() => {
         const successElement = document.querySelector(`[data-student-id="${studentId}"] .copy-success`);
