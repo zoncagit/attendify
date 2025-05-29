@@ -36,11 +36,11 @@ document.addEventListener('DOMContentLoaded', function() {
     tabButtons.forEach(button => {
       button.addEventListener('click', () => {
         const targetTab = button.getAttribute('data-tab');
-        
+
         // Update button states
         tabButtons.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
-        
+
         // Update tab pane visibility
         tabPanes.forEach(pane => {
           if (pane.id === `${targetTab}ClassesTab`) {
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function initializeModals() {
     const modalOverlay = document.getElementById('modalOverlay');
     const modals = document.querySelectorAll('.modal');
-    
+
     // Close modal when clicking outside
     modalOverlay.addEventListener('click', (e) => {
       if (e.target === modalOverlay) {
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function closeAllModals() {
     const modalOverlay = document.getElementById('modalOverlay');
     const modals = document.querySelectorAll('.modal');
-    
+
     modalOverlay.classList.remove('active');
     modals.forEach(modal => {
       modal.classList.remove('active');
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function initializeProfileDropdown() {
     const dropdownBtn = document.getElementById('profileDropdownBtn');
     const dropdownMenu = document.getElementById('profileDropdownMenu');
-    
+
     dropdownBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       dropdownMenu.classList.toggle('show');
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>`;
           return;
         }
-        
+
         enrolledClassesList.innerHTML = data.map(cls => createEnrolledClassCard(cls)).join('');
         setupEnrolledClassEventListeners();
       }
@@ -194,16 +194,16 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('Fetching tutored classes from:', ENDPOINTS.TUTORED_CLASSES);
       const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.TUTORED_CLASSES);
       console.log('API Response - ok:', ok, 'data:', data);
-      
+
       if (ok) {
         const tutoredClassesList = document.getElementById('tutoredClassesList');
         if (!tutoredClassesList) {
           console.error('tutoredClassesList element not found');
           return;
         }
-        
+
         console.log('Received classes data:', data);
-        
+
         if (!Array.isArray(data) || data.length === 0) {
           console.log('No classes found or data is not an array');
           tutoredClassesList.innerHTML = `
@@ -216,12 +216,12 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>`;
           return;
         }
-        
+
         // Log the first class to see its structure
         if (data.length > 0) {
           console.log('First class data:', data[0]);
         }
-        
+
         tutoredClassesList.innerHTML = data.map(cls => createTutoredClassCard(cls)).join('');
         setupTutoredClassEventListeners();
       } else {
@@ -253,25 +253,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Create new class
   async function createClass(className) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_CLASS, {
+      const { ok, data } = await utils.fetchWithAuth(`${CONFIG.API_URL}/api/v1/classes`, {
         method: 'POST',
         body: JSON.stringify({
-          class_name: className 
+          name: className,
+          description: '',  // Optional description
+          is_active: true   // Default to active
         })
       });
 
-      if (ok) {  
-        utils.showNotification(`Class "${data.class_name}" created successfully with code: ${data.class_code}`, 'success');
-        loadTutoredClasses();
-      } else {
-        throw new Error(data.detail || 'Failed to create class');
+      if (!ok) {
+        throw new Error(data?.message || 'Failed to create class');
       }
+
+      utils.showNotification(`Class "${data.name}" created successfully`, 'success');
+      await loadTutoredClasses();  // Refresh the list
+      return data;
     } catch (error) {
-      utils.showNotification(error.message, 'error');
+      utils.showNotification(error.message || 'Failed to create class', 'error');
       console.error('Error creating class:', error);
+      throw error;
     }
   }
 
@@ -313,14 +316,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Event Listeners
-  document.getElementById('dashboardEnrollClassBtn').addEventListener('click', () => {
+  document.getElementById('dashboardEnrollClassBtn')?.addEventListener('click', () => {
     const enrollModal = document.getElementById('enrollModal');
     const modalOverlay = document.getElementById('modalOverlay');
     modalOverlay.classList.add('active');
     enrollModal.classList.add('active');
   });
 
-  document.getElementById('confirmEnrollBtn').addEventListener('click', async () => {
+  document.getElementById('confirmEnrollBtn')?.addEventListener('click', async () => {
     const groupCode = document.getElementById('groupCode').value.trim();
     if (!groupCode) {
       utils.showNotification('Please enter a group code', 'error');
@@ -330,14 +333,14 @@ document.addEventListener('DOMContentLoaded', function() {
     closeAllModals();
   });
 
-  document.getElementById('dashboardCreateClassBtn').addEventListener('click', () => {
+  document.getElementById('dashboardCreateClassBtn')?.addEventListener('click', () => {
     const createClassModal = document.getElementById('createClassModal');
     const modalOverlay = document.getElementById('modalOverlay');
     modalOverlay.classList.add('active');
     createClassModal.classList.add('active');
   });
 
-  document.getElementById('confirmCreateClassBtn').addEventListener('click', async () => {
+  document.getElementById('confirmCreateClassBtn')?.addEventListener('click', async () => {
     const className = document.getElementById('className').value.trim();
     if (!className) {
       utils.showNotification('Please enter a class name', 'error');
@@ -350,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Helper function to create enrolled class card
   function createEnrolledClassCard(classData) {
     const attendancePercentage = ((classData.attendance_count || 0) / (classData.total_sessions || 1) * 100).toFixed(1);
-    
+
     return `
       <div class="class-card" data-class-id="${classData.class_id}">
         <div class="class-header">
@@ -420,14 +423,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const classId = e.target.closest('.class-card').dataset.classId;
         const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
         const groupCode = e.target.closest('.class-card').querySelector('.detail-value').textContent;
-        
+
         // Update quit modal content
         document.getElementById('quitClassName').textContent = className;
         document.getElementById('quitClassCode').textContent = groupCode;
-        
+
         // Store class ID for the confirm button
         document.getElementById('confirmQuitBtn').dataset.classId = classId;
-        
+
         // Show modal
         const modalOverlay = document.getElementById('modalOverlay');
         const quitModal = document.getElementById('quitClassModal');
@@ -444,13 +447,13 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
         const classId = e.target.closest('.class-card').dataset.classId;
         const className = e.target.closest('.class-card').querySelector('.class-name').textContent;
-        
+
         // Update delete modal content
         document.getElementById('deleteClassName').textContent = className;
-        
+
         // Store class ID for the confirm button
         document.getElementById('confirmDeleteBtn').dataset.classId = classId;
-        
+
         // Show modal
         const modalOverlay = document.getElementById('modalOverlay');
         const deleteModal = document.getElementById('deleteClassModal');
@@ -489,4 +492,4 @@ document.addEventListener('DOMContentLoaded', function() {
   loadUserProfile();
   loadEnrolledClasses();
   loadTutoredClasses();
-}); 
+});

@@ -34,26 +34,29 @@ const utils = {
 
   // Show notification message
   showNotification(message, type = 'success') {
-    const notificationElement = document.createElement('div');
-    notificationElement.className = `notification ${type}`;
-    notificationElement.innerHTML = `
-      <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-      <span>${message}</span>
+    const container = document.querySelector('.notification-container') || createNotificationContainer();
+    const notification = document.createElement('div');
+    notification.className = `notification ${type} show`;
+    
+    notification.innerHTML = `
+        <span class="notification-text">${message}</span>
+        <button class="notification-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
     `;
     
-    document.body.appendChild(notificationElement);
+    container.appendChild(notification);
     
-    // Remove previous notifications
-    const notifications = document.querySelectorAll('.notification');
-    notifications.forEach((notification, index) => {
-      if (notification !== notificationElement) {
-        notification.remove();
-      }
-    });
-    
+    // Auto-remove after 5 seconds
     setTimeout(() => {
-      notificationElement.remove();
-    }, 3000);
+        notification.classList.add('hide');
+        setTimeout(() => {
+            notification.remove();
+            if (container.children.length === 0) {
+                container.remove();
+            }
+        }, 300);
+    }, 5000);
   },
 
   // Make authenticated API calls
