@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - Attendify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-md p-8 max-w-md w-full mx-4">
+        <div id="loginSection" class="space-y-6">
+            <div class="text-center">
+                <h1 class="text-2xl font-bold text-gray-800">Mark Your Attendance</h1>
+                <p class="text-gray-600">Please log in to mark your attendance</p>
+            </div>
+            
+            <div id="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded hidden" role="alert">
+                <span class="block sm:inline" id="errorText"></span>
+            </div>
+            
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" required
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" required
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <button type="submit"
+                            class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Log In
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="successSection" class="text-center hidden">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h2 class="mt-3 text-lg font-medium text-gray-900">Attendance Marked Successfully!</h2>
+            <p class="mt-2 text-sm text-gray-500">Your attendance has been recorded.</p>
+            <div class="mt-6">
+                <p class="text-sm text-gray-500">You can close this page now.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const sessionId = window.location.pathname.split('/').pop();
+
+        // Check if we have a valid token and session ID
+        if (!token || !sessionId || isNaN(sessionId)) {
+            showError('Invalid attendance link. Please check the URL and try again.');
+        }
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                // First, log in the user
+                const loginResponse = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (!loginResponse.ok) {
+                    const error = await loginResponse.json();
+                    throw new Error(error.detail || 'Login failed');
+                }
+                
+                const { access_token } = await loginResponse.json();
+                
+                // Then mark attendance
+                const attendanceResponse = await fetch(`/api/v1/sessions/${sessionId}/mark-via-link?token=${token}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${access_token}`
+                    }
+                });
+                
+                if (!attendanceResponse.ok) {
+                    const error = await attendanceResponse.json();
+                    throw new Error(error.detail || 'Failed to mark attendance');
+                }
+                
+                // Show success message
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('successSection').classList.remove('hidden');
+                
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+        
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
