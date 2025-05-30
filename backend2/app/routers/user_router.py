@@ -4,8 +4,9 @@ from typing import Any, Dict
 
 from app.database import get_db
 from app.crud import user as user_crud
-from app.schemas.user import UserOut, UserProfile
+from app.schemas.user import UserOut, UserProfile, UserUpdate
 from app.auth.oauth2 import get_current_user
+from fastapi import status
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
@@ -60,3 +61,38 @@ def get_user_profile(
         profile_data["bio"] = user.bio
         
     return UserProfile(**profile_data)
+    @router.put("/profile/update", response_model=UserProfile)
+async def update_user_profile(
+    profile_data: UserUpdate,
+    current_user: UserOut = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update the current user's profile information
+    """
+    try:
+        # Get the current user from database
+        user = db.query(User).filter(User.user_id == current_user.user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Update the fields
+        for field, value in profile_data.dict(exclude_unset=True).items():
+            setattr(user, field, value)
+
+        db.commit()
+        db.refresh(user)
+
+        # Return updated profile
+        return {
+            **user.__dict__,
+            "role": crud.get_user_role(db, user.user_id),
+            "profile_picture": user.profile_picture if hasattr(user, 'profile_picture') else None
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while updating profile: {str(e)}"
+        )
