@@ -58,7 +58,7 @@ function initializeUI() {
     
     // Initialize modals
     initializeModals();
-    initializeGroupModal();
+    // Removed initializeGroupModal() from here to prevent duplicate initialization
     initializeDeleteModal();
 }
 
@@ -487,8 +487,8 @@ function initializeGroupModal() {
 
         try {
             // Show loading state
-            newConfirmBtn.disabled = true;
-            newConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+            confirmAddGroupBtn.disabled = true;
+            confirmAddGroupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
             
             await groupManagement.addGroup(classId, groupName);
             document.getElementById('groupName').value = '';
@@ -500,8 +500,8 @@ function initializeGroupModal() {
             utils.showToast(error.message || 'Failed to add group', 'error');
         } finally {
             // Reset loading state
-            newConfirmBtn.disabled = false;
-            newConfirmBtn.innerHTML = 'Create Group';
+            confirmAddGroupBtn.disabled = false;
+            confirmAddGroupBtn.innerHTML = 'Create Group';
         }
     });    // Add cancel button handler
     cancelAddGroupBtn.addEventListener('click', hideGroupModal);
