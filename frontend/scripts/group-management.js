@@ -92,11 +92,9 @@ export async function getGroupStudents(classId, groupId) {
 
 export async function getGroups(classId) {
     try {
-<<<<<<< Updated upstream
+
         const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/groups`, {
-=======
-        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/groups`, {
->>>>>>> Stashed changes
+
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`
             }
