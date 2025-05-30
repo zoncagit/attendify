@@ -30,30 +30,70 @@ const utils = {
   // Remove user data
   removeUser() {
     localStorage.removeItem(CONFIG.USER_KEY);
-  },
+  },  // Show notification message
+  showNotification(message, type = 'success', duration = 5000) {
+    // Get or create notification container
+    let container = document.querySelector('.notification-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'notification-container';
+      document.body.appendChild(container);
+    }
 
-  // Show notification message
-  showNotification(message, type = 'success') {
-    const notificationElement = document.createElement('div');
-    notificationElement.className = `notification ${type}`;
-    notificationElement.innerHTML = `
-      <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-      <span>${message}</span>
+    // Create notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    
+    // Set icon based on notification type
+    const icon = type === 'success' ? 'fa-check-circle' :
+                type === 'error' ? 'fa-exclamation-circle' :
+                type === 'warning' ? 'fa-exclamation-triangle' :
+                'fa-info-circle';
+                
+    notification.innerHTML = `
+      <i class="fas ${icon}"></i>
+      <span class="notification-text">${message}</span>
+      <button class="notification-close" aria-label="Close notification">
+        <i class="fas fa-times"></i>
+      </button>
     `;
-    
-    document.body.appendChild(notificationElement);
-    
-    // Remove previous notifications
-    const notifications = document.querySelectorAll('.notification');
-    notifications.forEach((notification, index) => {
-      if (notification !== notificationElement) {
+
+    // Add to container
+    container.appendChild(notification);
+
+    // Trigger reflow to ensure animation works
+    notification.offsetHeight;
+
+    // Show with animation
+    requestAnimationFrame(() => {
+      notification.classList.add('show');
+    });
+
+    // Add click handler for close button
+    const closeBtn = notification.querySelector('.notification-close');    const removeNotification = () => {
+      notification.classList.remove('show');
+      setTimeout(() => {
         notification.remove();
+        if (container.children.length === 0) {
+          container.remove();
+        }
+      }, 300);
+    };
+
+    // Close on button click
+    closeBtn.addEventListener('click', removeNotification);
+
+    // Auto-remove after duration
+    if (duration > 0) {
+      setTimeout(removeNotification, duration);
+    }
+
+    // Allow manual closing by clicking notification
+    notification.addEventListener('click', (e) => {
+      if (e.target === notification) {
+        removeNotification();
       }
     });
-    
-    setTimeout(() => {
-      notificationElement.remove();
-    }, 3000);
   },
 
   // Make authenticated API calls
