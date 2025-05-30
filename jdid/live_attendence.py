@@ -17,7 +17,7 @@ class L2Normalization(Layer):
         config = super().get_config()
         return config
     
-embedding_model = tf.keras.models.load_model("trained_embedding_model.keras", custom_objects={"L2Normalization": L2Normalization})
+embedding_model = tf.keras.models.load_model("C:/Users/hmani/new_test/model/trained_embedding_model_retrainedv4.keras", custom_objects={"L2Normalization": L2Normalization})
 
 stored_embeddings = np.load("C:/Users/hmani/new_test/students/students_embeddings.npy", allow_pickle=True).item()
 xml_path = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml')
@@ -49,7 +49,7 @@ while True:
         color = (0, 0, 255)
         for name, stored_embedding in stored_embeddings.items():
             distance = norm(emb- stored_embedding)  
-            if distance < 3:
+            if distance <0.5:
                 color = (0, 255, 0)
                 match_name=name
                 break
