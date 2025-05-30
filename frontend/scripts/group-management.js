@@ -26,33 +26,29 @@ const API_URL = 'http://127.0.0.1:8000/api/v1/classes';
     GET_USER_COUNT: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}/users/count`
   };
 
-export async function addGroup(groupCode) {
+export async function addGroup(className, classId) {
     try {
-        const response = await fetch(ENDPOINTS.ADD_GROUP(groupCode), {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                group_code: groupCode,
-            })
+        const { ok, data } = await utils.fetchWithAuth('http://127.0.0.1:8000/api/v1/classes/api/v1/classes/${classId}/groups', {
+          method: 'POST',
+          body: JSON.stringify({
+            class_name: className,
+            class_id: parseInt(classId)
+          })
         });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.detail || 'Failed to add group');
+  
+        if (ok) {  
+  
+          utils.showNotification(`Class "${data.class_name}" created successfully with code: ${data.class_code}`, 'success');
+            loadTutoredClasses();
+        } else {
+          throw new Error(data.detail || 'Failed to create class');
         }
-
-        const newGroup = await response.json();
-        utils.showToast('Group added successfully', 'success');
-        return newGroup;
-    } catch (error) {
-        utils.showToast('Error adding group', 'error');
-        console.error('Error:', error);
-        throw error;
+      } catch (error) {
+        utils.showNotification(error.message, 'error');
+        console.error('Error creating class:', error);
+      }
     }
-}
+  
 
 export async function deleteGroup(groupId) {
     try {
