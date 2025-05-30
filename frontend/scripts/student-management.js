@@ -14,13 +14,11 @@ export async function addStudent(classId, studentData) {
 
         if (!response.ok) {
             throw new Error('Failed to add student');
-        }
-
-        const newStudent = await response.json();
-        utils.showToast('Student added successfully', 'success');
+        }        const newStudent = await response.json();
+        utils.showNotification('Student added successfully', 'success');
         return newStudent;
     } catch (error) {
-        utils.showToast('Error adding student', 'error');
+        utils.showNotification('Error adding student', 'error');
         console.error('Error:', error);
         throw error;
     }
@@ -28,7 +26,7 @@ export async function addStudent(classId, studentData) {
 
 export async function deleteStudent(classId, studentId) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/${studentId}`, {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/students/${studentId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`
@@ -37,11 +35,9 @@ export async function deleteStudent(classId, studentId) {
 
         if (!response.ok) {
             throw new Error('Failed to delete student');
-        }
-
-        utils.showToast('Student removed successfully', 'success');
+        }        utils.showNotification('Student removed successfully', 'success');
     } catch (error) {
-        utils.showToast('Error removing student', 'error');
+        utils.showNotification('Error removing student', 'error');
         console.error('Error:', error);
         throw error;
     }
@@ -62,11 +58,9 @@ export async function getStudents(classId, groupId = null) {
 
         if (!response.ok) {
             throw new Error('Failed to get students');
-        }
-
-        return await response.json();
+        }        return await response.json();
     } catch (error) {
-        utils.showToast('Error loading students', 'error');
+        utils.showNotification('Error loading students', 'error');
         console.error('Error:', error);
         throw error;
     }
@@ -74,7 +68,7 @@ export async function getStudents(classId, groupId = null) {
 
 export async function updateStudent(classId, studentId, studentData) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/classes/${classId}/students/${studentId}`, {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/students/${studentId}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`,
@@ -85,12 +79,10 @@ export async function updateStudent(classId, studentId, studentData) {
 
         if (!response.ok) {
             throw new Error('Failed to update student');
-        }
-
-        utils.showToast('Student updated successfully', 'success');
+        }        utils.showNotification('Student updated successfully', 'success');
         return await response.json();
     } catch (error) {
-        utils.showToast('Error updating student', 'error');
+        utils.showNotification('Error updating student', 'error');
         console.error('Error:', error);
         throw error;
     }
@@ -111,13 +103,11 @@ export async function importStudents(classId, fileData) {
 
         if (!response.ok) {
             throw new Error('Failed to import students');
-        }
-
-        const result = await response.json();
-        utils.showToast(`Successfully imported ${result.imported} students`, 'success');
+        }        const result = await response.json();
+        utils.showNotification(`Successfully imported ${result.imported} students`, 'success');
         return result;
     } catch (error) {
-        utils.showToast('Error importing students', 'error');
+        utils.showNotification('Error importing students', 'error');
         console.error('Error:', error);
         throw error;
     }
