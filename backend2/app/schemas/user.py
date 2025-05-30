@@ -52,3 +52,14 @@ class UserProfile(UserBase):
 
     class Config:
         from_attributes = True
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    prenom: Optional[str] = None
+    profile_picture: Optional[str] = None
+    bio: Optional[str] = None
+    phone_number: Optional[str] = None
+
+    class Config:
+        from_attributes = True
