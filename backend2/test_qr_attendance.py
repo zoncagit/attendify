@@ -17,7 +17,7 @@ from app import models, crud, schemas
 from app.auth.hashing import hash_password, verify_password
 from app.models.user import UserRole
 
-# Update these with your server details
+# Base URL for the API
 BASE_URL = "http://localhost:8000"  # Update if your server is running on a different port
 
 # Test user credentials
@@ -125,25 +125,58 @@ def create_test_users():
 
 def login(credentials):
     """Helper function to log in and get access token using OAuth2 form data"""
-    # Convert credentials to form data format
-    form_data = {
-        "username": credentials["username"],
-        "password": credentials["password"],
-        "grant_type": "password",
-        "scope": ""
-    }
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    response = requests.post(
-        f"{BASE_URL}/api/v1/auth/login",
-        data=form_data,
-        headers=headers
-    )
-    if response.status_code != 200:
-        print(f"Login failed: {response.text}")
+    try:
+        print(f"Attempting to log in with username: {credentials['username']}")
+        
+        # Convert credentials to form data format
+        form_data = {
+            "username": credentials["username"],
+            "password": credentials["password"],
+            "grant_type": "password",
+            "scope": ""
+        }
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "accept": "application/json"
+        }
+        
+        print(f"Sending login request to: {BASE_URL}/api/v1/auth/login")
+        print(f"Request headers: {headers}")
+        print(f"Request data: {form_data}")
+        
+        # Add timeout to prevent hanging
+        response = requests.post(
+            f"{BASE_URL}/auth/login",
+            data=form_data,
+            headers=headers,
+            timeout=10  # 10 seconds timeout
+        )
+        
+        print(f"Response status code: {response.status_code}")
+        print(f"Response headers: {response.headers}")
+        print(f"Response text: {response.text[:500]}")  # Print first 500 chars of response
+        
+        if response.status_code != 200:
+            print(f"Login failed with status {response.status_code}: {response.text}")
+            return None
+            
+        # Try to parse the response as JSON
+        try:
+            response_data = response.json()
+            if "access_token" not in response_data:
+                print(f"No access_token in response: {response_data}")
+                return None
+            return response_data["access_token"]
+        except ValueError as e:
+            print(f"Failed to parse JSON response: {e}")
+            return None
+            
+    except requests.exceptions.Timeout:
+        print("Login request timed out after 10 seconds")
         return None
-    return response.json()["access_token"]
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {str(e)}")
+        return None
 
 def create_session(token, group_id):
     """Create a new session with QR code"""

@@ -61,7 +61,8 @@ def get_user_profile(
         profile_data["bio"] = user.bio
         
     return UserProfile(**profile_data)
-    @router.put("/profile/update", response_model=UserProfile)
+
+@router.put("/profile/update", response_model=UserProfile)
 async def update_user_profile(
     profile_data: UserUpdate,
     current_user: UserOut = Depends(get_current_user),
