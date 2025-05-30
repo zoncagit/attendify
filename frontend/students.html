@@ -2308,8 +2308,10 @@
             <!-- Groups will be dynamically inserted here -->
           </div>
         </div>
-        
-        <div class="header-actions">
+          <div class="header-actions">
+          <button id="startSessionBtn" class="btn btn-primary">
+            <i class="fas fa-play-circle"></i> Start Session
+          </button>
           <button id="addStudentBtn" class="btn btn-primary">
             <i class="fas fa-plus"></i> Add Student
           </button>
@@ -2598,13 +2600,146 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
-      }
-
-      .mini-modal.active {
+      }      .mini-modal.active {
         transform: translate(-50%, -50%) scale(1);
         opacity: 1;
         visibility: visible;
       }
     </style>
+    
+    <!-- Scan Options Modal -->
+    <div class="modal-overlay" id="scanOptionsModalOverlay"></div>
+    <div class="modal" id="scanOptionsModal">
+      <div class="modal-content">
+        <h2 class="modal-title">Choose Attendance Method</h2>
+        <p class="modal-description">Select how you want to track attendance for this session:</p>
+        
+        <div class="scan-options-container">
+          <!-- Face Recognition Option -->
+          <div class="scan-option-card" id="faceRecognitionOption">
+            <div class="scan-option-icon">
+              <i class="fas fa-camera"></i>
+            </div>
+            <h3 class="scan-option-title">Face Recognition</h3>
+            <p class="scan-option-description">Use the camera to automatically identify students by their face.</p>
+          </div>
+          
+          <!-- QR Code Option -->
+          <div class="scan-option-card" id="qrCodeOption">
+            <div class="scan-option-icon">
+              <i class="fas fa-qrcode"></i>
+            </div>
+            <h3 class="scan-option-title">QR Code</h3>
+            <p class="scan-option-description">Students can scan a QR code with their device to mark attendance.</p>
+          </div>
+          
+          <!-- Manual Entry Option -->
+          <div class="scan-option-card" id="manualEntryOption">
+            <div class="scan-option-icon">
+              <i class="fas fa-keyboard"></i>
+            </div>
+            <h3 class="scan-option-title">Manual Entry</h3>
+            <p class="scan-option-description">Manually enter student IDs to mark attendance.</p>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelScanOptionsBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Face Recognition Attendance Modal -->
+    <div class="modal" id="faceRecognitionModal">
+      <div class="modal-content">
+        <h2 class="modal-title">Face Recognition Attendance</h2>
+        <p class="modal-description">Position students in front of the camera to mark attendance.</p>
+        
+        <div class="camera-container">
+          <div class="camera-header">
+            <h3>Camera Feed</h3>
+            <div class="camera-status active">Active</div>
+          </div>
+          
+          <div class="camera-view">
+            <i class="fas fa-camera"></i>
+            <div class="scanning-indicator">
+              <div class="scanning-line"></div>
+            </div>
+            <div class="face-detection-box"></div>
+          </div>
+          
+          <div class="camera-info">
+            <p>Position face in the center of the screen</p>
+            <div class="status-message">Ready to scan</div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelFaceRecognitionBtn">Cancel</button>
+          <button class="btn btn-primary" id="completeFaceRecognitionBtn">Complete Session</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Code Attendance Modal -->
+    <div class="modal" id="qrCodeModal">
+      <div class="modal-content">
+        <h2 class="modal-title">QR Code Attendance</h2>
+        <p class="modal-description">Students can scan this QR code to mark their attendance.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <div id="qrCodeContainer" style="display: inline-block; padding: 15px; background: white; border-radius: 10px;"></div>
+        </div>
+        
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelQrCodeBtn">Cancel</button>
+          <button class="btn btn-primary" id="completeQrCodeBtn">Complete Session</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manual Attendance Modal -->
+    <div class="modal" id="manualAttendanceModal">
+      <div class="modal-content">
+        <h2 class="modal-title">Manual Attendance Entry</h2>
+        <p class="modal-description">Enter student ID to mark attendance.</p>
+        
+        <div class="form-group">
+          <input type="text" id="studentIdInput" class="form-input" placeholder="Enter Student ID" autocomplete="off">
+          <div class="error-message" id="studentIdError" style="color: var(--error); margin-top: 5px; display: none;"></div>
+        </div>
+        
+        <div id="studentFoundInfo" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: none;">
+          <div style="display: flex; gap: 15px; align-items: center;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;" id="studentInitials"></div>
+            <div>
+              <div style="font-weight: 600;" id="foundStudentName"></div>
+              <div style="color: var(--text-secondary); font-size: 14px;" id="foundStudentId"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelManualEntryBtn">Cancel</button>
+          <button class="btn btn-primary" id="markPresentBtn" disabled>Mark Present</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- JavaScript Files -->
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/group-management.js"></script>
+    <script src="scripts/student-management.js"></script>
+    <script type="module" src="scripts/students.js"></script>
+    
+    <script>
+      // Initialize the page when DOM is fully loaded
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded, initializing...');
+        initializeGroupModal();
+        // Add other initialization functions here if needed
+      });
+    </script>
   </body>
 </html>

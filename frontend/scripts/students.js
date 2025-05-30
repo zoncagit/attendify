@@ -3,6 +3,7 @@ import utils from './utils.js';
 import * as groupManagement from './group-management.js';
 import * as studentManagement from './student-management.js';
 import UserProfile from './user-profile.js';
+import { initializeAttendance } from './attendance.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Check authentication
@@ -55,6 +56,9 @@ function initializeUI() {
     if (addGroupBtn) {
         addGroupBtn.addEventListener('click', showAddGroupModal);
     }
+    
+    // Initialize attendance tracking
+    initializeAttendance();
     
     // Initialize modals
     initializeModals();
