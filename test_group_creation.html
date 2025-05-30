@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Group Creation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, button {
+            padding: 8px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .success {
+            color: green;
+            background-color: #f0fff0;
+            border: 1px solid green;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .error {
+            color: red;
+            background-color: #fff0f0;
+            border: 1px solid red;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Group Creation</h1>
+    <div class="form-group">
+        <label for="token">Auth Token:</label>
+        <input type="text" id="token" placeholder="Enter your auth token">
+    </div>
+    <div class="form-group">
+        <label for="classId">Class ID:</label>
+        <input type="text" id="classId" placeholder="Enter class ID">
+    </div>
+    <div class="form-group">
+        <label for="groupName">Group Name:</label>
+        <input type="text" id="groupName" placeholder="Enter group name">
+    </div>
+    <button id="createBtn">Create Group</button>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('createBtn').addEventListener('click', async () => {
+            const token = document.getElementById('token').value;
+            const classId = document.getElementById('classId').value;
+            const groupName = document.getElementById('groupName').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!token || !classId || !groupName) {
+                resultDiv.innerHTML = '<div class="error">Please fill all fields</div>';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '<p>Sending request...</p>';
+                
+                const url = `http://127.0.0.1:8000/api/v1/classes/${classId}/groups`;
+                console.log('Request URL:', url);
+                
+                const payload = {
+                    group_name: groupName,
+                    class_id: parseInt(classId)
+                };
+                console.log('Request payload:', payload);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                console.log('Response status:', response.status);
+                
+                // Parse the response
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    data = { error: 'Unable to parse response' };
+                }
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            Group created successfully!
+                        </div>
+                        <h3>Response:</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            Error: ${response.status} ${response.statusText}
+                        </div>
+                        <h3>Error Details:</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

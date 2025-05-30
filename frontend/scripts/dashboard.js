@@ -1,5 +1,6 @@
 import CONFIG from './config.js';
 import utils from './utils.js';
+import * as groupManagement from './group-management.js';
 
 document.addEventListener('DOMContentLoaded', function() {
   // Check authentication
@@ -8,16 +9,13 @@ document.addEventListener('DOMContentLoaded', function() {
     window.location.href = 'login.html';
     return;
   }
-
   // API endpoints
-  const API_URL = 'http://127.0.0.1:8000/api/v1/classes';
+  const API_URL = CONFIG.API_URL;
   const ENDPOINTS = {
     ENROLLED_CLASSES: `${API_URL}/api/v1/classes`,
     TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
     ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
-    CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
-    ADD_GROUP: (groupId) => `${API_URL}/api/v1/classes/groups/${groupId}/join`,
-    DELETE_GROUP : (groupID) =>  `${API_URL}/api/v1/classes/groups/${groupId}`, 
+    CREATE_CLASS: `${API_URL}/api/v1/classes`,  // POST to root of classes
     DELETE_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`, // Fixed double slash and removed {class_id} template
 
     QUIT_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}/leave`,
@@ -230,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         tutoredClassesList.innerHTML = data.map(cls => createTutoredClassCard(cls)).join('');
-        setupTutoredClassEventListeners();
+    setupTutoredClassEventListeners();
       } else {
         console.error('API request failed:', data);
         throw new Error(data.message || 'Failed to load classes');
@@ -281,25 +279,27 @@ document.addEventListener('DOMContentLoaded', function() {
       utils.showNotification(error.message, 'error');
       console.error('Error creating class:', error);
     }
+  }  // Function to show the add group modal
+  function showAddGroupModal(classId, className) {
+    // Set the class ID in the hidden field
+    document.getElementById('classIdForGroup').value = classId;
+    
+    // Display the class name in the modal
+    document.getElementById('classNameDisplay').textContent = `Class: ${className}`;
+    
+    // Show the modal
+    const modalOverlay = document.getElementById('modalOverlay');
+    const addGroupModal = document.getElementById('addGroupModal');
+    modalOverlay.classList.add('active');
+    addGroupModal.classList.add('active');
   }
-
-  // Add group to class
-  async function addGroup(classId, groupName) {
+  
+  // Add group to class - using the imported function from group-management.js
+  async function handleAddGroup(classId, groupName) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.ADD_GROUP, {
-        method: 'POST',
-        body: JSON.stringify({
-          class_id: classId,
-          name: groupName
-        })
-      });
-
-      if (ok) {
-        utils.showNotification('Group added successfully', 'success');
-        loadTutoredClasses();
-      } else {
-        throw new Error(data.message || 'Failed to add group');
-      }
+      await groupManagement.addGroup(classId, groupName);
+      utils.showNotification('Group added successfully', 'success');
+      loadTutoredClasses();
     } catch (error) {
       utils.showNotification(error.message, 'error');
     }
@@ -367,7 +367,6 @@ document.addEventListener('DOMContentLoaded', function() {
     modalOverlay.classList.add('active');
     createClassModal.classList.add('active');
   });
-
   document.getElementById('confirmCreateClassBtn').addEventListener('click', async () => {
     const className = document.getElementById('className').value.trim();
     if (!className) {
@@ -375,6 +374,18 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     await createClass(className);
+    closeAllModals();
+  });
+  
+  // Add group button event listener
+  document.getElementById('confirmAddGroupBtn')?.addEventListener('click', async () => {
+    const groupName = document.getElementById('groupName').value.trim();
+    const classId = document.getElementById('classIdForGroup').value;
+    if (!groupName) {
+      utils.showNotification('Please enter a group name', 'error');
+      return;
+    }
+    await handleAddGroup(classId, groupName);
     closeAllModals();
   });
 
@@ -415,7 +426,6 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `;
   }
-
   // Helper function to create tutored class card
   function createTutoredClassCard(classData) {
     return `
@@ -436,9 +446,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="detail-value">${classData.student_count || 0}</span>
           </div>
         </div>
-        <a href="students.html?class=${classData.class_id}" class="btn btn-primary view-students-btn">
-          <i class="fas fa-users"></i> View Students
-        </a>
+        <div class="class-actions">
+          <a href="students.html?class=${classData.class_id}" class="btn btn-primary view-students-btn">
+            <i class="fas fa-users"></i> View Students
+          </a>
+          <button class="btn btn-secondary add-group-btn" data-class-id="${classData.class_id}" data-class-name="${classData.class_name}">
+            <i class="fas fa-plus"></i> Add Group
+          </button>
+        </div>
       </div>
     `;
   }
@@ -467,7 +482,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   }
-
   // Setup event listeners for tutored classes
   function setupTutoredClassEventListeners() {
     document.querySelectorAll('.delete-class-icon').forEach(btn => {
@@ -489,6 +503,16 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteModal.classList.add('active');
       });
     });
+
+    // Add event listeners for "Add Group" buttons
+    document.querySelectorAll('.add-group-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const classId = btn.dataset.classId;
+        const className = btn.dataset.className;
+        showAddGroupModal(classId, className);
+      });
+    });
   }
 
   // New API functions
@@ -503,26 +527,6 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
       utils.showNotification(error.message, 'error');
       console.error('Error getting class:', error);
-      return null;
-    }
-  }
-
-  async function createGroupInClass(classId, groupName) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_GROUP(classId), {
-        method: 'POST',
-        body: JSON.stringify({ name: groupName })
-      });
-
-      if (ok) {
-        utils.showNotification('Group created successfully', 'success');
-        return data;
-      } else {
-        throw new Error(data.message || 'Failed to create group');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error creating group:', error);
       return null;
     }
   }

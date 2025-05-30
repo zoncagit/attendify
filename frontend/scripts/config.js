@@ -23,12 +23,11 @@ const CONFIG = {
     DELETE_CLASS: '/api/v1/classes/delete',
 
     UPDATE_CLASS: '/api/v1/classes/update',
-    
-    // Group endpoints
-    ADD_GROUP: '/api/v1/classes/groups/add',
-    DELETE_GROUP: '/api/v1/classes/groups/delete',
-    UPDATE_GROUP: '/api/v1/classes/groups/update',
-    GET_CLASS_GROUPS: '/api/v1/classes/groups',  // Append /{class_id} for specific class
+      // Group endpoints
+    ADD_GROUP: (classId) => `/api/v1/classes/${classId}/groups`,
+    DELETE_GROUP: (classId, groupId) => `/api/v1/classes/${classId}/groups/${groupId}`,
+    UPDATE_GROUP: (classId, groupId) => `/api/v1/classes/${classId}/groups/${groupId}`,
+    GET_CLASS_GROUPS: (classId) => `/api/v1/classes/${classId}/groups`,
     JOIN_GROUP: '/api/v1/classes/groups/join',  // Append /{group_code}
     GET_GROUP_USERS: '/api/v1/classes/groups/users',  // Append /{group_id}
     REMOVE_USER_FROM_GROUP: '/api/v1/groups/groups/members',  // Append /{group_code}/{user_id}
