@@ -439,18 +439,45 @@ function initializeGroupModal() {
 }
 
 function showAddGroupModal() {
+    console.log('showAddGroupModal called');
     const modal = document.getElementById('addGroupModal');
     const overlay = document.getElementById('confirmOverlay');
     
-    if (modal && overlay) {
-        overlay.style.display = 'block';
-        modal.style.display = 'block';
-        setTimeout(() => {
-            modal.classList.add('active');
-            overlay.classList.add('active');
-        }, 10);
-        document.getElementById('groupName')?.focus();
+    console.log('Modal element:', modal);
+    console.log('Overlay element:', overlay);
+    
+    if (!modal) {
+        console.error('Modal element not found!');
+        return;
     }
+    
+    if (!overlay) {
+        console.error('Overlay element not found!');
+        return;
+    }
+    
+    console.log('Showing modal and overlay');
+    overlay.style.display = 'block';
+    modal.style.display = 'block';
+    
+    // Force reflow
+    void modal.offsetHeight;
+    
+    // Add active class with a small delay
+    setTimeout(() => {
+        console.log('Adding active class to modal and overlay');
+        modal.classList.add('active');
+        overlay.classList.add('active');
+    }, 10);
+    
+    // Debug: Check styles after adding
+    setTimeout(() => {
+        console.log('Modal display style:', window.getComputedStyle(modal).display);
+        console.log('Modal opacity:', window.getComputedStyle(modal).opacity);
+        console.log('Modal visibility:', window.getComputedStyle(modal).visibility);
+    }, 100);
+    
+    document.getElementById('groupName')?.focus();
 }
 
 function hideGroupModal() {

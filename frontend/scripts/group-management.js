@@ -30,7 +30,7 @@ const ENDPOINTS = {
   JOIN_GROUP: (groupCode) => `${API_BASE}/api/v1/classes/groups/join/${groupCode}`,
 };
 
-export async function createGroup(classId, groupName) {
+export async function addGroup(classId, groupName) {
     try {
         const response = await fetch(ENDPOINTS.CREATE_GROUP(classId), {
             method: 'POST', 
