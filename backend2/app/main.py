@@ -3,11 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from app.database import engine, Base
+from app.database import engine, Base, init_db
 from app.auth.auth import router as auth_router
 from app.routers.classroom_router import router as classroom_router
 from app.routers.group_router import router as group_router
 from app.routers.user_router import router as user_router
+from app.routers.session import router as session_router
+from app.routers.face_recognition import router as face_recognition_router
 import logging
 
 # Configure logging
@@ -58,6 +60,8 @@ app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(classroom_router, prefix="/api/v1/classes", tags=["Classrooms"])
 app.include_router(group_router, prefix="/api/v1/groups", tags=["Groups"])
 app.include_router(user_router, prefix="/api/v1/users", tags=["Users"])
+app.include_router(session_router, prefix="/api/v1/sessions", tags=["Sessions"])
+app.include_router(face_recognition_router, prefix="/api/v1/face-recognition", tags=["Face Recognition"])
 
 # Configure OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -91,6 +95,11 @@ def custom_openapi():
     return app.openapi_schema
 
 app.openapi = custom_openapi
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup."""
+    init_db()
 
 @app.get("/")
 def root():
