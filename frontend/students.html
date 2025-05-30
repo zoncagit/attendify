@@ -304,7 +304,106 @@
         .checkmark:active {
             transform: scale(0.9);
         }
+        .delete-group-btn {
+        color: var(--text-secondary);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.6;
+      }
 
+      .delete-group-btn:hover {
+        background-color: rgba(239, 68, 68, 0.15);
+        color: var(--error);
+        opacity: 1;
+      }
+      
+      /* Prevent the delete button from triggering the group card click */
+      .group-card {
+        position: relative;
+      }  
+        /* Delete group button styles */
+      .delete-group-btn {
+        color: var(--text-secondary);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.6;
+      }
+
+      .delete-group-btn:hover {
+        background-color: rgba(239, 68, 68, 0.15);
+        color: var(--error);
+        opacity: 1;
+        }
+ 
+
+      /* Delete group modal styles */
+     .delete-group-modal {
+       position: fixed;
+       top: 50%;
+       left: 50%;
+       transform: translate(-50%, -50%) scale(0.95);
+       background: rgba(30, 41, 59, 0.95);
+       border: 1px solid rgba(255, 255, 255, 0.2);
+       border-radius: 10px;
+       padding: 25px;
+       width: 90%;
+       max-width: 400px;
+       z-index: 3000;
+       backdrop-filter: blur(10px);
+       box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+       display: none;
+       opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .delete-group-modal.active {
+     transform: translate(-50%, -50%) scale(1);
+     opacity: 1;
+     display: block;
+    }
+
+    .delete-group-modal-content {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+    }
+
+   .delete-group-modal-title {
+     font-size: 18px;
+     font-weight: 600;
+     margin-bottom: 15px;
+     text-align: center;
+   }
+
+    .delete-group-modal-description {
+     color: var(--text-secondary);
+     text-align: center;
+     margin-bottom: 20px;
+     font-size: 14px;
+     line-height: 1.5;
+   }
+
+    .delete-group-modal-buttons {
+     display: flex;
+     gap: 15px;
+     margin-top: 20px;
+      width: 100%;
+     justify-content: center;
+}
         /* Ripple animation */
         @keyframes ripple {
             to {
@@ -2178,7 +2277,21 @@
                 <button class="btn btn-primary" id="confirmAddGroupBtn">Create Group</button>
             </div>
         </div>
+    </div> <!-- Delete Group Modal -->
+    <div id="deleteGroupModal" class="modal">
+      <div class="modal-content">
+        <h2 class="modal-title">Delete Group</h2>
+        <p class="modal-description warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          Are you sure you want to delete this group? All students in this group will be moved to the default group.
+        </p>
+        <div class="modal-footer">
+          <button id="cancelDeleteGroupBtn" class="btn btn-secondary">Cancel</button>
+          <button id="confirmDeleteGroupBtn" class="btn btn-danger">Delete Group</button>
+        </div>
+      </div>
     </div>
+    <div id="deleteGroupOverlay" class="modal-overlay"></div>
 
     <!-- Modal Overlay -->
     <div id="settingsModalOverlay" class="modal-overlay">

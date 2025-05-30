@@ -143,12 +143,11 @@ function displayGroups(groups) {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const groupId = btn.dataset.groupId;
-                console.log('Delete button clicked. Group ID:', groupId, 'Type:', typeof groupId);
                 if (!groupId || groupId === 'unknown') {
                     console.error('Error: Invalid group ID for deletion');
                     return;
                 }
-                handleGroupDelete(groupId);
+                showDeleteGroupModal(groupId); // <-- use modal instead of confirm()
             });
         });
 
@@ -172,7 +171,6 @@ function displayGroups(groups) {
         `;
     }
 }
-
 function displayStudents(students) {
     const container = document.querySelector('.students-container');
     if (!container) return;
@@ -262,10 +260,10 @@ async function handleGroupSelect(groupId) {
 
 async function handleGroupDelete(groupId) {
     console.log('handleGroupDelete called with groupId:', groupId, 'Type:', typeof groupId);
-    
+
     const classId = new URLSearchParams(window.location.search).get('class');
     console.log('Class ID from URL:', classId);
-    
+
     if (!classId) {
         console.error('Error: No class ID found in URL');
         utils.showToast('Error: No class ID found', 'error');
@@ -279,17 +277,13 @@ async function handleGroupDelete(groupId) {
         return;
     }
 
-    if (!confirm('Are you sure you want to delete this group? All students in this group will be moved to the default group.')) {
-        return;
-    }
-
     try {
         console.log('Calling groupManagement.deleteGroup with:', { classId, groupId });
         await groupManagement.deleteGroup(classId, groupId);
-        
+
         // Show success message
         utils.showToast('Group deleted successfully', 'success');
-        
+
         // Reload the page to reflect changes
         window.location.reload();
     } catch (error) {

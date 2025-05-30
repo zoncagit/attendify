@@ -54,3 +54,54 @@ document.getElementById('cancelAddGroupBtn')?.addEventListener('click', () => {
     overlay.classList.remove('active');
     document.getElementById('groupName').value = '';
 }); 
+
+let groupIdToDelete = null;
+
+function showDeleteGroupModal(groupId) {
+    groupIdToDelete = groupId;
+    const modal = document.getElementById('deleteGroupModal');
+    const overlay = document.getElementById('deleteGroupOverlay');
+    if (modal && overlay) {
+        overlay.style.display = 'block';
+        modal.style.display = 'block';
+        setTimeout(() => {
+            modal.classList.add('active');
+            overlay.classList.add('active');
+        }, 10);
+    }
+}
+
+function hideDeleteGroupModal() {
+    const modal = document.getElementById('deleteGroupModal');
+    const overlay = document.getElementById('deleteGroupOverlay');
+    if (modal && overlay) {
+        modal.classList.remove('active');
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+        }, 300);
+    }
+    groupIdToDelete = null;
+}
+
+// Initialize delete group modal events
+function initializeDeleteGroupModal() {
+    const cancelBtn = document.getElementById('cancelDeleteGroupBtn');
+    const confirmBtn = document.getElementById('confirmDeleteGroupBtn');
+    const overlay = document.getElementById('deleteGroupOverlay');
+    if (cancelBtn) cancelBtn.addEventListener('click', hideDeleteGroupModal);
+    if (overlay) overlay.addEventListener('click', hideDeleteGroupModal);
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+            if (!groupIdToDelete) return;
+            await handleGroupDelete(groupIdToDelete);
+            hideDeleteGroupModal();
+        });
+    }
+}
+
+// Call this in your DOMContentLoaded or initialization code:
+document.addEventListener('DOMContentLoaded', () => {
+    initializeDeleteGroupModal();
+});
