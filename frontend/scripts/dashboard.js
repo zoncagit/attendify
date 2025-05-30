@@ -243,19 +243,39 @@ document.addEventListener('DOMContentLoaded', function() {
   // Enroll in class
   async function enrollInClass(groupCode) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.ENROLL_CLASS, {
+      console.log('Enrolling in group with code:', groupCode);
+      
+      const response = await fetch(ENDPOINTS.JOIN_GROUP(groupCode), {
         method: 'POST',
-        body: JSON.stringify({ group_code: groupCode })
+        headers: {
+          'Authorization': `Bearer ${utils.getAuthToken()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})  // Empty body as required by the endpoint
       });
 
-      if (ok) {
+      console.log('Enroll response status:', response.status);
+      
+      if (response.status === 200) {
+        const data = await response.json();
         utils.showNotification('Successfully enrolled in class', 'success');
         loadEnrolledClasses();
+        return { ok: true, data };
       } else {
-        throw new Error(data.message || 'Failed to enroll in class');
+        let errorMsg = 'Failed to enroll in class';
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.detail || errorData.message || errorMsg;
+        } catch (e) {
+          console.error('Error parsing error response:', e);
+        }
+        console.error('Enrollment error:', errorMsg);
+        throw new Error(errorMsg);
       }
     } catch (error) {
+      console.error('Error in enrollInClass:', error);
       utils.showNotification(error.message, 'error');
+      throw error;
     }
   }
 
