@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
   // API endpoints
-  const API_URL = CONFIG.API_URL;
+  const API_URL = 'http://127.0.0.1:8000/api/v1/classes';
   const ENDPOINTS = {
     ENROLLED_CLASSES: `${API_URL}/api/v1/classes`,
     TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
@@ -30,7 +30,8 @@ document.addEventListener('DOMContentLoaded', function() {
     REMOVE_USER_FROM_GROUP: (groupCode, userId) => `${API_URL}/api/v1/groups/groups/${groupCode}/members/${userId}`,
     GET_CLASS_GROUPS: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}`,
     GET_GROUP_COUNT: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}/count`,
-    GET_USER_COUNT: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}/users/count`
+    GET_USER_COUNT: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}/users/count`,
+    JOIN_GROUP: (groupCode) => `${API_URL}/api/v1/classes/groups/join/${groupCode}`,
   };
 
   // Tab switching functionality

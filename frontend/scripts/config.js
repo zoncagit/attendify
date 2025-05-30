@@ -1,5 +1,5 @@
 const CONFIG = {
-  API_URL: 'http://127.0.0.1:8000',
+  API_URL: 'http://127.0.0.1:8000/api/v1/classes',
   API_ENDPOINTS: {
     // Auth endpoints
     LOGIN: '/api/v1/auth/login',
