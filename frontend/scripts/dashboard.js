@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
     TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
     ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
     CREATE_CLASS: `${API_URL}/api/v1/classes/`,  // POST to root of classes
-    ADD_GROUP: (groupId) => `${API_URL}/api/v1/classes/groups/${groupId}/join`,
-    DELETE_GROUP : (groupID) =>  `${API_URL}/api/v1/classes/groups/${groupId}`, 
+    ADD_GROUP: (groupCode) => `${API_URL}/api/v1/classes/groups/join/${groupCode}`,
+    DELETE_GROUP : (groupID) =>  `${API_URL}/api/v1/classes/groups/${groupID}`, 
     DELETE_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`, // Fixed double slash and removed {class_id} template
 
     QUIT_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}/leave`,
