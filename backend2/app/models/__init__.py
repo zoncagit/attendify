@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from .user import User
 from .classroom import Class
 from .class_user import ClassUser
-from .session import Session
+from .session import Session, QRCodeStatus
 from .attendance import Attendance, AttendanceStatus
 from .log import Log
 from .password_reset_token import PasswordResetToken
@@ -28,16 +28,17 @@ Base = declarative_base()
 
 __all__ = [
     # Models
-    "User", 
-    "Class", 
-    "ClassUser", 
-    "Session", 
-    "Attendance", 
-    "AttendanceStatus", 
-    "Log", 
-    "PasswordResetToken", 
-    "PreVerification", 
-    "Group", 
+    "User",
+    "Class",
+    "ClassUser",
+    "Session",
+    "QRCodeStatus",
+    "Attendance",
+    "AttendanceStatus",
+    "Log",
+    "PasswordResetToken",
+    "PreVerification",
+    "Group",
     "GroupUser",
     # Base
     "Base",

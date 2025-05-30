@@ -1,5 +1,5 @@
 const CONFIG = {
-  API_URL: 'http://127.0.0.1:8000/api/v1/classes',
+  API_URL: 'http://127.0.0.1:8000',
   API_ENDPOINTS: {
     // Auth endpoints
     LOGIN: '/api/v1/auth/login',
@@ -10,7 +10,7 @@ const CONFIG = {
     RESEND_CODE: '/api/v1/auth/resend-verification',
     
     // User endpoints
-    USER_PROFILE: '/api/v1/users/profile',
+    USER_PROFILE: '/api/v1/users/me',
     UPDATE_PROFILE: '/api/v1/users/profile/update',
     UPLOAD_FACE: '/api/v1/users/face-recognition/upload',
     VERIFY_FACE: '/api/v1/users/face-recognition/verify',
