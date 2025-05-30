@@ -18,7 +18,7 @@ const ENDPOINTS = {
   // Group endpoints
   GET_CLASS: (classId) => `${API_BASE}/api/v1/classes/${classId}`,
   CREATE_GROUP: (classId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/groups`,
-  DELETE_GROUP: (classId, groupId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/groups/${groupId}`,
+  DELETE_GROUP: ( groupId) => `${API_BASE}/api/v1/classes/api/v1/classes/groups/${groupId}`,
   LIST_CLASS_GROUPS: (classId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/groups`,
   GET_CLASS_USERS: (classId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/users`,
   GET_GROUP_USERS: (groupId) => `${API_BASE}/api/v1/classes/api/v1/classes/groups/${groupId}/users`,
@@ -65,10 +65,13 @@ export async function deleteGroup(classId, groupId) {
         throw new Error(errorMsg);
     }
 
-    const url = ENDPOINTS.DELETE_GROUP(classId, groupId);
+    const url = `${API_BASE}/api/v1/classes/api/v1/classes/groups/${groupId}`;
     console.log('Making DELETE request to:', url);
     
     try {
+        console.log('Full URL being called:', url);
+        console.log('Auth token:', utils.getAuthToken() ? 'Exists' : 'Missing');
+        
         const response = await fetch(url, {
             method: 'DELETE',
             headers: {
@@ -79,22 +82,22 @@ export async function deleteGroup(classId, groupId) {
 
         console.log('Response status:', response.status);
         
-        if (!response.ok) {
-            let errorMsg = `Failed to delete group. Status: ${response.status}`;
-            try {
-                const errorData = await response.json();
-                errorMsg += ` - ${JSON.stringify(errorData)}`;
-            } catch (e) {
-                // If we can't parse the error response, just use the status text
-                errorMsg += ` - ${response.statusText}`;
-            }
-            console.error(errorMsg);
-            throw new Error(errorMsg);
+        if (response.status === 204) {
+            console.log('Group deleted successfully');
+            utils.showNotification('Group deleted successfully', 'success');
+            return true;
         }
         
-        console.log('Group deleted successfully');
-        utils.showNotification('Group deleted successfully', 'success');
-        return true;
+        // Handle error responses
+        let errorMsg = `Failed to delete group. Status: ${response.status}`;
+        try {
+            const errorData = await response.json();
+            errorMsg += ` - ${JSON.stringify(errorData)}`;
+        } catch (e) {
+            errorMsg += ` - ${response.statusText}`;
+        }
+        console.error(errorMsg);
+        throw new Error(errorMsg);
     } catch (error) {
         const errorMsg = `Error in deleteGroup: ${error.message}`;
         console.error(errorMsg, error);
@@ -103,9 +106,9 @@ export async function deleteGroup(classId, groupId) {
     }
 }
 
-export async function moveStudentToGroup(classId, studentId, groupId) {
+export async function moveStudentToGroup(studentId, groupId) {
     try {
-        const response = await fetch(ENDPOINTS.MOVE_STUDENT_TO_GROUP(classId, studentId), {
+        const response = await fetch(ENDPOINTS.MOVE_STUDENT_TO_GROUP( studentId), {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`,

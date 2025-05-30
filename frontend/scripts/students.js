@@ -113,7 +113,9 @@ function displayGroups(groups) {
             return `
                 <div class="group-card" data-group-id="${groupId}">
                     <div class="group-name-container">
-                        <div class="group-name" title="${groupName}">${groupName}</div>
+                        <div class="group-name" title="${groupName}">
+                            ${groupName} <span class="group-code">Code: ${group.group_code || 'N/A'}</span>
+                        </div>
                         ${!isDefaultGroup ? `
                             <button class="delete-group-btn" title="Delete group" data-group-id="${groupId}">
                                 <i class="fas fa-trash"></i>
@@ -266,25 +268,33 @@ async function handleGroupDelete(groupId) {
     
     if (!classId) {
         console.error('Error: No class ID found in URL');
+        utils.showToast('Error: No class ID found', 'error');
         return;
     }
 
     if (!groupId) {
-        console.error('Error: groupId is undefined or empty in handleGroupDelete');
+        const errorMsg = 'Error: groupId is undefined or empty in handleGroupDelete';
+        console.error(errorMsg);
+        utils.showToast(errorMsg, 'error');
         return;
     }
 
-    if (!confirm('Are you sure you want to delete this group? All students in this group will be removed.')) {
+    if (!confirm('Are you sure you want to delete this group? All students in this group will be moved to the default group.')) {
         return;
     }
 
     try {
         console.log('Calling groupManagement.deleteGroup with:', { classId, groupId });
         await groupManagement.deleteGroup(classId, groupId);
-        await loadData(classId); // Reload all data
+        
+        // Show success message
+        utils.showToast('Group deleted successfully', 'success');
+        
+        // Reload the page to reflect changes
+        window.location.reload();
     } catch (error) {
         console.error('Error in handleGroupDelete:', error);
-        utils.showToast('Error deleting group: ' + error.message, 'error');
+        utils.showToast('Error deleting group: ' + (error.message || 'Unknown error'), 'error');
     }
 }
 
