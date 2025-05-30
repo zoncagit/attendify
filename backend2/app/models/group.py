@@ -5,7 +5,7 @@ from app.database import Base
 from .group_user import GroupUser
 
 class Group(Base):
-    __tablename__ = "groupss"
+    __tablename__ = "groups"
 
     group_id = Column(Integer, primary_key=True, index=True)
     group_name = Column(String(100), nullable=False)
