@@ -1,0 +1,10 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+python-socketio==5.10.0
+python-multipart==0.0.6
+numpy==1.24.3
+opencv-python==4.8.1.78
+tensorflow==2.14.0
+python-engineio==4.8.0
+aiohttp==3.9.1
+websockets==12.0 

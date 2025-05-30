@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 20px auto;
+        }
+        #video {
+            width: 100%;
+            border-radius: 8px;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .attendance-status {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .attendance-active {
+            color: #28a745;
+        }
+        .attendance-inactive {
+            color: #dc3545;
+        }
+        .attendance-list {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        .attendance-item {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .attendance-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Face Recognition Attendance System</h1>
+        
+        <div class="attendance-status">
+            Status: <span id="attendanceStatus" class="attendance-inactive">Inactive</span>
+        </div>
+        
+        <div class="video-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="button-group">
+            <button id="startAttendance" onclick="startAttendance()">Start Attendance</button>
+            <button id="stopAttendance" onclick="stopAttendance()" disabled>Stop Attendance</button>
+        </div>
+        
+        <div class="button-group">
+            <button id="registerButton" onclick="registerFace()">Register Face</button>
+        </div>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="attendance-list" id="attendanceList">
+            <h3>Attendance Log</h3>
+            <div id="attendanceItems"></div>
+        </div>
+    </div>
+
+    <script>
+        let socket;
+        let video;
+        let canvas;
+        let ctx;
+        let stream;
+        let isAttendanceActive = false;
+        let isProcessing = false;
+        let lastProcessedTime = 0;
+        const PROCESS_INTERVAL = 1000; // Process every 1 second
+
+        // Initialize video and canvas
+        function init() {
+            video = document.getElementById('video');
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size to match video
+            video.addEventListener('loadedmetadata', () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+            });
+        }
+
+        // Connect to Socket.IO server
+        function connect() {
+            socket = io('http://localhost:8001');
+            
+            socket.on('connect', () => {
+                updateStatus('Connected to server', 'success');
+                document.getElementById('registerButton').disabled = false;
+            });
+            
+            socket.on('disconnect', () => {
+                updateStatus('Disconnected from server', 'error');
+                document.getElementById('registerButton').disabled = true;
+            });
+            
+            socket.on('registration_response', (data) => {
+                if (data.success) {
+                    updateStatus(data.message, 'success');
+                } else {
+                    updateStatus(data.message, 'error');
+                }
+                if (data.annotated_image) {
+                    displayAnnotatedImage(data.annotated_image);
+                }
+            });
+            
+            socket.on('attendance_response', (data) => {
+                if (data.success) {
+                    updateStatus(data.message, 'success');
+                    addAttendanceItem(data.user_id, data.confidence);
+                } else {
+                    updateStatus(data.message, 'error');
+                }
+                if (data.annotated_image) {
+                    displayAnnotatedImage(data.annotated_image);
+                }
+            });
+            
+            socket.on('attendance_status', (data) => {
+                isAttendanceActive = data.active;
+                document.getElementById('attendanceStatus').textContent = data.active ? 'Active' : 'Inactive';
+                document.getElementById('attendanceStatus').className = data.active ? 'attendance-active' : 'attendance-inactive';
+                document.getElementById('startAttendance').disabled = data.active;
+                document.getElementById('stopAttendance').disabled = !data.active;
+                updateStatus(data.message, data.active ? 'success' : 'error');
+                
+                if (data.active) {
+                    startVideoProcessing();
+                } else {
+                    stopVideoProcessing();
+                }
+            });
+        }
+
+        // Start video stream
+        async function startVideo() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                updateStatus('Camera started', 'success');
+            } catch (err) {
+                updateStatus('Error accessing camera: ' + err.message, 'error');
+            }
+        }
+
+        // Update status message
+        function updateStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        // Display annotated image with face detection box
+        function displayAnnotatedImage(base64Image) {
+            const img = new Image();
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.style.display = 'block';
+                setTimeout(() => {
+                    canvas.style.display = 'none';
+                }, 1000);
+            };
+            img.src = 'data:image/jpeg;base64,' + base64Image;
+        }
+
+        // Add attendance item to the list
+        function addAttendanceItem(userId, confidence) {
+            const items = document.getElementById('attendanceItems');
+            const item = document.createElement('div');
+            item.className = 'attendance-item';
+            const time = new Date().toLocaleTimeString();
+            item.textContent = `${time} - User ${userId} (Confidence: ${(confidence * 100).toFixed(1)}%)`;
+            items.insertBefore(item, items.firstChild);
+        }
+
+        // Process video frame
+        function processVideoFrame() {
+            if (!isAttendanceActive || isProcessing) return;
+            
+            const now = Date.now();
+            if (now - lastProcessedTime < PROCESS_INTERVAL) return;
+            
+            lastProcessedTime = now;
+            isProcessing = true;
+            
+            try {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg');
+                
+                socket.emit('mark_attendance', {
+                    image: imageData
+                });
+            } catch (err) {
+                updateStatus('Error processing video: ' + err.message, 'error');
+            } finally {
+                isProcessing = false;
+            }
+        }
+
+        // Start video processing
+        function startVideoProcessing() {
+            if (!window.videoProcessingInterval) {
+                window.videoProcessingInterval = setInterval(processVideoFrame, PROCESS_INTERVAL);
+            }
+        }
+
+        // Stop video processing
+        function stopVideoProcessing() {
+            if (window.videoProcessingInterval) {
+                clearInterval(window.videoProcessingInterval);
+                window.videoProcessingInterval = null;
+            }
+        }
+
+        // Register face
+        async function registerFace() {
+            if (isProcessing) return;
+            isProcessing = true;
+            
+            try {
+                const user_id = prompt('Enter user ID:');
+                if (!user_id) {
+                    updateStatus('Registration cancelled', 'error');
+                    return;
+                }
+                
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg');
+                
+                socket.emit('register_face', {
+                    user_id: user_id,
+                    image: imageData
+                });
+            } catch (err) {
+                updateStatus('Error registering face: ' + err.message, 'error');
+            } finally {
+                isProcessing = false;
+            }
+        }
+
+        // Start attendance session
+        function startAttendance() {
+            socket.emit('start_attendance');
+        }
+
+        // Stop attendance session
+        function stopAttendance() {
+            socket.emit('stop_attendance');
+        }
+
+        // Initialize everything
+        window.onload = () => {
+            init();
+            connect();
+            startVideo();
+        };
+    </script>
+</body>
+</html> 
