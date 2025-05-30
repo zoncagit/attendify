@@ -95,19 +95,19 @@ function displayGroups(groups) {
     // Log each group's structure
     groups.forEach((group, index) => {
         console.log(`Processing group ${index}:`, {
-            id: group?.id,
-            name: group?.name,
-            studentCount: group?.studentCount,
+            id: group?.group_id,
+            name: group?.group_name,
+            studentCount: group?.student_count || 0, // Default to 0 if not provided
             rawGroup: group
         });
     });
 
     try {
         groupsList.innerHTML = groups.map(group => {
-            // Ensure required properties exist
-            const groupId = group?.id || 'unknown';
-            const groupName = group?.name || 'Unnamed Group';
-            const studentCount = group?.studentCount || 0;
+            // Map API response fields to expected properties
+            const groupId = group?.group_id || 'unknown';
+            const groupName = group?.group_name || 'Unnamed Group';
+            const studentCount = group?.student_count || 0;
             const isDefaultGroup = groupName === 'Default Group';
 
             return `
