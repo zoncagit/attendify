@@ -284,21 +284,21 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Add group to class
-  async function addGroup(classId, groupName) {
+  async function createGroup(classId, groupName) {
     try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.ADD_GROUP, {
+      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_GROUP(classId), {
         method: 'POST',
         body: JSON.stringify({
-          class_id: classId,
-          name: groupName
+          group_name: groupName,
+          class_id: parseInt(classId)
         })
       });
 
       if (ok) {
-        utils.showNotification('Group added successfully', 'success');
+        utils.showNotification('Group created successfully', 'success');
         loadTutoredClasses();
       } else {
-        throw new Error(data.message || 'Failed to add group');
+        throw new Error(data.message || 'Failed to create group');
       }
     } catch (error) {
       utils.showNotification(error.message, 'error');
@@ -507,26 +507,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  async function createGroupInClass(classId, groupName) {
-    try {
-      const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.CREATE_GROUP(classId), {
-        method: 'POST',
-        body: JSON.stringify({ name: groupName })
-      });
-
-      if (ok) {
-        utils.showNotification('Group created successfully', 'success');
-        return data;
-      } else {
-        throw new Error(data.message || 'Failed to create group');
-      }
-    } catch (error) {
-      utils.showNotification(error.message, 'error');
-      console.error('Error creating group:', error);
-      return null;
-    }
-  }
-
+  
   async function listClassGroups(classId) {
     try {
       const { ok, data } = await utils.fetchWithAuth(ENDPOINTS.LIST_CLASS_GROUPS(classId));
