@@ -57,20 +57,48 @@ export async function addGroup(classId, groupName) {
 }
 
 export async function deleteGroup(classId, groupId) {
+    console.log('deleteGroup called with:', { classId, groupId });
+    
+    if (!classId || !groupId) {
+        const errorMsg = `Missing required parameters. Class ID: ${classId}, Group ID: ${groupId}`;
+        console.error(errorMsg);
+        throw new Error(errorMsg);
+    }
+
+    const url = ENDPOINTS.DELETE_GROUP(classId, groupId);
+    console.log('Making DELETE request to:', url);
+    
     try {
-        const response = await fetch(ENDPOINTS.DELETE_GROUP(classId, groupId), {
+        const response = await fetch(url, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${utils.getAuthToken()}`
+                'Authorization': `Bearer ${utils.getAuthToken()}`,
+                'Content-Type': 'application/json'
             }
         });
 
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error('Failed to delete group');
-        }        utils.showNotification('Group deleted successfully', 'success');
+            let errorMsg = `Failed to delete group. Status: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMsg += ` - ${JSON.stringify(errorData)}`;
+            } catch (e) {
+                // If we can't parse the error response, just use the status text
+                errorMsg += ` - ${response.statusText}`;
+            }
+            console.error(errorMsg);
+            throw new Error(errorMsg);
+        }
+        
+        console.log('Group deleted successfully');
+        utils.showNotification('Group deleted successfully', 'success');
+        return true;
     } catch (error) {
-        utils.showNotification('Error deleting group', 'error');
-        console.error('Error:', error);
+        const errorMsg = `Error in deleteGroup: ${error.message}`;
+        console.error(errorMsg, error);
+        utils.showNotification('Error deleting group: ' + error.message, 'error');
         throw error;
     }
 }

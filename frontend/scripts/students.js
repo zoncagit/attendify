@@ -79,36 +79,96 @@ async function loadData(classId) {
 }
 
 function displayGroups(groups) {
+    console.log('Displaying groups:', groups);
     const groupsList = document.querySelector('.groups-list');
-    if (!groupsList) return;
+    if (!groupsList) {
+        console.error('Groups list container not found in the DOM');
+        return;
+    }
 
-    groupsList.innerHTML = groups.map(group => `
-        <div class="group-card" data-group-id="${group.id}">
-            <div class="group-name-container">
-                <div class="group-name">${group.name}</div>
-                ${group.name !== 'Default Group' ? `
-                    <button class="delete-group-btn" title="Delete group" data-group-id="${group.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                ` : ''}
-            </div>
-            <div class="group-students-count">
-                <i class="fas fa-user-graduate"></i> ${group.studentCount || 0} student${group.studentCount !== 1 ? 's' : ''}
-            </div>
-        </div>
-    `).join('');
+    // Ensure groups is an array
+    if (!Array.isArray(groups)) {
+        console.error('Expected an array of groups but got:', groups);
+        groups = [];
+    }
 
-    // Add event listeners
-    groupsList.querySelectorAll('.group-card').forEach(card => {
-        card.addEventListener('click', () => handleGroupSelect(card.dataset.groupId));
-    });
-
-    groupsList.querySelectorAll('.delete-group-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            handleGroupDelete(btn.dataset.groupId);
+    // Log each group's structure
+    groups.forEach((group, index) => {
+        console.log(`Processing group ${index}:`, {
+            id: group?.id,
+            name: group?.name,
+            studentCount: group?.studentCount,
+            rawGroup: group
         });
     });
+
+    try {
+        groupsList.innerHTML = groups.map(group => {
+            // Ensure required properties exist
+            const groupId = group?.id || 'unknown';
+            const groupName = group?.name || 'Unnamed Group';
+            const studentCount = group?.studentCount || 0;
+            const isDefaultGroup = groupName === 'Default Group';
+
+            return `
+                <div class="group-card" data-group-id="${groupId}">
+                    <div class="group-name-container">
+                        <div class="group-name" title="${groupName}">${groupName}</div>
+                        ${!isDefaultGroup ? `
+                            <button class="delete-group-btn" title="Delete group" data-group-id="${groupId}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                    <div class="group-students-count">
+                        <i class="fas fa-user-graduate"></i> 
+                        ${studentCount} student${studentCount !== 1 ? 's' : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Add click handlers for group cards
+        groupsList.querySelectorAll('.group-card').forEach(card => {
+            const groupId = card.dataset.groupId;
+            if (groupId && groupId !== 'unknown') {
+                card.addEventListener('click', () => handleGroupSelect(groupId));
+            }
+        });
+
+        // Add click handlers for delete buttons
+        groupsList.querySelectorAll('.delete-group-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const groupId = btn.dataset.groupId;
+                console.log('Delete button clicked. Group ID:', groupId, 'Type:', typeof groupId);
+                if (!groupId || groupId === 'unknown') {
+                    console.error('Error: Invalid group ID for deletion');
+                    return;
+                }
+                handleGroupDelete(groupId);
+            });
+        });
+
+        // Log if no groups were found
+        if (groups.length === 0) {
+            console.log('No groups to display');
+            groupsList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <p>No groups found</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error rendering groups:', error);
+        groupsList.innerHTML = `
+            <div class="error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Error loading groups</p>
+            </div>
+        `;
+    }
 }
 
 function displayStudents(students) {
@@ -199,18 +259,32 @@ async function handleGroupSelect(groupId) {
 }
 
 async function handleGroupDelete(groupId) {
+    console.log('handleGroupDelete called with groupId:', groupId, 'Type:', typeof groupId);
+    
     const classId = new URLSearchParams(window.location.search).get('class');
-    if (!classId) return;
+    console.log('Class ID from URL:', classId);
+    
+    if (!classId) {
+        console.error('Error: No class ID found in URL');
+        return;
+    }
+
+    if (!groupId) {
+        console.error('Error: groupId is undefined or empty in handleGroupDelete');
+        return;
+    }
 
     if (!confirm('Are you sure you want to delete this group? All students in this group will be removed.')) {
         return;
     }
 
     try {
+        console.log('Calling groupManagement.deleteGroup with:', { classId, groupId });
         await groupManagement.deleteGroup(classId, groupId);
         await loadData(classId); // Reload all data
     } catch (error) {
-        console.error('Error deleting group:', error);
+        console.error('Error in handleGroupDelete:', error);
+        utils.showToast('Error deleting group: ' + error.message, 'error');
     }
 }
 
@@ -387,54 +461,56 @@ function initializeGroupModal() {
         return;
     }
     
-    // Add debug logs for modal elements
-    console.log('Add Group Button:', addGroupBtn);
-    console.log('Group Modal:', groupModal);
-    console.log('Overlay:', overlay);
+    // Remove any existing event listeners first
+    const newAddGroupBtn = addGroupBtn.cloneNode(true);
+    addGroupBtn.parentNode.replaceChild(newAddGroupBtn, addGroupBtn);
+    
+    const newConfirmBtn = confirmAddGroupBtn.cloneNode(true);
+    confirmAddGroupBtn.parentNode.replaceChild(newConfirmBtn, confirmAddGroupBtn);
     
     // Add click event listener for the Add Group button
-    addGroupBtn.addEventListener('click', function(e) {
-        console.log('Add Group button clicked!');
-        showAddGroupModal();
-    });
+    newAddGroupBtn.addEventListener('click', showAddGroupModal);
     
-    // Add click handler for Add Group button
-    if (addGroupBtn) {
-        addGroupBtn.addEventListener('click', showAddGroupModal);
-    }
+    // Add click event for confirm button
+    newConfirmBtn.addEventListener('click', async () => {
+        const groupName = document.getElementById('groupName')?.value.trim();
+        const classId = new URLSearchParams(window.location.search).get('class');
+        
+        if (!groupName) {
+            utils.showToast('Please enter a group name', 'error');
+            return;
+        }
+        
+        if (!classId) {
+            utils.showToast('No class ID found', 'error');
+            return;
+        }
 
-    if (confirmAddGroupBtn) {
-        confirmAddGroupBtn.addEventListener('click', async () => {
-            const groupName = document.getElementById('groupName')?.value.trim();
-            const classId = new URLSearchParams(window.location.search).get('class');
+        try {
+            // Show loading state
+            newConfirmBtn.disabled = true;
+            newConfirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
             
-            if (!groupName || !classId) {
-                utils.showToast('Please enter a group name', 'error');
-                return;
-            }
+            await groupManagement.addGroup(classId, groupName);
+            document.getElementById('groupName').value = '';
+            hideGroupModal();
+            await loadData(classId);
+            utils.showToast('Group added successfully', 'success');
+        } catch (error) {
+            console.error('Error adding group:', error);
+            utils.showToast(error.message || 'Failed to add group', 'error');
+        } finally {
+            // Reset loading state
+            newConfirmBtn.disabled = false;
+            newConfirmBtn.innerHTML = 'Create Group';
+        }
+    });
 
-            try {
-                // Show loading state
-                confirmAddGroupBtn.disabled = true;
-                confirmAddGroupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-                
-                await groupManagement.addGroup(classId, groupName);
-                document.getElementById('groupName').value = '';
-                hideGroupModal();
-                await loadData(classId);
-                utils.showToast('Group added successfully', 'success');
-            } catch (error) {
-                utils.showToast(error.message || 'Failed to add group', 'error');
-            } finally {
-                // Reset loading state
-                confirmAddGroupBtn.disabled = false;
-                confirmAddGroupBtn.innerHTML = 'Create Group';
-            }
-        });
-    }
-
+    // Add cancel button handler
     if (cancelAddGroupBtn) {
-        cancelAddGroupBtn.addEventListener('click', hideGroupModal);
+        const newCancelBtn = cancelAddGroupBtn.cloneNode(true);
+        cancelAddGroupBtn.parentNode.replaceChild(newCancelBtn, cancelAddGroupBtn);
+        newCancelBtn.addEventListener('click', hideGroupModal);
     }
 }
 
