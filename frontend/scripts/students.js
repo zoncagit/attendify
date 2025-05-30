@@ -457,32 +457,21 @@ function initializeModals() {
 }
 
 function initializeGroupModal() {
-    console.log('Initializing group modal...');
-    
     const addGroupBtn = document.getElementById('addGroupBtn');
     const confirmAddGroupBtn = document.getElementById('confirmAddGroupBtn');
     const cancelAddGroupBtn = document.getElementById('cancelAddGroupBtn');
-    const groupNameInput = document.getElementById('groupName');
-    const groupModal = document.getElementById('addGroupModal');
     const overlay = document.getElementById('confirmOverlay');
     
-    if (!addGroupBtn) {
-        console.error('Add Group button not found!');
+    if (!addGroupBtn || !confirmAddGroupBtn || !cancelAddGroupBtn || !overlay) {
+        console.error('Some group modal elements were not found');
         return;
     }
     
-    // Remove any existing event listeners first
-    const newAddGroupBtn = addGroupBtn.cloneNode(true);
-    addGroupBtn.parentNode.replaceChild(newAddGroupBtn, addGroupBtn);
-    
-    const newConfirmBtn = confirmAddGroupBtn.cloneNode(true);
-    confirmAddGroupBtn.parentNode.replaceChild(newConfirmBtn, confirmAddGroupBtn);
-    
-    // Add click event listener for the Add Group button
-    newAddGroupBtn.addEventListener('click', showAddGroupModal);
+    // Add Group button click handler
+    addGroupBtn.addEventListener('click', showAddGroupModal);
     
     // Add click event for confirm button
-    newConfirmBtn.addEventListener('click', async () => {
+    confirmAddGroupBtn.addEventListener('click', async () => {
         const groupName = document.getElementById('groupName')?.value.trim();
         const classId = new URLSearchParams(window.location.search).get('class');
         
@@ -514,55 +503,36 @@ function initializeGroupModal() {
             newConfirmBtn.disabled = false;
             newConfirmBtn.innerHTML = 'Create Group';
         }
+    });    // Add cancel button handler
+    cancelAddGroupBtn.addEventListener('click', hideGroupModal);
+    
+    // Close modal when clicking overlay
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            hideGroupModal();
+        }
     });
-
-    // Add cancel button handler
-    if (cancelAddGroupBtn) {
-        const newCancelBtn = cancelAddGroupBtn.cloneNode(true);
-        cancelAddGroupBtn.parentNode.replaceChild(newCancelBtn, cancelAddGroupBtn);
-        newCancelBtn.addEventListener('click', hideGroupModal);
-    }
 }
 
 function showAddGroupModal() {
-    console.log('showAddGroupModal called');
     const modal = document.getElementById('addGroupModal');
     const overlay = document.getElementById('confirmOverlay');
     
-    console.log('Modal element:', modal);
-    console.log('Overlay element:', overlay);
-    
-    if (!modal) {
-        console.error('Modal element not found!');
+    if (!modal || !overlay) {
+        console.error('Modal or overlay element not found!');
         return;
     }
     
-    if (!overlay) {
-        console.error('Overlay element not found!');
-        return;
-    }
-    
-    console.log('Showing modal and overlay');
     overlay.style.display = 'block';
     modal.style.display = 'block';
     
-    // Force reflow
+    // Force reflow before adding transition classes
     void modal.offsetHeight;
     
-    // Add active class with a small delay
-    setTimeout(() => {
-        console.log('Adding active class to modal and overlay');
-        modal.classList.add('active');
-        overlay.classList.add('active');
-    }, 10);
+    modal.classList.add('active');
+    overlay.classList.add('active');
     
-    // Debug: Check styles after adding
-    setTimeout(() => {
-        console.log('Modal display style:', window.getComputedStyle(modal).display);
-        console.log('Modal opacity:', window.getComputedStyle(modal).opacity);
-        console.log('Modal visibility:', window.getComputedStyle(modal).visibility);
-    }, 100);
-    
+    // Focus on group name input
     document.getElementById('groupName')?.focus();
 }
 
