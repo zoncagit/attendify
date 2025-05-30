@@ -1,10 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import delete
+from sqlalchemy import delete, or_
 from typing import List, Optional, Dict, Any
 import random
 import string
 import logging
+import os
+from openpyxl import Workbook
+from datetime import datetime
 
 from app.database import get_db
 from app.models import Class, Group, ClassUser, GroupUser, User, Attendance, Session
@@ -105,6 +109,97 @@ def get_user_classes(
         .filter(ClassUser.user_id == current_user.user_id)
         .all())
     return classes
+
+@router.get("/{class_id}/users/export")
+async def export_class_users(
+    class_id: int,
+    format: str = 'xlsx',
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Export class users to Excel file
+    
+    - **class_id**: ID of the class
+    - **format**: Export format (only 'xlsx' supported for now)
+    - Returns: Excel file with class users
+    
+    Only class members can export this information.
+    """
+    # Check if class exists
+    class_data = db.query(Class).filter(Class.class_id == class_id).first()
+    if not class_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Class not found"
+        )
+    
+    # Check if user is a member of the class
+    class_member = db.query(ClassUser).filter(
+        ClassUser.class_id == class_id,
+        ClassUser.user_id == current_user.user_id
+    ).first()
+    
+    if not class_member:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this class"
+        )
+    
+    # Get all users in the class with their roles and groups
+    users = (db.query(User, ClassUser.role, Group.group_name)
+        .join(ClassUser, User.user_id == ClassUser.user_id)
+        .outerjoin(GroupUser, User.user_id == GroupUser.user_id)
+        .outerjoin(Group, GroupUser.group_id == Group.group_id)
+        .filter(ClassUser.class_id == class_id)
+        .order_by(User.last_name, User.first_name)
+        .all())
+    
+    # Create Excel file
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Class Users"
+    
+    # Add headers
+    headers = ["ID", "First Name", "Last Name", "Email", "Role", "Group"]
+    for col_num, header in enumerate(headers, 1):
+        ws.cell(row=1, column=col_num, value=header)
+    
+    # Add data
+    for row_num, (user, role, group_name) in enumerate(users, 2):
+        ws.cell(row=row_num, column=1, value=user.user_id)
+        ws.cell(row=row_num, column=2, value=user.first_name)
+        ws.cell(row=row_num, column=3, value=user.last_name)
+        ws.cell(row=row_num, column=4, value=user.email)
+        ws.cell(row=row_num, column=5, value=role)
+        ws.cell(row=row_num, column=6, value=group_name or "")
+    
+    # Auto-adjust column widths
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column_letter].width = min(adjusted_width, 30)
+    
+    # Save to temporary file
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"class_{class_id}_users_{timestamp}.xlsx"
+    filepath = f"/tmp/{filename}"
+    wb.save(filepath)
+    
+    # Return the file
+    return FileResponse(
+        path=filepath,
+        filename=filename,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 @router.get("/{class_id}", response_model=ClassResponse)
 def get_class(
