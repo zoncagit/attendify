@@ -2606,5 +2606,20 @@
         visibility: visible;
       }
     </style>
+    
+    <!-- JavaScript Files -->
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/group-management.js"></script>
+    <script src="scripts/student-management.js"></script>
+    <script src="scripts/students.js"></script>
+    
+    <script>
+      // Initialize the page when DOM is fully loaded
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded, initializing...');
+        initializeGroupModal();
+        // Add other initialization functions here if needed
+      });
+    </script>
   </body>
 </html>

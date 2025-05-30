@@ -181,6 +181,47 @@ const utils = {
     this.removeAuthToken();
     this.removeUser();
     window.location.href = 'login.html';
+  },
+
+  // Show toast notification
+  showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `notification ${type} show`;
+    toast.innerHTML = `
+      <span class="notification-text">${message}</span>
+      <button class="notification-close">
+        <i class="fas fa-times"></i>
+      </button>
+    `;
+    
+    const container = document.querySelector('.notification-container') || this.createNotificationContainer();
+    container.appendChild(toast);
+    
+    // Add click handler for close button
+    const closeBtn = toast.querySelector('.notification-close');
+    closeBtn.addEventListener('click', () => this.removeToast(toast, container));
+    
+    // Auto-remove after delay
+    setTimeout(() => this.removeToast(toast, container), 3000);
+  },
+  
+  // Helper to create notification container
+  createNotificationContainer() {
+    const container = document.createElement('div');
+    container.className = 'notification-container';
+    document.body.appendChild(container);
+    return container;
+  },
+  
+  // Helper to remove toast
+  removeToast(toast, container) {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      toast.remove();
+      if (container && container.children.length === 0) {
+        container.remove();
+      }
+    }, 300);
   }
 };
 
@@ -221,32 +262,10 @@ export function generateUniqueCode(prefix = 'GRP') {
   return `${prefix}${timestamp}${randomStr}`.toUpperCase();
 }
 
+// Keep this export for backward compatibility
 export function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `notification ${type} show`;
-  toast.innerHTML = `
-    <span class="notification-text">${message}</span>
-    <button class="notification-close" onclick="this.parentElement.remove()">
-      <i class="fas fa-times"></i>
-    </button>
-  `;
-  
-  const container = document.querySelector('.notification-container') || createNotificationContainer();
-  container.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.remove();
-    if (container.children.length === 0) {
-      container.remove();
-    }
-  }, 3000);
-}
-
-function createNotificationContainer() {
-  const container = document.createElement('div');
-  container.className = 'notification-container';
-  document.body.appendChild(container);
-  return container;
+  const utils = new Utils();
+  utils.showToast(message, type);
 }
 
 export function copyToClipboard(text, successCallback) {

@@ -3,7 +3,7 @@ import utils from './utils.js';
 
 export async function addStudent(classId, studentData) {
     try {
-        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/students`, {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/users`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`,
@@ -26,7 +26,7 @@ export async function addStudent(classId, studentData) {
 
 export async function deleteStudent(classId, studentId) {
     try {
-        const response = await fetch(ENDPOINTS.DELETE_STUDENT(classId, studentId), {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/users/${studentId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`
@@ -45,7 +45,7 @@ export async function deleteStudent(classId, studentId) {
 
 export async function getStudents(classId, groupId = null) {
     try {
-        let url = ENDPOINTS.GET_STUDENTS(classId);
+        let url = `${CONFIG.API_URL}/api/v1/classes/${classId}/users`;
         if (groupId) {
             url += `?groupId=${groupId}`;
         }
@@ -68,7 +68,7 @@ export async function getStudents(classId, groupId = null) {
 
 export async function updateStudent(classId, studentId, studentData) {
     try {
-        const response = await fetch(ENDPOINTS.UPDATE_STUDENT(classId, studentId), {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/users/${studentId}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`,
@@ -79,7 +79,8 @@ export async function updateStudent(classId, studentId, studentData) {
 
         if (!response.ok) {
             throw new Error('Failed to update student');
-        }        utils.showNotification('Student updated successfully', 'success');
+        }
+        utils.showNotification('Student updated successfully', 'success');
         return await response.json();
     } catch (error) {
         utils.showNotification('Error updating student', 'error');
@@ -93,7 +94,7 @@ export async function importStudents(classId, fileData) {
         const formData = new FormData();
         formData.append('file', fileData);
 
-        const response = await fetch(ENDPOINTS.IMPORT_STUDENTS(classId), {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/users/import`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`
@@ -115,7 +116,7 @@ export async function importStudents(classId, fileData) {
 
 export async function exportStudents(classId, format = 'xlsx') {
     try {
-        const response = await fetch(ENDPOINTS.EXPORT_STUDENTS(classId, format), {
+        const response = await fetch(`${CONFIG.API_URL}/api/v1/classes/${classId}/users/export?format=${format}`, {
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`
             }

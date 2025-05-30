@@ -373,11 +373,35 @@ function initializeModals() {
 }
 
 function initializeGroupModal() {
-    // Add Group Modal Event Handlers
+    console.log('Initializing group modal...');
+    
+    const addGroupBtn = document.getElementById('addGroupBtn');
     const confirmAddGroupBtn = document.getElementById('confirmAddGroupBtn');
     const cancelAddGroupBtn = document.getElementById('cancelAddGroupBtn');
-    const addGroupModal = document.getElementById('addGroupModal');
+    const groupNameInput = document.getElementById('groupName');
+    const groupModal = document.getElementById('addGroupModal');
     const overlay = document.getElementById('confirmOverlay');
+    
+    if (!addGroupBtn) {
+        console.error('Add Group button not found!');
+        return;
+    }
+    
+    // Add debug logs for modal elements
+    console.log('Add Group Button:', addGroupBtn);
+    console.log('Group Modal:', groupModal);
+    console.log('Overlay:', overlay);
+    
+    // Add click event listener for the Add Group button
+    addGroupBtn.addEventListener('click', function(e) {
+        console.log('Add Group button clicked!');
+        showAddGroupModal();
+    });
+    
+    // Add click handler for Add Group button
+    if (addGroupBtn) {
+        addGroupBtn.addEventListener('click', showAddGroupModal);
+    }
 
     if (confirmAddGroupBtn) {
         confirmAddGroupBtn.addEventListener('click', async () => {
@@ -495,6 +519,13 @@ function hideDeleteModal() {
         }, 300);
     }
 }
+
+// Initialize modals when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    initializeGroupModal();
+    initializeDeleteModal();
+    initializeModals();
+});
 
 // Export functions for use in HTML
 window.showDeleteConfirmation = (studentId, studentName) => {

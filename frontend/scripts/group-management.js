@@ -1,26 +1,33 @@
-import utils from './utils.js'; 
-const API_URL = 'http://127.0.0.1:8000/api/v1/classes';
+import utils from './utils.js';
+
+// Base API URL without any path segments
+const API_BASE = 'http://127.0.0.1:8000';
+
 const ENDPOINTS = {
-  ENROLLED_CLASSES: `${API_URL}/api/v1/classes`,
-  TUTORED_CLASSES: `${API_URL}/api/v1/classes`,
-  ENROLL_CLASS: `${API_URL}/api/v1/classes/enroll`,
-  CREATE_CLASS: `${API_URL}/api/v1/classes`,  // POST to root of classes
-  DELETE_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`, // Fixed double slash and removed {class_id} template
-
-  QUIT_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}/leave`,
-
-  USER_PROFILE: `http://127.0.0.1:8000/api/v1/users/me`,
-  // New endpoints
-  GET_CLASS: (classId) => `${API_URL}/api/v1/classes/${classId}`,
-  CREATE_GROUP: (classId) => `${API_URL}/api/v1/classes/${classId}/groups`,
-  LIST_CLASS_GROUPS: (classId) => `${API_URL}/api/v1/classes/${classId}`,
-  GET_CLASS_USERS: (classId) => `${API_URL}/api/v1/classes/${classId}/users`,
-  GET_GROUP_USERS: (groupId) => `${API_URL}/api/v1/classes/groups/${groupId}/users`,
-  REMOVE_USER_FROM_GROUP: (groupCode, userId) => `${API_URL}/api/v1/groups/groups/${groupCode}/members/${userId}`,
-  GET_CLASS_GROUPS: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}`,
-  GET_GROUP_COUNT: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}/count`,
-  GET_USER_COUNT: (classId) => `${API_URL}/api/v1/groups/groups/class/${classId}/users/count`,
-  JOIN_GROUP: (groupCode) => `${API_URL}/api/v1/classes/groups/join/${groupCode}`,
+  // Class endpoints
+  ENROLLED_CLASSES: `${API_BASE}/api/v1/classes/enrolled`,
+  TUTORED_CLASSES: `${API_BASE}/api/v1/classes/tutored`,
+  ENROLL_CLASS: `${API_BASE}/api/v1/classes/enroll`,
+  CREATE_CLASS: `${API_BASE}/api/v1/classes`,
+  DELETE_CLASS: (classId) => `${API_BASE}/api/v1/classes/${classId}`,
+  QUIT_CLASS: (classId) => `${API_BASE}/api/v1/classes/${classId}/leave`,
+  
+  // User profile endpoint
+  USER_PROFILE: `${API_BASE}/api/v1/users/me`,
+  
+  // Group endpoints
+  GET_CLASS: (classId) => `${API_BASE}/api/v1/classes/${classId}`,
+  CREATE_GROUP: (classId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/groups`,
+  DELETE_GROUP: (classId, groupId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/groups/${groupId}`,
+  LIST_CLASS_GROUPS: (classId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/groups`,
+  GET_CLASS_USERS: (classId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/users`,
+  GET_GROUP_USERS: (groupId) => `${API_BASE}/api/v1/classes/api/v1/classes/groups/${groupId}/users`,
+  REMOVE_USER_FROM_GROUP: (groupCode, userId) => 
+    `${API_BASE}/api/v1/groups/groups/${groupCode}/members/${userId}`,
+  GET_CLASS_GROUPS: (classId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/groups`,
+  GET_GROUP_COUNT: (classId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/groups/count`,
+  GET_USER_COUNT: (classId) => `${API_BASE}/api/v1/classes/api/v1/classes/${classId}/users/count`,
+  JOIN_GROUP: (groupCode) => `${API_BASE}/api/v1/classes/groups/join/${groupCode}`,
 };
 
 export async function createGroup(classId, groupName) {
@@ -109,7 +116,7 @@ export async function getGroupStudents(classId, groupId) {
 
 export async function getGroups(classId) {
     try {
-        const response = await fetch(ENDPOINTS.GET_GROUPS(classId), {
+        const response = await fetch(ENDPOINTS.LIST_CLASS_GROUPS(classId), {
 
             headers: {
                 'Authorization': `Bearer ${utils.getAuthToken()}`
