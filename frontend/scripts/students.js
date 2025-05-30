@@ -4,7 +4,7 @@ import * as groupManagement from './group-management.js';
 import * as studentManagement from './student-management.js';
 import UserProfile from './user-profile.js';
 
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     // Check authentication
     const token = utils.getAuthToken();
     if (!token) {
@@ -27,10 +27,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Initialize UI
     initializeUI();
-    
+
     // Update current date
     updateCurrentDate();
-    
+
     // Load initial data
     await loadData(classId);
 });
@@ -49,13 +49,13 @@ function initializeUI() {
     document.getElementById('addStudentBtn')?.addEventListener('click', showAddStudentModal);
     document.getElementById('importStudentsBtn')?.addEventListener('click', showImportModal);
     document.getElementById('exportStudentsBtn')?.addEventListener('click', handleExport);
-    
+
     // Add Group button event listener
     const addGroupBtn = document.getElementById('addGroupBtn');
     if (addGroupBtn) {
         addGroupBtn.addEventListener('click', showAddGroupModal);
     }
-    
+
     // Initialize modals
     initializeModals();
     // Removed initializeGroupModal() from here to prevent duplicate initialization
@@ -143,12 +143,11 @@ function displayGroups(groups) {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const groupId = btn.dataset.groupId;
-                console.log('Delete button clicked. Group ID:', groupId, 'Type:', typeof groupId);
                 if (!groupId || groupId === 'unknown') {
                     console.error('Error: Invalid group ID for deletion');
                     return;
                 }
-                handleGroupDelete(groupId);
+                showDeleteGroupModal(groupId); // <-- use modal instead of confirm()
             });
         });
 
@@ -240,7 +239,7 @@ async function handleGroupSelect(groupId) {
             card.style.opacity = '0.7';
             card.style.pointerEvents = 'none';
         });
-        
+
         const students = await studentManagement.getStudents(classId, groupId);
         displayStudents(students);
 
@@ -262,10 +261,10 @@ async function handleGroupSelect(groupId) {
 
 async function handleGroupDelete(groupId) {
     console.log('handleGroupDelete called with groupId:', groupId, 'Type:', typeof groupId);
-    
+
     const classId = new URLSearchParams(window.location.search).get('class');
     console.log('Class ID from URL:', classId);
-    
+
     if (!classId) {
         console.error('Error: No class ID found in URL');
         utils.showToast('Error: No class ID found', 'error');
@@ -279,17 +278,13 @@ async function handleGroupDelete(groupId) {
         return;
     }
 
-    if (!confirm('Are you sure you want to delete this group? All students in this group will be moved to the default group.')) {
-        return;
-    }
-
     try {
         console.log('Calling groupManagement.deleteGroup with:', { classId, groupId });
         await groupManagement.deleteGroup(classId, groupId);
-        
+
         // Show success message
         utils.showToast('Group deleted successfully', 'success');
-        
+
         // Reload the page to reflect changes
         window.location.reload();
     } catch (error) {
@@ -325,14 +320,14 @@ function showAddStudentModal() {
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     document.body.appendChild(overlay);
-    
+
     if (modal) {
         modal.classList.add('active');
         overlay.classList.add('active');
-        
+
         // Populate groups in the select
         populateGroupSelect();
-        
+
         // Focus on the name input
         document.getElementById('studentName')?.focus();
     }
@@ -341,7 +336,7 @@ function showAddStudentModal() {
 function hideAddStudentModal() {
     const modal = document.getElementById('addStudentModal');
     const overlay = document.querySelector('.modal-overlay');
-    
+
     if (modal) {
         modal.classList.remove('active');
         overlay?.classList.remove('active');
@@ -354,7 +349,7 @@ function hideAddStudentModal() {
 async function populateGroupSelect() {
     const select = document.getElementById('studentGroup');
     const classId = new URLSearchParams(window.location.search).get('class');
-    
+
     if (select && classId) {
         try {
             const groups = await groupManagement.getGroups(classId);
@@ -461,25 +456,25 @@ function initializeGroupModal() {
     const confirmAddGroupBtn = document.getElementById('confirmAddGroupBtn');
     const cancelAddGroupBtn = document.getElementById('cancelAddGroupBtn');
     const overlay = document.getElementById('confirmOverlay');
-    
+
     if (!addGroupBtn || !confirmAddGroupBtn || !cancelAddGroupBtn || !overlay) {
         console.error('Some group modal elements were not found');
         return;
     }
-    
+
     // Add Group button click handler
     addGroupBtn.addEventListener('click', showAddGroupModal);
-    
+
     // Add click event for confirm button
     confirmAddGroupBtn.addEventListener('click', async () => {
         const groupName = document.getElementById('groupName')?.value.trim();
         const classId = new URLSearchParams(window.location.search).get('class');
-        
+
         if (!groupName) {
             utils.showToast('Please enter a group name', 'error');
             return;
         }
-        
+
         if (!classId) {
             utils.showToast('No class ID found', 'error');
             return;
@@ -489,7 +484,7 @@ function initializeGroupModal() {
             // Show loading state
             confirmAddGroupBtn.disabled = true;
             confirmAddGroupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-            
+
             await groupManagement.addGroup(classId, groupName);
             document.getElementById('groupName').value = '';
             hideGroupModal();
@@ -505,7 +500,7 @@ function initializeGroupModal() {
         }
     });    // Add cancel button handler
     cancelAddGroupBtn.addEventListener('click', hideGroupModal);
-    
+
     // Close modal when clicking overlay
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
@@ -517,21 +512,21 @@ function initializeGroupModal() {
 function showAddGroupModal() {
     const modal = document.getElementById('addGroupModal');
     const overlay = document.getElementById('confirmOverlay');
-    
+
     if (!modal || !overlay) {
         console.error('Modal or overlay element not found!');
         return;
     }
-    
+
     overlay.style.display = 'block';
     modal.style.display = 'block';
-    
+
     // Force reflow before adding transition classes
     void modal.offsetHeight;
-    
+
     modal.classList.add('active');
     overlay.classList.add('active');
-    
+
     // Focus on group name input
     document.getElementById('groupName')?.focus();
 }
@@ -539,7 +534,7 @@ function showAddGroupModal() {
 function hideGroupModal() {
     const modal = document.getElementById('addGroupModal');
     const overlay = document.getElementById('confirmOverlay');
-    
+
     if (modal && overlay) {
         modal.classList.remove('active');
         overlay.classList.remove('active');
@@ -554,11 +549,11 @@ function hideGroupModal() {
 function initializeDeleteModal() {
     const cancelBtn = document.getElementById('cancelDeleteBtn');
     const confirmBtn = document.getElementById('confirmDeleteBtn');
-    
+
     if (cancelBtn) {
         cancelBtn.addEventListener('click', hideDeleteModal);
     }
-    
+
     if (confirmBtn) {
         confirmBtn.addEventListener('click', async () => {
             const studentId = confirmBtn.dataset.studentId;
@@ -575,11 +570,11 @@ function showDeleteModal(studentId, studentName) {
     const overlay = document.getElementById('deleteConfirmOverlay');
     const nameSpan = document.getElementById('studentNameToDelete');
     const confirmBtn = document.getElementById('confirmDeleteBtn');
-    
+
     if (modal && overlay && nameSpan && confirmBtn) {
         nameSpan.textContent = studentName;
         confirmBtn.dataset.studentId = studentId;
-        
+
         overlay.style.display = 'block';
         modal.style.display = 'block';
         setTimeout(() => {
@@ -592,7 +587,7 @@ function showDeleteModal(studentId, studentName) {
 function hideDeleteModal() {
     const modal = document.getElementById('deleteConfirmModal');
     const overlay = document.getElementById('deleteConfirmOverlay');
-    
+
     if (modal && overlay) {
         modal.classList.remove('active');
         overlay.classList.remove('active');
@@ -625,4 +620,4 @@ window.copyStudentId = (studentId) => {
             }, 2000);
         }
     });
-}; 
+};
