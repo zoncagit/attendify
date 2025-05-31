@@ -18,32 +18,32 @@ const CONFIG = {
     // Class endpoints
     ENROLLED_CLASSES: '/api/v1/classes/enrolled',
     TUTORED_CLASSES: '/api/v1/classes/tutored',
-    CREATE_CLASS: '/api/v1/classes/create',
-    GET_CLASS: '/api/v1/classes',  // Append /{class_id} for specific class
-    DELETE_CLASS: '/api/v1/classes/delete',
-
-    UPDATE_CLASS: '/api/v1/classes/update',
-      // Group endpoints
+    CREATE_CLASS: '/api/v1/classes',
+    GET_CLASS: (classId) => `/api/v1/classes/${classId}`,
+    DELETE_CLASS: (classId) => `/api/v1/classes/${classId}`,
+    UPDATE_CLASS: (classId) => `/api/v1/classes/${classId}`,
+    
+    // Group endpoints
     ADD_GROUP: (classId) => `/api/v1/classes/${classId}/groups`,
     DELETE_GROUP: (classId, groupId) => `/api/v1/classes/${classId}/groups/${groupId}`,
     UPDATE_GROUP: (classId, groupId) => `/api/v1/classes/${classId}/groups/${groupId}`,
     GET_CLASS_GROUPS: (classId) => `/api/v1/classes/${classId}/groups`,
-    JOIN_GROUP: '/api/v1/classes/groups/join',  // Append /{group_code}
-    GET_GROUP_USERS: '/api/v1/classes/groups/users',  // Append /{group_id}
-    REMOVE_USER_FROM_GROUP: '/api/v1/groups/groups/members',  // Append /{group_code}/{user_id}
+    JOIN_GROUP: (groupCode) => `/api/v1/groups/join/${groupCode}`,
+    GET_GROUP_USERS: (groupId) => `/api/v1/groups/${groupId}/users`,
+    REMOVE_USER_FROM_GROUP: (groupCode, userId) => `/api/v1/groups/${groupCode}/members/${userId}`,
     
     // Enrollment endpoints
     ENROLL_CLASS: '/api/v1/classes/enroll',
-    QUIT_CLASS: '/api/v1/classes/quit',
+    QUIT_CLASS: (classId) => `/api/v1/classes/${classId}/quit`,
     
     // Attendance endpoints
-    MARK_ATTENDANCE: '/api/v1/attendance/mark',
-    GET_ATTENDANCE: '/api/v1/attendance/get',
-    GET_CLASS_ATTENDANCE: '/api/v1/attendance/class',
+    MARK_ATTENDANCE: '/api/v1/attendance',
+    GET_ATTENDANCE: (attendanceId) => `/api/v1/attendance/${attendanceId}`,
+    GET_CLASS_ATTENDANCE: (classId) => `/api/v1/classes/${classId}/attendance`,
     
     // Statistics endpoints
-    GET_CLASS_GROUP_COUNT: '/api/v1/groups/groups/class/count',  // Append /{class_id}
-    GET_CLASS_USER_COUNT: '/api/v1/groups/groups/class/users/count'  // Append /{class_id}
+    GET_CLASS_GROUP_COUNT: (classId) => `/api/v1/classes/${classId}/groups/count`,
+    GET_CLASS_USER_COUNT: (classId) => `/api/v1/classes/${classId}/users/count`
   },
   TOKEN_KEY: 'attendify_token',
   USER_KEY: 'attendify_user'

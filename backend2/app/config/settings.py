@@ -1,31 +1,39 @@
-from pydantic_settings import BaseSettings
-from pydantic import Field
+import os
+from pydantic import BaseModel
+from dotenv import load_dotenv
+from pathlib import Path
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-class Settings(BaseSettings):
+# Load environment variables explicitly
+project_root = Path(__file__).parent.parent.parent
+env_path = project_root / ".env"
+logger.info(f"Loading .env from: {env_path}")
+load_dotenv(env_path)
+
+class Settings(BaseModel):
     # Email Configuration
-    smtp_server: str = Field(default="smtp.gmail.com", env="SMTP_SERVER")
-    smtp_port: int = Field(default=587, env="SMTP_PORT")
-    smtp_user: str = Field(default=..., env="SMTP_USER")
-    smtp_password: str = Field(default=..., env="SMTP_PASSWORD")
-    email_from: str = Field(default=..., env="EMAIL_FROM")
-    email_from_name: str = Field(default="Attendify Support", env="EMAIL_FROM_NAME")
+    smtp_server: str = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    smtp_port: int = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user: str = os.getenv("SMTP_USER")
+    smtp_password: str = os.getenv("SMTP_PASSWORD")
+    email_from: str = os.getenv("EMAIL_FROM")
+    email_from_name: str = os.getenv("EMAIL_FROM_NAME", "Attendify Support")
 
     # Database Configuration
-    database_url: str = Field(default=..., env="DATABASE_URL")
-    secret_key: str = Field(default=..., env="SECRET_KEY")
-    algorithm: str = Field(default="HS256", env="ALGORITHM")
-    access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
+    database_url: str = os.getenv("DATABASE_URL")
+    secret_key: str = os.getenv("SECRET_KEY")
+    algorithm: str = os.getenv("ALGORITHM", "HS256")
+    access_token_expire_minutes: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
     class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
         extra = 'ignore'  # Ignore extra environment variables
 
-settings = Settings()
-
 def get_settings():
-    return settings
+    return Settings()
 
 # Initialize settings immediately
 settings = get_settings()

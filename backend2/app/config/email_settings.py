@@ -1,7 +1,6 @@
-import logging
 import os
-from pydantic_settings import BaseSettings
-from pydantic import Field
+import logging
+from pydantic import BaseSettings, Field
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -16,12 +15,12 @@ load_dotenv(env_path)
 
 class EmailSettings(BaseSettings):
     # Email Configuration
-    smtp_server: str = Field(default="smtp.gmail.com", env="SMTP_SERVER")
-    smtp_port: int = Field(default=587, env="SMTP_PORT")
-    smtp_user: str = Field(default=..., env="SMTP_USER")
-    smtp_password: str = Field(default=..., env="SMTP_PASSWORD")
-    email_from: str = Field(default=..., env="EMAIL_FROM")
-    email_from_name: str = Field(default="Attendify Support", env="EMAIL_FROM_NAME")
+    smtp_server: str = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    smtp_port: int = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user: str = os.getenv("SMTP_USER")
+    smtp_password: str = os.getenv("SMTP_PASSWORD")
+    email_from: str = os.getenv("EMAIL_FROM")
+    email_from_name: str = os.getenv("EMAIL_FROM_NAME", "Attendify Support")
 
     class Config:
         env_file = ".env"

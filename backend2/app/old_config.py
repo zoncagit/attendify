@@ -1,51 +1,28 @@
-from pydantic_settings import BaseSettings
+from pydantic import BaseModel, validator
 from functools import lru_cache
 import logging
-from typing import Optional
 import os
+from dotenv import load_dotenv
+from pathlib import Path
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class Settings(BaseSettings):
-    DATABASE_URL: str
-    SECRET_KEY: str
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    
-    class Config:
-        env_file = ".env"
-        env_file_encoding = 'utf-8'
-        extra = "ignore"
-        case_sensitive = False
+# Load environment variables explicitly
+project_root = Path(__file__).parent.parent
+env_path = project_root / ".env"
+logger.info(f"Loading .env from: {env_path}")
+load_dotenv(env_path)
 
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate_env
+class Settings(BaseModel):
+    DATABASE_URL: str = os.getenv("DATABASE_URL")
+    SECRET_KEY: str = os.getenv("SECRET_KEY")
+    ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
-    @classmethod
-    def validate_env(cls, v):
-        if not v:
-            raise ValueError("Environment variable is required")
-        return v
-
-# Load settings at module level
-settings = Settings()
-
-@lru_cache()
-def get_settings():
-    settings = Settings()
-    logger.info("Settings loaded:")
-    logger.info(f"Database URL: {settings.DATABASE_URL}")
-    return settings
-
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate_env
-
-    @classmethod
-    def validate_env(cls, v):
+    @validator('DATABASE_URL', 'SECRET_KEY')
+    def check_not_empty(cls, v):
         if not v:
             raise ValueError("Environment variable is required")
         return v
