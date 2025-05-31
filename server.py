@@ -3,7 +3,7 @@ import socketserver
 import os
 
 # Change to the frontend directory
-os.chdir('frontend')
+os.chdir('backend2/frontend')
 
 # Set the port
 PORT = 5500

@@ -93,8 +93,10 @@ document.addEventListener('DOMContentLoaded', function() {//waiting until the en
         const data = await response.json();
     
         if (response.ok && data.access_token) {
+            console.log('Login successful, received token:', data.access_token);
             // Sauvegarder le token et l'utilisateur
             utils.setAuthToken(data.access_token);
+            console.log('Token stored in localStorage:', localStorage.getItem('attendify_token'));
             utils.setUser(data.user);
     
             utils.showNotification('Login successful! Redirecting...', 'success');

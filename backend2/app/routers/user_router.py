@@ -6,14 +6,23 @@ from app.database import get_db
 from app.crud import user as user_crud
 from app.schemas.user import UserOut, UserProfile, UserUpdate
 from app.auth.oauth2 import get_current_user
+from app.models.user import User
 from fastapi import status
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
 @router.get("/me", response_model=UserOut)
-def read_current_user(current_user: UserOut = Depends(get_current_user)):
+def read_current_user(current_user: User = Depends(get_current_user)):
     """Get current user's information"""
-    return current_user
+    # Convert User model to UserOut schema
+    return UserOut(
+        user_id=current_user.user_id,
+        name=current_user.name,
+        prenom=current_user.prenom,
+        email=current_user.email,
+        created_at=current_user.created_at,
+        updated_at=current_user.updated_at
+    )
 
 @router.get("/{user_id}", response_model=UserOut)
 def read_user(

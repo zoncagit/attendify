@@ -89,13 +89,18 @@
       line-height: 1.6;
     }
 
-    #video {
+    .video-container {
+      position: relative;
       width: 100%;
       max-width: 640px;
+      margin: 0 auto 2rem;
+    }
+
+    #video {
+      width: 100%;
       height: 480px;
       background-color: var(--card-bg);
       border-radius: 1rem;
-      margin: 0 auto 2rem;
       display: block;
       border: 1px solid var(--border);
     }
@@ -189,6 +194,22 @@
       color: var(--text);
     }
 
+    .visualization {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    
+    .visualization img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 1rem;
+    }
+
     @media (max-width: 768px) {
       .container {
         margin: 20px;
@@ -219,8 +240,11 @@
       Position your face in the frame and click "Capture Face" when ready.
     </p>
     
-    <video id="video" autoplay playsinline></video>
-    <canvas id="canvas"></canvas>
+    <div class="video-container">
+      <video id="video" autoplay playsinline></video>
+      <canvas id="canvas"></canvas>
+      <div id="visualization" class="visualization"></div>
+    </div>
     
     <div class="button-container">
       <button id="startButton" class="btn btn-primary">
@@ -239,7 +263,7 @@
   </div>
 
   <script>
-    const socket = io('http://localhost:5000', {
+    const socket = io('http://localhost:8000', {
       transports: ['polling', 'websocket'],
       path: '/socket.io',
       reconnection: true,
@@ -261,8 +285,79 @@
     const status = document.getElementById('status');
     let stream = null;
 
-    // Get user ID from URL or localStorage
-    const userId = localStorage.getItem('userId');
+    // Debug: Log all localStorage contents
+    console.log('All localStorage contents:', Object.keys(localStorage).reduce((obj, key) => {
+        obj[key] = localStorage.getItem(key);
+        return obj;
+    }, {}));
+
+    // Check authentication and get user ID
+    const token = localStorage.getItem('attendify_token');
+    console.log('Token found:', token ? 'Yes' : 'No');
+    
+    if (!token) {
+        console.log('No token found, redirecting to login...');
+        showStatus('Please log in first', 'error');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 5000);
+    }
+
+    // Get user data from API
+    async function getUserData() {
+        try {
+            console.log('Attempting to get user data with token:', token);
+            const response = await fetch('http://localhost:8000/api/v1/users/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                console.error('Failed to get user data:', response.status, response.statusText, errorData);
+                
+                if (response.status === 401) {
+                    showStatus('Your session has expired. Please log in again.', 'error');
+                } else if (response.status === 404) {
+                    showStatus('User endpoint not found. Please contact support.', 'error');
+                } else {
+                    showStatus(errorData?.detail || 'Failed to get user data. Please try again.', 'error');
+                }
+                
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 20000);
+                return null;
+            }
+            
+            const userData = await response.json();
+            console.log('User data:', userData);
+            return userData;
+        } catch (error) {
+            console.error('Error getting user data:', error);
+            showStatus('Error getting user data. Please log in again.', 'error');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 20000);
+            return null;
+        }
+    }
+
+    // Initialize user data
+    let userId = null;
+    getUserData().then(userData => {
+        if (userData) {
+            userId = userData.user_id;
+            console.log('User ID:', userId);
+            showStatus('Ready to capture face', 'success');
+        }
+    });
 
     socket.on('connect', () => {
       console.log('Connected to server');
@@ -312,7 +407,16 @@
       }
     });
 
-    captureButton.addEventListener('click', () => {
+    captureButton.addEventListener('click', async () => {
+      if (!userId) {
+        showStatus('Please wait while we get your user data...', 'error');
+        const userData = await getUserData();
+        if (!userData) {
+          return;
+        }
+        userId = userData.user_id;
+      }
+
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       canvas.getContext('2d').drawImage(video, 0, 0);
@@ -330,6 +434,10 @@
 
     socket.on('face_setup_success', (data) => {
       showStatus(data.message, 'success');
+      if (data.visualization) {
+        const visDiv = document.getElementById('visualization');
+        visDiv.innerHTML = `<img src="${data.visualization}" alt="Face detection visualization">`;
+      }
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
@@ -345,6 +453,10 @@
 
     socket.on('face_setup_error', (data) => {
       showStatus(data.message, 'error');
+      if (data.visualization) {
+        const visDiv = document.getElementById('visualization');
+        visDiv.innerHTML = `<img src="${data.visualization}" alt="Face detection visualization">`;
+      }
       captureButton.disabled = false;
     });
 

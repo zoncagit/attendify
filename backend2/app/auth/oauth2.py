@@ -48,6 +48,7 @@ def get_current_user(
     except (JWTError, ValidationError):
         raise credentials_exception
 
+    # Query user by user_id instead of id
     user = db.query(models.User).filter(models.User.user_id == int(user_id)).first()
     if user is None:
         raise credentials_exception

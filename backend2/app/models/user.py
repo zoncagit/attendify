@@ -50,6 +50,9 @@ class User(Base):
     updated_at = Column(TIMESTAMP(timezone=True), onupdate=func.now())
     last_login = Column(TIMESTAMP(timezone=True), nullable=True)
     
+    # Face Recognition
+    face_embedding = Column(Text, nullable=True)  # Store face embedding as JSON string
+    
     # Authentication & Status
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
@@ -57,8 +60,6 @@ class User(Base):
     
     # Roles and Permissions
     role = Column(SQLEnum(UserRole), default=UserRole.STUDENT, nullable=False)
-    
-
     
     # Relationships
     created_classes = relationship("Class", back_populates="creator")
