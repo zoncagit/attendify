@@ -14,7 +14,7 @@ const statusMessage = document.querySelector('.status-message');
 
 // Function to get user ID from localStorage
 function getUserId() {
-    const userData = localStorage.getItem('attendify_user');
+    const userData = localStorage.getItem('user_data');
     console.log('Raw user data from localStorage:', userData);
     if (userData) {
         try {
@@ -2707,6 +2707,22 @@ function setupSettingsModal() {
             settingsUserName.textContent = headerUserName.textContent;
             settingsStudentId.textContent = headerStudentId.textContent;
         }
+    }
+}
+
+// Function to close the scan options modal
+function closeScanModal() {
+    // Hide the modal
+    const scanOptionsModal = document.getElementById('scanOptionsModal');
+    if (scanOptionsModal) {
+        scanOptionsModal.style.display = 'none';
+    }
+
+    // Hide the overlay
+    const scanModalOverlay = document.getElementById('scanModalOverlay');
+    if (scanModalOverlay) {
+        scanModalOverlay.classList.remove('active');
+        scanModalOverlay.style.display = 'none';
     }
 }
 

@@ -76,7 +76,7 @@ def create_user(user_data: dict) -> User:
         if 'db' in locals():
             db.close()
 
-def get_user_by_email(email: str) -> User | None:
+def get_user_by_email(email: str) -> Optional[User]:
     """Récupère un utilisateur par son email."""
     db = next(get_db_session())
     try:
