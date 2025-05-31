@@ -17,7 +17,7 @@ class L2Normalization(Layer):
         config = super().get_config()
         return config
     
-embedding_model = tf.keras.models.load_model("C:/Users/hmani/new_test/model/trained_embedding_model_retrainedv4.keras", custom_objects={"L2Normalization": L2Normalization})
+embedding_model = tf.keras.models.load_model("C:/Users/hmani/new_test/model/trained_embedding_model_retrainedv3.keras", custom_objects={"L2Normalization": L2Normalization})
 
 stored_embeddings = np.load("C:/Users/hmani/new_test/students/students_embeddings.npy", allow_pickle=True).item()
 xml_path = os.path.join(cv2.data.haarcascades, 'haarcascade_frontalface_default.xml')
