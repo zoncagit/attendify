@@ -1,7 +1,7 @@
 // Initialize Socket.IO connection
-const socket = io('http://localhost:8000', {
+const socket = io('http://localhost:8000','http://localhost:5500', {
     transports: ['websocket', 'polling'],
-    path: '/socket.io/'
+    path: '/socket.io'
 });
 
 // Camera and attendance variables
@@ -14,24 +14,38 @@ const statusMessage = document.querySelector('.status-message');
 
 // Function to get user ID from localStorage
 function getUserId() {
-    const userData = localStorage.getItem('attendify_user');
-    console.log('Raw user data from localStorage:', userData);
-    if (userData) {
-        try {
-            const user = JSON.parse(userData);
-            console.log('Parsed user data:', user);
-            return user.user_id;  // Changed from user.id to user.user_id
-        } catch (e) {
-            console.error('Error parsing user data:', e);
+    const userData = localStorage.getItem('user_data');
+    
+    if (!userData) {
+        console.log('Debug - No user data found in localStorage');
+        return null;
+    }
+
+    try {
+        const user = JSON.parse(userData);
+        console.log('Debug - Parsed user object:', user);
+
+        // Check for user_id or id field
+        const userId = user.user_id || user.id;
+        console.log('Debug - Found user ID:', userId);
+
+        if (!userId) {
+            console.error('Debug - No user ID found in user data');
             return null;
         }
+
+        return userId;
+    } catch (e) {
+        console.error('Debug - Parse error:', e);
+        console.error('Debug - Failed data:', userData);
+        return null;
     }
-    return null;
 }
 
 // Start camera
-async function startCamera() {
+async function startCamera() {e}{
     try {
+        e.preventDefault();
         videoStream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
                 facingMode: 'user',
@@ -87,6 +101,10 @@ function startAttendanceSession(classCode) {
     // Get the current user ID
     const userId = getUserId();
     if (!userId) {
+        console.log('Debug - localStorage contents:', {
+            user: localStorage.getItem('attendify_user'),
+            token: localStorage.getItem('attendify_token')
+        });
         alert('Please log in to start an attendance session');
         window.location.href = 'login.html';
         return;
@@ -160,6 +178,22 @@ function startAttendanceSession(classCode) {
     }
 }
 
+// Function to close scan modal
+function closeScanModal() {
+    const scanModalOverlay = document.getElementById('scanModalOverlay');
+    const scanOptionsModal = document.getElementById('scanOptionsModal');
+
+    if (scanModalOverlay && scanOptionsModal) {
+        scanOptionsModal.classList.remove('active');
+        scanModalOverlay.classList.remove('active');
+        
+        setTimeout(() => {
+            scanModalOverlay.style.display = 'none';
+            scanOptionsModal.style.display = 'none';
+        }, 300);
+    }
+}
+
 // End attendance session
 function endAttendanceSession() {
     if (currentSessionId) {
@@ -169,7 +203,97 @@ function endAttendanceSession() {
     }
 }
 
+// Check authentication
+function checkAuthentication() {
+    const token = utils.getAuthToken();
+    const user = utils.getUser();
+
+    if (!token || !user) {
+        console.error('No authentication token or user data found');
+        window.location.href = 'login.html';
+        return false;
+    }
+
+    console.log('Current user:', user);
+    return true;
+}
+
+// Initialize the page
+function initializePage() {
+    // Get class code from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const classCode = urlParams.get('class');
+
+    // Set current date
+    updateCurrentDate();
+
+    // First make sure the class exists
+    ensureClassExists(classCode);
+
+    // First load the class data to ensure groups exist
+    preloadClassData(classCode);
+
+    // Then load class details for UI
+    loadClassDetails(classCode);
+
+    // Load groups list
+    loadGroupsList(classCode);
+
+    // Load students list
+    loadStudents(classCode);
+
+    // Handle profile dropdown
+    setupProfileDropdown();
+
+    // Setup delete confirmation modal
+    setupDeleteConfirmation();
+
+    // Setup search functionality
+    setupSearchFunctionality(classCode);
+
+    // Setup Excel export button
+    const logToExcelBtn = document.getElementById('logToExcelBtn');
+    if (logToExcelBtn) {
+        logToExcelBtn.addEventListener('click', function () {
+            exportToExcel(classCode);
+        });
+    }
+
+    // Setup Start Session button with attendance integration
+    const startSessionBtn = document.getElementById('startSessionBtn');
+    if (startSessionBtn) {
+        startSessionBtn.addEventListener('click', function () {
+            // Get the current user ID
+            const userId = getUserId();
+            if (!userId) {
+                alert('Please log in to start an attendance session');
+                window.location.href = 'login.html';
+                return;
+            }
+            startAttendanceSession(classCode);
+        });
+    }
+
+    // Setup add group button
+    setupAddGroupButton(classCode);
+
+    // Setup header copy ID button
+    setupHeaderCopyButton();
+
+    // Setup Settings Modal and its copy button
+    setupSettingsModal();
+
+    // Initialize attendance socket listeners
+    initializeAttendanceSocketListeners();
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+    // Debug check for localStorage contents
+    console.log('Debug - Initial localStorage check:');
+    console.log('All localStorage keys:', Object.keys(localStorage));
+    console.log('User data:', localStorage.getItem('attendify_user'));
+    console.log('Auth token:', localStorage.getItem('attendify_token'));
+
     // Get class code from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const classCode = urlParams.get('class');
@@ -222,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.location.href = 'login.html';
                 return;
             }
-            startAttendanceSession(classCode, userId);
+            startAttendanceSession(classCode);
         });
     }
 
