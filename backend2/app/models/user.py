@@ -58,10 +58,7 @@ class User(Base):
     # Roles and Permissions
     role = Column(SQLEnum(UserRole), default=UserRole.STUDENT, nullable=False)
     
-    # Additional user details (optional)
-    phone_number = Column(String(20), nullable=True)
-    profile_picture = Column(String(255), nullable=True)
-    bio = Column(Text, nullable=True)
+
     
     # Relationships
     created_classes = relationship("Class", back_populates="creator")

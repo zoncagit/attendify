@@ -1,22 +1,60 @@
 import CONFIG from './config.js';
 import utils from './utils.js';
+import io from 'socket.io-client';
 
 class FaceRecognition {
   constructor(options = {}) {
-    this.videoElement = null;
-    this.canvasElement = null;
-    this.stream = null;
-    this.websocket = null;
+    this.options = {
+      onResult: () => {},
+      onError: () => {},
+      ...options
+    };
+    
+    // Initialize Socket.IO with proper configuration
+    this.socket = io('http://localhost:5000', {
+      transports: ['websocket'],
+      path: '/socket.io',
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 10000
+    });
+
+    // Socket.IO event handlers
+    this.socket.on('connect', () => {
+      console.log('Connected to server');
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+      this.options.onError('Failed to connect to server. Please try again.');
+    });
+
+    this.socket.on('disconnect', (reason) => {
+      console.log('Disconnected:', reason);
+      if (reason === 'io server disconnect') {
+        // Server initiated disconnect, try to reconnect
+        this.socket.connect();
+      }
+    });
+
+    this.socket.on('error', (error) => {
+      console.error('Socket error:', error);
+      this.options.onError('Connection error. Please try again.');
+    });
+
+    // Initialize other properties
     this.isRecognizing = false;
+    this.video = null;
+    this.canvas = null;
+    this.stream = null;
     this.frameInterval = options.frameInterval || 200; // 5 FPS by default
     this.wsUrl = 'ws://127.0.0.1:8000/ws/face-recognition';
-    this.onResult = options.onResult || (() => {});
-    this.onError = options.onError || (() => {});
   }
 
   async initialize(videoElement, canvasElement) {
-    this.videoElement = videoElement;
-    this.canvasElement = canvasElement;
+    this.video = videoElement;
+    this.canvas = canvasElement;
 
     try {
       // Request camera access
@@ -29,8 +67,8 @@ class FaceRecognition {
       });
 
       // Set up video stream
-      this.videoElement.srcObject = this.stream;
-      await this.videoElement.play();
+      this.video.srcObject = this.stream;
+      await this.video.play();
 
       // Initialize WebSocket connection
       this.initializeWebSocket();
@@ -38,7 +76,7 @@ class FaceRecognition {
       return true;
     } catch (error) {
       console.error('Error initializing face recognition:', error);
-      this.onError('Failed to initialize camera. Please check permissions.');
+      this.options.onError('Failed to initialize camera. Please check permissions.');
       return false;
     }
   }
@@ -65,13 +103,13 @@ class FaceRecognition {
 
     this.websocket.onerror = (error) => {
       console.error('WebSocket error:', error);
-      this.onError('Connection error occurred');
+      this.options.onError('Connection error occurred');
     };
 
     this.websocket.onclose = () => {
       console.log('WebSocket connection closed');
       if (this.isRecognizing) {
-        this.onError('Connection lost. Please refresh the page.');
+        this.options.onError('Connection lost. Please refresh the page.');
         this.stop();
       }
     };
@@ -79,16 +117,16 @@ class FaceRecognition {
 
   handleRecognitionResponse(response) {
     if (response.error) {
-      this.onError(response.error);
+      this.options.onError(response.error);
       return;
     }
 
-    this.onResult(response);
+    this.options.onResult(response);
   }
 
   start() {
     if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
-      this.onError('No connection to server');
+      this.options.onError('No connection to server');
       return;
     }
 
@@ -109,16 +147,16 @@ class FaceRecognition {
   captureAndSendFrames() {
     if (!this.isRecognizing) return;
 
-    const context = this.canvasElement.getContext('2d');
-    this.canvasElement.width = this.videoElement.videoWidth;
-    this.canvasElement.height = this.videoElement.videoHeight;
+    const context = this.canvas.getContext('2d');
+    this.canvas.width = this.video.videoWidth;
+    this.canvas.height = this.video.videoHeight;
 
     // Capture and send frame
     const sendFrame = () => {
       if (!this.isRecognizing) return;
 
-      context.drawImage(this.videoElement, 0, 0, this.canvasElement.width, this.canvasElement.height);
-      const frame = this.canvasElement.toDataURL('image/jpeg', 0.8);
+      context.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+      const frame = this.canvas.toDataURL('image/jpeg', 0.8);
 
       if (this.websocket.readyState === WebSocket.OPEN) {
         this.websocket.send(JSON.stringify({

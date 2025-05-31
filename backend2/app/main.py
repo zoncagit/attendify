@@ -3,13 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from app.database import engine, Base
+from app.database import engine, Base, init_db
 from app.auth.auth import router as auth_router
 from app.routers.classroom_router import router as classroom_router
 from app.routers.group_router import router as group_router
 from app.routers.user_router import router as user_router
 from app.routers.session_router import router as session_router
+import socketio
+from app.socketio.face_recognition import register_face_recognition_handlers
 import logging
+import uvicorn
 
 # Configure logging
 logging.basicConfig(
@@ -35,6 +38,7 @@ create_tables()
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
+# Create FastAPI app
 app = FastAPI(
     title="Attendify API",
     description="API for Attendify application",
@@ -45,14 +49,54 @@ app = FastAPI(
     openapi_url="/openapi.json"
 )
 
-# Add CORS middleware
+# Define allowed origins
+origins = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    "*"  # Allow all origins in development
+]
+
+# Add CORS middleware with specific origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or specify your frontend URL in production
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins in development
+    allow_credentials=False,  # Set to False when using "*"
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
+
+# Create Socket.IO server with proper CORS settings
+sio = socketio.AsyncServer(
+    async_mode='asgi',
+    cors_allowed_origins=["*"],  # Allow all origins in development
+    logger=True,
+    engineio_logger=True,
+    ping_timeout=60,
+    ping_interval=25,
+    allow_upgrades=True,
+    max_http_buffer_size=1e8,
+    always_connect=True,
+    handle_sigint=True,
+    async_handlers=True,
+    namespaces=['/']
+)
+
+# Create Socket.IO ASGI app with proper configuration
+socket_app = socketio.ASGIApp(
+    socketio_server=sio,
+    socketio_path='socket.io',
+    on_startup=[lambda: print("Socket.IO server started")],
+    on_shutdown=[lambda: print("Socket.IO server stopped")]
+)
+
+# Register Socket.IO handlers
+register_face_recognition_handlers(sio)
+
+# Mount Socket.IO app with proper path
+app.mount("/socket.io", socket_app)
 
 # Include routers with proper prefixes
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication"])
@@ -97,3 +141,6 @@ app.openapi = custom_openapi
 @app.get("/")
 def root():
     return {"message": "Welcome to Attendify API"}
+
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", host="0.0.0.0", port=5000, reload=True)
