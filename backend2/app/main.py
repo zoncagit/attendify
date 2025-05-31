@@ -9,6 +9,7 @@ from app.routers.group_router import router as group_router
 from app.routers.user_router import router as user_router
 from app.routers.session_router import router as session_router
 from app.socketio.face_recognition import register_face_recognition_handlers
+from app.socketio.attendance import register_attendance_handlers
 import socketio
 import logging
 
@@ -101,6 +102,7 @@ sio = socketio.AsyncServer(
 
 # Register Socket.IO event handlers
 register_face_recognition_handlers(sio)
+register_attendance_handlers(sio)
 
 # Basic Socket.IO event handlers
 @sio.event

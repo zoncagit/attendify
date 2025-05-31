@@ -1,5 +1,5 @@
 from enum import Enum
-from sqlalchemy import Column, Integer, String, Text, Boolean, TIMESTAMP, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, Text, Boolean, TIMESTAMP, ForeignKey, LargeBinary, Enum as SQLEnum
 from sqlalchemy.sql import func
 from app.database import Base
 from sqlalchemy.orm import relationship, backref
@@ -51,7 +51,7 @@ class User(Base):
     last_login = Column(TIMESTAMP(timezone=True), nullable=True)
     
     # Face Recognition
-    face_embedding = Column(Text, nullable=True)  # Store face embedding as JSON string
+    face_embedding = Column(LargeBinary, nullable=True)  # Store face embedding as JSON string
     
     # Authentication & Status
     is_active = Column(Boolean, default=True, nullable=False)

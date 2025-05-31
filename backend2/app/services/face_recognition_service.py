@@ -108,9 +108,9 @@ class FaceRecognitionService:
             # Generate embedding
             embedding = self.embedding_model.predict(face, verbose=0)[0]
             
-            # Convert to list and then to JSON string for SQLite storage
+            # Convert to list and then to bytes for storage
             embedding_list = embedding.tolist()
-            return json.dumps(embedding_list)
+            return json.dumps(embedding_list).encode('utf-8')
         except Exception as e:
             logger.error(f"Embedding generation error: {str(e)}", exc_info=True)
             return None
