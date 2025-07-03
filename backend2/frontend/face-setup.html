@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD:backend2/frontend/face-setup.html
   <title>Face Setup - Attendify</title>
   <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -464,6 +465,201 @@
       status.textContent = message;
       status.className = type;
     }
+=======
+  <title>Attendify - Face Recognition Setup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles/face-recognition.css">
+  <link rel="icon" type="image/png" href="logo_attendify1.png" />
+</head>
+<body>
+  <div class="face-recognition-container">
+    <div class="recognition-content" id="setupContent">
+      <div class="recognition-header">
+        <h1 class="recognition-title">Set Up Face Recognition</h1>
+        <p class="recognition-subtitle">This step enables face scanning for attendance. You can skip for now and set it up later from your profile settings.</p>
+      </div>
+      
+      <div class="camera-container">
+        <div class="webcam-container">
+          <div class="webcam-placeholder">
+            <i class="fas fa-camera"></i>
+            <p>Camera will appear here</p>
+          </div>
+          <video id="webcam" autoplay playsinline style="display: none;"></video>
+          <canvas id="faceCanvas" style="display: none;"></canvas>
+        </div>
+        <div class="face-outline">
+          <div class="face-position"></div>
+        </div>
+      </div>
+      
+      <div class="recognition-status">
+        <div class="status-icon">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <p class="status-message">Position your face within the outline and remain still</p>
+      </div>
+      
+      <div class="recognition-actions">
+        <button type="button" class="btn-skip" id="skipBtn">Skip for now</button>
+        <button type="button" class="btn-start" id="startRecognitionBtn">Start Scan</button>
+        <button type="button" class="btn-stop" id="stopRecognitionBtn" disabled>Stop</button>
+      </div>
+    </div>
+    
+    <div class="scan-complete" id="scanComplete" style="display: none;">
+      <div class="complete-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h2 class="complete-title">Setup Complete!</h2>
+      <p class="complete-message">Face recognition has been successfully set up. You can now use face scanning for attendance.</p>
+      <button type="button" class="btn-continue" id="continueBtn">Continue to Dashboard</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import CONFIG from './scripts/config.js';
+    import utils from './scripts/utils.js';
+    import FaceRecognition from './scripts/face-recognition.js';
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Check authentication
+      const token = utils.getAuthToken();
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Check if coming from signup or settings
+      const isFromSignup = new URLSearchParams(window.location.search).get('from') === 'signup';
+      const isFromSettings = new URLSearchParams(window.location.search).get('from') === 'settings';
+
+      // Check browser support
+      if (!FaceRecognition.checkBrowserSupport()) {
+        utils.showNotification('Your browser does not support face recognition features', 'error');
+        return;
+      }
+
+      const webcam = document.getElementById('webcam');
+      const canvas = document.getElementById('faceCanvas');
+      const startBtn = document.getElementById('startRecognitionBtn');
+      const stopBtn = document.getElementById('stopRecognitionBtn');
+      const skipBtn = document.getElementById('skipBtn');
+      const continueBtn = document.getElementById('continueBtn');
+      const setupContent = document.getElementById('setupContent');
+      const scanComplete = document.getElementById('scanComplete');
+      const statusMessage = document.querySelector('.status-message');
+      const statusIcon = document.querySelector('.status-icon i');
+
+      let faceRecognition = null;
+
+      function updateButtons(isRecognizing) {
+        startBtn.disabled = isRecognizing;
+        stopBtn.disabled = !isRecognizing;
+        skipBtn.style.display = isRecognizing ? 'none' : 'block';
+      }
+
+      function showSetupComplete() {
+        setupContent.style.display = 'none';
+        scanComplete.style.display = 'block';
+        localStorage.setItem('faceScanComplete', 'true');
+      }
+
+      function navigateToNextPage() {
+        if (isFromSignup || isFromSettings) {
+          window.location.href = 'dashboard.html';
+        } else {
+          window.history.back();
+        }
+      }
+
+      function initializeFaceRecognition() {
+        faceRecognition = new FaceRecognition({
+          onResult: (result) => {
+            if (result.recognized) {
+              statusIcon.className = 'fas fa-check-circle';
+              statusMessage.textContent = 'Face recognized! Setup complete.';
+              statusMessage.style.color = 'var(--success)';
+              
+              // Stop recognition and show completion screen
+              faceRecognition.stop();
+              updateButtons(false);
+              showSetupComplete();
+            } else {
+              statusIcon.className = 'fas fa-search';
+              statusMessage.textContent = 'Scanning...';
+              statusMessage.style.color = 'var(--text)';
+            }
+          },
+          onError: (error) => {
+            statusIcon.className = 'fas fa-exclamation-circle';
+            statusMessage.textContent = error;
+            statusMessage.style.color = 'var(--error)';
+            updateButtons(false);
+          }
+        });
+      }
+
+      // Initialize face recognition
+      initializeFaceRecognition();
+
+      // Event Listeners
+      startBtn.addEventListener('click', async () => {
+        try {
+          statusIcon.className = 'fas fa-spinner fa-spin';
+          statusMessage.textContent = 'Initializing...';
+          statusMessage.style.color = 'var(--text)';
+          
+          const initialized = await faceRecognition.initialize(webcam, canvas);
+          if (initialized) {
+            webcam.style.display = 'block';
+            document.querySelector('.webcam-placeholder').style.display = 'none';
+            
+            faceRecognition.start();
+            updateButtons(true);
+            
+            statusIcon.className = 'fas fa-search';
+            statusMessage.textContent = 'Position your face within the outline...';
+          }
+        } catch (error) {
+          utils.showNotification('Failed to initialize camera', 'error');
+          console.error('Camera initialization error:', error);
+        }
+      });
+
+      stopBtn.addEventListener('click', () => {
+        if (faceRecognition) {
+          faceRecognition.stop();
+        }
+        updateButtons(false);
+        webcam.style.display = 'none';
+        document.querySelector('.webcam-placeholder').style.display = 'flex';
+        
+        statusIcon.className = 'fas fa-camera';
+        statusMessage.textContent = 'Recognition stopped';
+        statusMessage.style.color = 'var(--text)';
+      });
+
+      skipBtn.addEventListener('click', () => {
+        if (faceRecognition) {
+          faceRecognition.stop();
+        }
+        navigateToNextPage();
+      });
+
+      continueBtn.addEventListener('click', () => {
+        navigateToNextPage();
+      });
+
+      // Clean up on page unload
+      window.addEventListener('beforeunload', () => {
+        if (faceRecognition) {
+          faceRecognition.stop();
+        }
+      });
+    });
+>>>>>>> branch22:frontend/face-setup.html
   </script>
 </body>
 </html> 

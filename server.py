@@ -1,5 +1,6 @@
 import http.server
 import socketserver
+<<<<<<< HEAD
 import os
 
 # Change to the frontend directory
@@ -21,3 +22,12 @@ try:
 except KeyboardInterrupt:
     print("\nShutting down server...")
     httpd.server_close() 
+=======
+
+PORT = 5500
+Handler = http.server.SimpleHTTPRequestHandler
+
+with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    print("Serving at port", PORT)
+    httpd.serve_forever() 
+>>>>>>> branch22
