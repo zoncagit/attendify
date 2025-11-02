@@ -49,7 +49,7 @@ while True:
         color = (0, 0, 255)
         for name, stored_embedding in stored_embeddings.items():
             distance = norm(emb- stored_embedding)  
-            if distance <0.5:
+            if distance <0.6:
                 color = (0, 255, 0)
                 match_name=name
                 break
