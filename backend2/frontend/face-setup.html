@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD:backend2/frontend/face-setup.html
+  <title>Face Setup - Attendify</title>
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --secondary: #818cf8;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-secondary: #94a3b8;
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --hover: rgba(255, 255, 255, 0.1);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .background-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: 0.1;
+      background:
+        radial-gradient(circle at 20% 20%, var(--primary) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, var(--secondary) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.2); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 2rem;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(to right, var(--text), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+    }
+
+    .setup-description {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto 2rem;
+    }
+
+    #video {
+      width: 100%;
+      height: 480px;
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      display: block;
+      border: 1px solid var(--border);
+    }
+
+    #canvas {
+      display: none;
+    }
+
+    .button-container {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: white;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+      opacity: 0.9;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      background: var(--text-secondary);
+      cursor: not-allowed;
+      transform: none;
+      opacity: 0.7;
+    }
+
+    #status {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .success {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .error {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--error);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .skip-link {
+      display: block;
+      text-align: center;
+      margin-top: 1.5rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s ease;
+    }
+
+    .skip-link:hover {
+      color: var(--text);
+    }
+
+    .visualization {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    
+    .visualization img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px;
+        padding: 1.5rem;
+      }
+
+      #video {
+        height: 360px;
+      }
+
+      .button-container {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="background-animation"></div>
+  
+  <div class="container">
+    <h1>Face Setup</h1>
+    <p class="setup-description">
+      Set up face recognition for quick and secure attendance marking. 
+      Position your face in the frame and click "Capture Face" when ready.
+    </p>
+    
+    <div class="video-container">
+      <video id="video" autoplay playsinline></video>
+      <canvas id="canvas"></canvas>
+      <div id="visualization" class="visualization"></div>
+    </div>
+    
+    <div class="button-container">
+      <button id="startButton" class="btn btn-primary">
+        <i class="fas fa-camera"></i> Start Camera
+      </button>
+      <button id="captureButton" class="btn btn-primary" disabled>
+        <i class="fas fa-camera-retro"></i> Capture Face
+      </button>
+    </div>
+    
+    <div id="status"></div>
+    
+    <a href="dashboard.html" class="skip-link">
+      <i class="fas fa-arrow-right"></i> Skip for now
+    </a>
+  </div>
+
+  <script>
+    const socket = io('http://localhost:8000', {
+      transports: ['polling', 'websocket'],
+      path: '/socket.io',
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 10000,
+      forceNew: true,
+      autoConnect: true,
+      withCredentials: false,
+      extraHeaders: {
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const startButton = document.getElementById('startButton');
+    const captureButton = document.getElementById('captureButton');
+    const status = document.getElementById('status');
+    let stream = null;
+
+    // Debug: Log all localStorage contents
+    console.log('All localStorage contents:', Object.keys(localStorage).reduce((obj, key) => {
+        obj[key] = localStorage.getItem(key);
+        return obj;
+    }, {}));
+
+    // Check authentication and get user ID
+    const token = localStorage.getItem('attendify_token');
+    console.log('Token found:', token ? 'Yes' : 'No');
+    
+    if (!token) {
+        console.log('No token found, redirecting to login...');
+        showStatus('Please log in first', 'error');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 5000);
+    }
+
+    // Get user data from API
+    async function getUserData() {
+        try {
+            console.log('Attempting to get user data with token:', token);
+            const response = await fetch('http://localhost:8000/api/v1/users/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                console.error('Failed to get user data:', response.status, response.statusText, errorData);
+                
+                if (response.status === 401) {
+                    showStatus('Your session has expired. Please log in again.', 'error');
+                } else if (response.status === 404) {
+                    showStatus('User endpoint not found. Please contact support.', 'error');
+                } else {
+                    showStatus(errorData?.detail || 'Failed to get user data. Please try again.', 'error');
+                }
+                
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 20000);
+                return null;
+            }
+            
+            const userData = await response.json();
+            console.log('User data:', userData);
+            return userData;
+        } catch (error) {
+            console.error('Error getting user data:', error);
+            showStatus('Error getting user data. Please log in again.', 'error');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 20000);
+            return null;
+        }
+    }
+
+    // Initialize user data
+    let userId = null;
+    getUserData().then(userData => {
+        if (userData) {
+            userId = userData.user_id;
+            console.log('User ID:', userId);
+            showStatus('Ready to capture face', 'success');
+        }
+    });
+
+    socket.on('connect', () => {
+      console.log('Connected to server');
+      showStatus('Connected to server', 'success');
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+      showStatus('Connection error: ' + error.message, 'error');
+      // Try to reconnect with different transport
+      if (socket.io.opts.transports[0] === 'polling') {
+        socket.io.opts.transports = ['websocket', 'polling'];
+      } else {
+        socket.io.opts.transports = ['polling', 'websocket'];
+      }
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('Disconnected:', reason);
+      showStatus('Disconnected from server', 'error');
+      if (reason === 'io server disconnect') {
+        // Server initiated disconnect, try to reconnect
+        socket.connect();
+      }
+    });
+
+    socket.on('error', (error) => {
+      console.error('Socket error:', error);
+      showStatus('Connection error. Please try again.', 'error');
+    });
+
+    startButton.addEventListener('click', async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: 640,
+            height: 480,
+            facingMode: 'user'
+          } 
+        });
+        video.srcObject = stream;
+        startButton.disabled = true;
+        captureButton.disabled = false;
+        showStatus('Camera started. Position your face in the frame.', 'success');
+      } catch (err) {
+        showStatus('Error accessing camera: ' + err.message, 'error');
+      }
+    });
+
+    captureButton.addEventListener('click', async () => {
+      if (!userId) {
+        showStatus('Please wait while we get your user data...', 'error');
+        const userData = await getUserData();
+        if (!userData) {
+          return;
+        }
+        userId = userData.user_id;
+      }
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      
+      const imageData = canvas.toDataURL('image/jpeg');
+      
+      socket.emit('setup_face', {
+        user_id: userId,
+        image: imageData
+      });
+      
+      captureButton.disabled = true;
+      showStatus('Processing face...', 'success');
+    });
+
+    socket.on('face_setup_success', (data) => {
+      showStatus(data.message, 'success');
+      if (data.visualization) {
+        const visDiv = document.getElementById('visualization');
+        visDiv.innerHTML = `<img src="${data.visualization}" alt="Face detection visualization">`;
+      }
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      video.srcObject = null;
+      startButton.disabled = false;
+      captureButton.disabled = true;
+      
+      // Redirect to dashboard after successful setup
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 2000);
+    });
+
+    socket.on('face_setup_error', (data) => {
+      showStatus(data.message, 'error');
+      if (data.visualization) {
+        const visDiv = document.getElementById('visualization');
+        visDiv.innerHTML = `<img src="${data.visualization}" alt="Face detection visualization">`;
+      }
+      captureButton.disabled = false;
+    });
+
+    function showStatus(message, type) {
+      status.textContent = message;
+      status.className = type;
+    }
+=======
+  <title>Attendify - Face Recognition Setup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles/face-recognition.css">
+  <link rel="icon" type="image/png" href="logo_attendify1.png" />
+</head>
+<body>
+  <div class="face-recognition-container">
+    <div class="recognition-content" id="setupContent">
+      <div class="recognition-header">
+        <h1 class="recognition-title">Set Up Face Recognition</h1>
+        <p class="recognition-subtitle">This step enables face scanning for attendance. You can skip for now and set it up later from your profile settings.</p>
+      </div>
+      
+      <div class="camera-container">
+        <div class="webcam-container">
+          <div class="webcam-placeholder">
+            <i class="fas fa-camera"></i>
+            <p>Camera will appear here</p>
+          </div>
+          <video id="webcam" autoplay playsinline style="display: none;"></video>
+          <canvas id="faceCanvas" style="display: none;"></canvas>
+        </div>
+        <div class="face-outline">
+          <div class="face-position"></div>
+        </div>
+      </div>
+      
+      <div class="recognition-status">
+        <div class="status-icon">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <p class="status-message">Position your face within the outline and remain still</p>
+      </div>
+      
+      <div class="recognition-actions">
+        <button type="button" class="btn-skip" id="skipBtn">Skip for now</button>
+        <button type="button" class="btn-start" id="startRecognitionBtn">Start Scan</button>
+        <button type="button" class="btn-stop" id="stopRecognitionBtn" disabled>Stop</button>
+      </div>
+    </div>
+    
+    <div class="scan-complete" id="scanComplete" style="display: none;">
+      <div class="complete-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h2 class="complete-title">Setup Complete!</h2>
+      <p class="complete-message">Face recognition has been successfully set up. You can now use face scanning for attendance.</p>
+      <button type="button" class="btn-continue" id="continueBtn">Continue to Dashboard</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import CONFIG from './scripts/config.js';
+    import utils from './scripts/utils.js';
+    import FaceRecognition from './scripts/face-recognition.js';
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Check authentication
+      const token = utils.getAuthToken();
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Check if coming from signup or settings
+      const isFromSignup = new URLSearchParams(window.location.search).get('from') === 'signup';
+      const isFromSettings = new URLSearchParams(window.location.search).get('from') === 'settings';
+
+      // Check browser support
+      if (!FaceRecognition.checkBrowserSupport()) {
+        utils.showNotification('Your browser does not support face recognition features', 'error');
+        return;
+      }
+
+      const webcam = document.getElementById('webcam');
+      const canvas = document.getElementById('faceCanvas');
+      const startBtn = document.getElementById('startRecognitionBtn');
+      const stopBtn = document.getElementById('stopRecognitionBtn');
+      const skipBtn = document.getElementById('skipBtn');
+      const continueBtn = document.getElementById('continueBtn');
+      const setupContent = document.getElementById('setupContent');
+      const scanComplete = document.getElementById('scanComplete');
+      const statusMessage = document.querySelector('.status-message');
+      const statusIcon = document.querySelector('.status-icon i');
+
+      let faceRecognition = null;
+
+      function updateButtons(isRecognizing) {
+        startBtn.disabled = isRecognizing;
+        stopBtn.disabled = !isRecognizing;
+        skipBtn.style.display = isRecognizing ? 'none' : 'block';
+      }
+
+      function showSetupComplete() {
+        setupContent.style.display = 'none';
+        scanComplete.style.display = 'block';
+        localStorage.setItem('faceScanComplete', 'true');
+      }
+
+      function navigateToNextPage() {
+        if (isFromSignup || isFromSettings) {
+          window.location.href = 'dashboard.html';
+        } else {
+          window.history.back();
+        }
+      }
+
+      function initializeFaceRecognition() {
+        faceRecognition = new FaceRecognition({
+          onResult: (result) => {
+            if (result.recognized) {
+              statusIcon.className = 'fas fa-check-circle';
+              statusMessage.textContent = 'Face recognized! Setup complete.';
+              statusMessage.style.color = 'var(--success)';
+              
+              // Stop recognition and show completion screen
+              faceRecognition.stop();
+              updateButtons(false);
+              showSetupComplete();
+            } else {
+              statusIcon.className = 'fas fa-search';
+              statusMessage.textContent = 'Scanning...';
+              statusMessage.style.color = 'var(--text)';
+            }
+          },
+          onError: (error) => {
+            statusIcon.className = 'fas fa-exclamation-circle';
+            statusMessage.textContent = error;
+            statusMessage.style.color = 'var(--error)';
+            updateButtons(false);
+          }
+        });
+      }
+
+      // Initialize face recognition
+      initializeFaceRecognition();
+
+      // Event Listeners
+      startBtn.addEventListener('click', async () => {
+        try {
+          statusIcon.className = 'fas fa-spinner fa-spin';
+          statusMessage.textContent = 'Initializing...';
+          statusMessage.style.color = 'var(--text)';
+          
+          const initialized = await faceRecognition.initialize(webcam, canvas);
+          if (initialized) {
+            webcam.style.display = 'block';
+            document.querySelector('.webcam-placeholder').style.display = 'none';
+            
+            faceRecognition.start();
+            updateButtons(true);
+            
+            statusIcon.className = 'fas fa-search';
+            statusMessage.textContent = 'Position your face within the outline...';
+          }
+        } catch (error) {
+          utils.showNotification('Failed to initialize camera', 'error');
+          console.error('Camera initialization error:', error);
+        }
+      });
+
+      stopBtn.addEventListener('click', () => {
+        if (faceRecognition) {
+          faceRecognition.stop();
+        }
+        updateButtons(false);
+        webcam.style.display = 'none';
+        document.querySelector('.webcam-placeholder').style.display = 'flex';
+        
+        statusIcon.className = 'fas fa-camera';
+        statusMessage.textContent = 'Recognition stopped';
+        statusMessage.style.color = 'var(--text)';
+      });
+
+      skipBtn.addEventListener('click', () => {
+        if (faceRecognition) {
+          faceRecognition.stop();
+        }
+        navigateToNextPage();
+      });
+
+      continueBtn.addEventListener('click', () => {
+        navigateToNextPage();
+      });
+
+      // Clean up on page unload
+      window.addEventListener('beforeunload', () => {
+        if (faceRecognition) {
+          faceRecognition.stop();
+        }
+      });
+    });
+>>>>>>> branch22:frontend/face-setup.html
+  </script>
+</body>
+</html> 
