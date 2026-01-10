@@ -52,6 +52,7 @@ class User(Base):
     
     # Face Recognition
     face_embedding = Column(LargeBinary, nullable=True)  # Store face embedding as JSON string
+    profile_photo = Column(String(255), nullable=True)  # Path to uploaded profile photo
     
     # Authentication & Status
     is_active = Column(Boolean, default=True, nullable=False)

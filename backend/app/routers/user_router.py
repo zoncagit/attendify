@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import Any, Dict
+import os
+import uuid
+from pathlib import Path
 
 from app.database import get_db
 from app.crud import user as user_crud
@@ -10,6 +13,12 @@ from app.models.user import User
 from fastapi import status
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
+
+# Configure upload directory (PythonAnywhere compatible)
+UPLOAD_DIR = Path(__file__).parent.parent.parent / "static" / "uploads" / "profiles"
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
 
 @router.get("/me", response_model=UserOut)
 def read_current_user(current_user: User = Depends(get_current_user)):
@@ -54,13 +63,13 @@ def get_user_profile(
     profile_data = {
         "user_id": user.user_id,
         "email": user.email,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
+        "first_name": user.first_name if hasattr(user, 'first_name') else user.name,
+        "last_name": user.last_name if hasattr(user, 'last_name') else user.prenom,
         "role": role,
         "is_active": user.is_active,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
-        "profile_picture": user.profile_picture if hasattr(user, 'profile_picture') else None
+        "profile_picture": user.profile_photo if hasattr(user, 'profile_photo') else None
     }
     
     # Add any additional profile fields that might exist
@@ -96,8 +105,8 @@ async def update_user_profile(
         # Return updated profile
         return {
             **user.__dict__,
-            "role": crud.get_user_role(db, user.user_id),
-            "profile_picture": user.profile_picture if hasattr(user, 'profile_picture') else None
+            "role": user_crud.get_user_role(db, user.user_id),
+            "profile_picture": user.profile_photo if hasattr(user, 'profile_photo') else None
         }
 
     except Exception as e:
@@ -106,3 +115,74 @@ async def update_user_profile(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while updating profile: {str(e)}"
         )
+
+
+@router.post("/profile/photo")
+async def upload_profile_photo(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload a profile photo for the current user.
+    
+    - Accepts: JPG, JPEG, PNG, GIF, WEBP
+    - Max size: 5MB
+    - Returns: URL path to the uploaded photo
+    """
+    # Validate file extension
+    file_ext = Path(file.filename).suffix.lower()
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    # Read file content
+    content = await file.read()
+    
+    # Validate file size
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File size exceeds 5MB limit"
+        )
+    
+    # Create upload directory if it doesn't exist
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # Generate unique filename
+    unique_filename = f"{current_user.user_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    # Delete old photo if exists
+    user = db.query(User).filter(User.user_id == current_user.user_id).first()
+    if user.profile_photo:
+        old_path = Path(__file__).parent.parent.parent / user.profile_photo.lstrip("/")
+        if old_path.exists():
+            try:
+                old_path.unlink()
+            except Exception:
+                pass  # Ignore deletion errors
+    
+    # Save file
+    try:
+        with open(file_path, "wb") as f:
+            f.write(content)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save file: {str(e)}"
+        )
+    
+    # Update user profile photo path in database
+    relative_path = f"/static/uploads/profiles/{unique_filename}"
+    user.profile_photo = relative_path
+    db.commit()
+    
+    return {
+        "success": True,
+        "message": "Profile photo uploaded successfully",
+        "photo_url": relative_path
+    }
+
